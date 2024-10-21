@@ -1,0 +1,200 @@
+# Config details
+file_prefix: ""
+file_suffix: ""
+
+uncensored_folder: "00_uncensored"
+censored_folder: "01_censored"
+video_folder: "videos"
+
+debug_mode: False
+
+# Parts Enabled
+parts_enabled:
+# Female
+- "FACE_FEMALE"
+
+- "ARMPITS_EXPOSED"
+- "ARMPITS_COVERED"
+
+- "FEMALE_BREAST_EXPOSED"
+- "FEMALE_BREAST_COVERED"
+
+- "BELLY_EXPOSED"
+- "BELLY_COVERED"
+
+- "BUTTOCKS_EXPOSED"
+- "BUTTOCKS_COVERED"
+
+- "ANUS_EXPOSED"
+- "ANUS_COVERED"
+
+- "FEMALE_GENITALIA_EXPOSED"
+- "FEMALE_GENITALIA_COVERED"
+
+- "FEET_EXPOSED"
+- "FEET_COVERED"
+
+
+# Male
+- "FACE_MALE"
+- "MALE_GENITALIA_EXPOSED"
+- "MALE_BREAST_EXPOSED"
+
+# Information
+information:
+  # Fall Back Options as "General" Settings
+  defaults:
+    minimum_score: 0.20
+    censors: []
+    shape: "box"
+    mergable: False
+    margin: 0.0
+
+  # Body Parts in Body Order (Exposed Then Covered, Female Then Male)
+  # Female
+  FACE_FEMALE:
+    censors:
+    - function: "outlined_box"
+      args:
+        rgb_colour_box: "BABY_PINK"
+        rgb_colour_outline: "BLACK"
+        alpha: 0.5
+
+
+
+  ARMPITS_EXPOSED:
+    censors:
+    - function: "outlined_box"
+      args:
+        rgb_colour_box: "HOT_BLUE"
+        rgb_colour_outline: "BLACK"
+        alpha: 0.5
+
+  ARMPITS_COVERED:
+    censors:
+    - function: "outlined_box"
+      args:
+        rgb_colour_box: "DARK_BLUE"
+        rgb_colour_outline: "BLACK"
+        alpha: 0.5
+
+
+  FEMALE_BREAST_EXPOSED:
+    censors:
+    - function: "outlined_box"
+      args:
+        rgb_colour_box: "HOT_PINK"
+        rgb_colour_outline: "BLACK"
+        alpha: 0.5
+  FEMALE_BREAST_COVERED:
+    censors:
+    - function: "outlined_box"
+      args:
+        rgb_colour_box: "DARK_PINK"
+        rgb_colour_outline: "BLACK"
+        alpha: 0.5
+
+
+  BELLY_EXPOSED:
+    censors:
+    - function: "outlined_box"
+      args:
+        rgb_colour_box: "HOT_PURPLE"
+        rgb_colour_outline: "BLACK"
+        alpha: 0.5
+  BELLY_COVERED:
+    censors:
+    - function: "outlined_box"
+      args:
+        rgb_colour_box: "DARK_PURPLE"
+        rgb_colour_outline: "BLACK"
+        alpha: 0.5
+
+
+  BUTTOCKS_EXPOSED:
+    censors:
+    - function: "outlined_box"
+      args:
+        rgb_colour_box: "HOT_ORANGE"
+        rgb_colour_outline: "BLACK"
+        alpha: 0.5
+  BUTTOCKS_COVERED:
+    censors:
+    - function: "outlined_box"
+      args:
+        rgb_colour_box: "DARK_ORANGE"
+        rgb_colour_outline: "BLACK"
+        alpha: 0.5
+
+
+  ANUS_EXPOSED:
+    censors:
+    - function: "outlined_box"
+      args:
+        rgb_colour_box: "HOT_BROWN"
+        rgb_colour_outline: "BLACK"
+        alpha: 0.5
+  ANUS_COVERED:
+    censors:
+    - function: "outlined_box"
+      args:
+        rgb_colour_box: "DARK_BROWN"
+        rgb_colour_outline: "BLACK"
+        alpha: 0.5
+
+
+  FEMALE_GENITALIA_EXPOSED:
+    censors:
+    - function: "outlined_box"
+      args:
+        rgb_colour_box: "HOT_YELLOW"
+        rgb_colour_outline: "BLACK"
+        alpha: 0.5
+  FEMALE_GENITALIA_COVERED:
+    censors:
+    - function: "outlined_box"
+      args:
+        rgb_colour_box: "DARK_YELLOW"
+        rgb_colour_outline: "BLACK"
+        alpha: 0.5
+
+
+  FEET_EXPOSED:
+    censors:
+    - function: "outlined_box"
+      args:
+        rgb_colour_box: "HOT_RED"
+        rgb_colour_outline: "BLACK"
+        alpha: 0.5
+  FEET_COVERED:
+    censors:
+    - function: "outlined_box"
+      args:
+        rgb_colour_box: "DARK_RED"
+        rgb_colour_outline: "BLACK"
+        alpha: 0.5
+
+
+
+  # Male
+  FACE_MALE:
+    censors:
+    - function: "outlined_box"
+      args:
+        rgb_colour_box: "BABY_BLUE"
+        rgb_colour_outline: "BLACK"
+        alpha: 0.5
+  MALE_BREAST_EXPOSED:
+    censors:
+    - function: "outlined_box"
+      args:
+        rgb_colour_box: "VENETIAN_RED"
+        rgb_colour_outline: "BLACK"
+        alpha: 0.5
+  MALE_GENITALIA_EXPOSED:
+    censors:
+    - function: "outlined_box"
+      args:
+        rgb_colour_box: "IRIS"
+        rgb_colour_outline: "BLACK"
+        alpha: 0.5

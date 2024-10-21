@@ -1,0 +1,217 @@
+# Config details
+file_prefix: ""
+file_suffix: ""
+
+uncensored_folder: "00_uncensored"
+censored_folder: "01_censored"
+video_folder: "videos"
+
+debug_mode: False
+
+# Parts Enabled
+parts_enabled:
+# Female
+- "FACE_FEMALE"
+
+- "ARMPITS_EXPOSED"
+- "ARMPITS_COVERED"
+
+- "FEMALE_BREAST_EXPOSED"
+- "FEMALE_BREAST_COVERED"
+
+- "BELLY_EXPOSED"
+- "BELLY_COVERED"
+
+- "BUTTOCKS_EXPOSED"
+- "BUTTOCKS_COVERED"
+
+- "ANUS_EXPOSED"
+- "ANUS_COVERED"
+
+- "FEMALE_GENITALIA_EXPOSED"
+- "FEMALE_GENITALIA_COVERED"
+
+- "FEET_EXPOSED"
+- "FEET_COVERED"
+
+
+# Male
+- "FACE_MALE"
+- "MALE_GENITALIA_EXPOSED"
+- "MALE_BREAST_EXPOSED"
+
+# Information
+information:
+  # Fall Back Options as "General" Settings
+  defaults:
+    minimum_score: 0.20
+    censors: []
+    shape: "box"
+    mergable: False
+    margin: 0.0
+
+
+  # Body Parts in Body Order (Exposed Then Covered, Female Then Male)
+  # Female
+  FACE_FEMALE:
+    censors:
+    - function: "dev_debug"
+      args:
+        rgb_colour: "BABY_PINK"
+    - function: "box"
+      args:
+        rgb_colour: "BLACK"
+
+
+  ARMPITS_EXPOSED:
+    censors:
+    - function: "dev_debug"
+      args:
+        rgb_colour: "HOT_BLUE"
+    - function: "box"
+      args:
+        rgb_colour: "BLACK"
+  ARMPITS_COVERED:
+    censors:
+    - function: "dev_debug"
+      args:
+        rgb_colour: "DARK_BLUE"
+    - function: "box"
+      args:
+        rgb_colour: "BLACK"
+
+
+  FEMALE_BREAST_EXPOSED:
+    censors:
+    - function: "dev_debug"
+      args:
+        rgb_colour: "HOT_PINK"
+    - function: "box"
+      args:
+        rgb_colour: "BLACK"
+  FEMALE_BREAST_COVERED:
+    censors:
+    - function: "dev_debug"
+      args:
+        rgb_colour: "DARK_PINK"
+    - function: "box"
+      args:
+        rgb_colour: "BLACK"
+
+
+  BELLY_EXPOSED:
+    censors:
+    - function: "dev_debug"
+      args:
+        rgb_colour: "HOT_PURPLE"
+    - function: "box"
+      args:
+        rgb_colour: "BLACK"
+  BELLY_COVERED:
+    censors:
+    - function: "dev_debug"
+      args:
+        rgb_colour: "DARK_PURPLE"
+    - function: "box"
+      args:
+        rgb_colour: "BLACK"
+
+
+  BUTTOCKS_EXPOSED:
+    censors:
+    - function: "dev_debug"
+      args:
+        rgb_colour: "HOT_ORANGE"
+    - function: "box"
+      args:
+        rgb_colour: "BLACK"
+  BUTTOCKS_COVERED:
+    censors:
+    - function: "dev_debug"
+      args:
+        rgb_colour: "DARK_ORANGE"
+    - function: "box"
+      args:
+        rgb_colour: "BLACK"
+
+
+  ANUS_EXPOSED:
+    censors:
+    - function: "dev_debug"
+      args:
+        rgb_colour: "HOT_BROWN"
+    - function: "box"
+      args:
+        rgb_colour: "BLACK"
+  ANUS_COVERED:
+    censors:
+    - function: "dev_debug"
+      args:
+        rgb_colour: "DARK_BROWN"
+    - function: "box"
+      args:
+        rgb_colour: "BLACK"
+
+
+  FEMALE_GENITALIA_EXPOSED:
+    censors:
+    - function: "dev_debug"
+      args:
+        rgb_colour: "HOT_YELLOW"
+    - function: "box"
+      args:
+        rgb_colour: "BLACK"
+  FEMALE_GENITALIA_COVERED:
+    censors:
+    - function: "dev_debug"
+      args:
+        rgb_colour: "DARK_YELLOW"
+    - function: "box"
+      args:
+        rgb_colour: "BLACK"
+
+
+  FEET_EXPOSED:
+    censors:
+    - function: "dev_debug"
+      args:
+        rgb_colour: "HOT_RED"
+    - function: "box"
+      args:
+        rgb_colour: "BLACK"
+  FEET_COVERED:
+    censors:
+    - function: "dev_debug"
+      args:
+        rgb_colour: "DARK_RED"
+    - function: "box"
+      args:
+        rgb_colour: "BLACK"
+
+
+
+  # Male
+  FACE_MALE:
+    censors:
+    - function: "dev_debug"
+      args:
+        rgb_colour: "BABY_BLUE"
+    - function: "box"
+      args:
+        rgb_colour: "BLACK"
+  MALE_BREAST_EXPOSED:
+    censors:
+    - function: "dev_debug"
+      args:
+        rgb_colour: "VENETIAN_RED"
+    - function: "box"
+      args:
+        rgb_colour: "BLACK"
+  MALE_GENITALIA_EXPOSED:
+    censors:
+    - function: "dev_debug"
+      args:
+        rgb_colour: "IRIS"
+    - function: "box"
+      args:
+        rgb_colour: "BLACK"

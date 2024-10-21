@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "censorengine"
+version = "0.2.0"
+description = "This is an open censoring tool for NSFW images and videos"
+authors = ["PartTimeDegen"]
+license = "GPL"
+packages = [
+    { include = "project_name", from = "src" },
+]
+
+[tool.poetry.dependencies]
+python          = "^3.10"
+PyYAML          = "^6.0.2"
+numpy           = "1.*"
+opencv-python   = "^4.10.0"
+pillow          = "^10.4.0"
+pytest          = "^8.3.2"
+onnxruntime     = "^1.18.1"
+nudenet         = "^3.4.2"
+ruff            = "^0.6.9"
+mypy            = "^1.11.2"
+pyclean         = "^3.0.0"
+pre-commit      = "^4.0.1"
+autoflake       = "^2.3.1"
+opencv-stubs    = "^0.0.10"
+opencv-python-headless = "^4.10.0.84"
+
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.pytest.ini_options]
+pythonpath = "src"
