@@ -5,25 +5,25 @@ description = "This is an open censoring tool for NSFW images and videos"
 authors = ["PartTimeDegen"]
 license = "GPL"
 packages = [
-    { include = "project_name", from = "src" },
+    { include = "censorengine", from = "src" },
 ]
 
 [tool.poetry.dependencies]
-python          = "^3.10"
-PyYAML          = "^6.0.2"
-numpy           = "1.*"
-opencv-python   = "^4.10.0"
-pillow          = "^10.4.0"
-pytest          = "^8.3.2"
-onnxruntime     = "^1.18.1"
-nudenet         = "^3.4.2"
-ruff            = "^0.6.9"
-mypy            = "^1.11.2"
-pyclean         = "^3.0.0"
-pre-commit      = "^4.0.1"
-autoflake       = "^2.3.1"
-opencv-stubs    = "^0.0.10"
-opencv-python-headless = "^4.10.0.84"
+python          = "^3.12"
+PyYAML          = "^6"
+numpy           = "^1"
+opencv-python   = "^4"
+pillow          = "^10"
+pytest          = "^8"
+onnxruntime     = "^1"
+nudenet         = "^3"
+ruff            = "^0"
+mypy            = "^1"
+pyclean         = "^3"
+pre-commit      = "^4"
+autoflake       = "^2"
+opencv-stubs    = "^0"
+opencv-python-headless = "^4"
 
 
 [build-system]

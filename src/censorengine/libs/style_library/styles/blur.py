@@ -1,5 +1,4 @@
 import math
-import warnings
 
 import cv2
 import numpy as np
@@ -8,7 +7,8 @@ from censorengine.lib_models.styles import BlurStyle
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from censorengine.backend.constants.typing import  CVImage
+    from censorengine.backend.constants.typing import CVImage
+
 
 class Blur(BlurStyle):
     style_name: str = "blur"
@@ -17,7 +17,7 @@ class Blur(BlurStyle):
         self,
         image: CVImage,
         contour,
-        factor:int | float,
+        factor: int | float,
     ) -> CVImage:
         # Fixing Strength
         factor = factor * 4 + 1
@@ -49,65 +49,78 @@ class Blur(BlurStyle):
         return self.draw_effect([contour], blurred_image, image)
 
 
-def pixelate(image, [contour], factor):
-    bounding_rect = cv2.boundingRect([contour][0][0])
-    _, _, box_width, box_height = bounding_rect
-    fixed_size = max(box_width, box_height)
+class Pixelate(BlurStyle):
+    style_name: str = "pixelate"
 
-    distortion_ratio = (
-        box_width / fixed_size,
-        box_height / fixed_size,
-    )
-    distortion_ratio = (
-        distortion_ratio[0] / min(distortion_ratio),
-        distortion_ratio[1] / min(distortion_ratio),
-    )
+    def _get_distortion_factor(self, image, contour, factor):
+        bounding_rect = cv2.boundingRect([contour][0][0])
+        _, _, box_width, box_height = bounding_rect
 
-    size_image_ratio = (
-        image.shape[0] / box_width,
-        image.shape[1] / box_height,
-    )
-    size_image_ratio = (
-        size_image_ratio[0] / min(size_image_ratio),
-        size_image_ratio[1] / min(size_image_ratio),
-    )
+        fixed_size = max(box_width, box_height)
 
-    factor_ratio = (
-        int(factor / size_image_ratio[0] / distortion_ratio[0]),
-        int(factor / size_image_ratio[1] / distortion_ratio[1]),
-    )
-    factor_ratio = (
-        factor - min(factor_ratio) + factor_ratio[0],
-        factor - min(factor_ratio) + factor_ratio[1],
-    )
-    factors = (
-        int(factor_ratio[0] * factor / 2),
-        int(factor_ratio[1] * factor / 2),
-    )
+        distortion_ratio = (
+            box_width / fixed_size,
+            box_height / fixed_size,
+        )
+        distortion_ratio = (
+            distortion_ratio[0] / min(distortion_ratio),
+            distortion_ratio[1] / min(distortion_ratio),
+        )
 
-    factors = (
-        _normalise_factor(image, [contour], factors[0]),
-        _normalise_factor(image, [contour], factors[1]),
-    )
+        size_image_ratio = (
+            image.shape[0] / box_width,
+            image.shape[1] / box_height,
+        )
+        size_image_ratio = (
+            size_image_ratio[0] / min(size_image_ratio),
+            size_image_ratio[1] / min(size_image_ratio),
+        )
 
-    # Code Proper
-    down_image = cv2.resize(image, factors, interpolation=cv2.INTER_LINEAR)
-    pixel_image = cv2.resize(
-        down_image,
-        (image.shape[1], image.shape[0]),
-        interpolation=cv2.INTER_NEAREST,
-    )
+        factor_ratio = (
+            int(factor / size_image_ratio[0] / distortion_ratio[0]),
+            int(factor / size_image_ratio[1] / distortion_ratio[1]),
+        )
+        factor_ratio = (
+            factor - min(factor_ratio) + factor_ratio[0],
+            factor - min(factor_ratio) + factor_ratio[1],
+        )
+        factors = (
+            int(factor_ratio[0] * factor / 2),
+            int(factor_ratio[1] * factor / 2),
+        )
 
-    return ip.draw_effect([contour], pixel_image, image)
+        return (
+            self.normalise_factor(image, [contour], factors[0]),
+            self.normalise_factor(image, [contour], factors[1]),
+        )
+
+    def apply_style(
+        self,
+        image: CVImage,
+        contour,
+        factor: int | float,
+    ) -> CVImage:
+        factors = self._get_distortion_factor(self, image, contour, factor)
+
+        # Code Proper
+        down_image = cv2.resize(
+            image,
+            factors,
+            interpolation=cv2.INTER_LINEAR,
+        )
+        pixel_image = cv2.resize(
+            down_image,
+            (image.shape[1], image.shape[0]),
+            interpolation=cv2.INTER_NEAREST,
+        )
+
+        return self.draw_effect([contour], pixel_image, image)
 
 
-def hexagon_pixelate(image, [contour], factor):
-    """
-    Credit : https://github.com/McJazzy/hexagonpy
-    """
-    warnings.filterwarnings("ignore")
+class HexagonPixelate(BlurStyle):
+    style_name: str = "hexagon_pixelate"
 
-    def hexagon_corners(center, size):
+    def _hexagon_corners(self, center, size):
         x = center[0]
         y = center[1]
 
@@ -123,18 +136,18 @@ def hexagon_pixelate(image, [contour], factor):
             (x - w / 2, y + h / 4),
         ]
 
-    def rectangle_corners(center, w, h):
+    def _rectangle_corners(self, center, width, height):
         x = center[0]
         y = center[1]
 
         return [
-            (x - w / 2, y - h / 2),
-            (x + w / 2, y - h / 2),
-            (x + w / 2, y + h / 2),
-            (x - w / 2, y + h / 2),
+            (x - width / 2, y - height / 2),
+            (x + width / 2, y - height / 2),
+            (x + width / 2, y + height / 2),
+            (x - width / 2, y + height / 2),
         ]
 
-    def hexagonify(image, hexagon_size):
+    def _hexagonify(self, image, hexagon_size):
         img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         im = Image.fromarray(img)
 
@@ -155,12 +168,12 @@ def hexagon_pixelate(image, [contour], factor):
                 row % 2
             )  # the even rows of hexagons has w/2 offset on the x-axis compared to odd rows.
 
-            p = hexagon_corners(
+            p = self._hexagon_corners(
                 (column * w + even * w / 2, row * h * 3 / 4), hexagon_size
             )
 
             # compute the average color of the hexagon, use a rectangle approximation.
-            raw = rectangle_corners(
+            raw = self._rectangle_corners(
                 (column * w + even * w / 2, row * h * 3 / 4), w, h
             )
             r = []
@@ -178,15 +191,24 @@ def hexagon_pixelate(image, [contour], factor):
             draw.polygon(p, fill=color)
         return cv2.cvtColor(np.asarray(im), cv2.COLOR_RGB2BGR)
 
-    # image_ratio = (max(image.shape) - min(image.shape)) / min(image.shape)
-    factor = _normalise_factor(image, [contour], factor)
+    def apply_style(
+        self,
+        image: CVImage,
+        contour,
+        factor: int | float,
+    ) -> CVImage:
+        # """
+        # Credit : https://github.com/McJazzy/hexagonpy
+        # """
 
-    pixel_image = hexagonify(image, factor)
-    return ip.draw_effect([contour], pixel_image, image)
+        factor = self.normalise_factor(image, contour, factor)
+        pixel_image = self._hexagonify(image, factor)
+
+        return self.draw_effect(contour, pixel_image, image)
 
 
 effects = {
-    "blur": blur,
-    "pixelate": pixelate,
-    "hexagon_pixelate": hexagon_pixelate,
+    "blur": Blur,
+    "pixelate": Pixelate,
+    "hexagon_pixelate": HexagonPixelate,
 }

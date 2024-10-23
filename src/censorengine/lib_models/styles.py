@@ -1,4 +1,4 @@
-# TODO: Remove me once you made a model for styles
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import cv2
 import numpy as np
@@ -10,13 +10,15 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class Style:
+class Style(ABC):
     style_name: str = "invalid_style"
     style_type: str = "invalid_style"
 
     force_png: bool = False
 
+    @abstractmethod
     def apply_style(
+        self,
         image: CVImage,
         contour,
         *args: Any,
@@ -25,11 +27,11 @@ class Style:
         raise NotImplementedError
 
     def draw_effect_on_mask(
+        self,
         contours,
         mask_image: Mask,
         image: CVImage,
     ) -> CVImage:
-
         mask = cv2.drawContours(
             np.zeros(image.shape, dtype=np.uint8),
             contours[0],
@@ -55,6 +57,7 @@ class BlurStyle(Style):
     style_type: str = "blur"
 
     def normalise_factor(
+        self,
         image: CVImage,
         factor: int | float,
     ) -> int | float:
