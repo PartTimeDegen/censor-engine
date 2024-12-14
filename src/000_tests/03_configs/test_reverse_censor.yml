@@ -2,10 +2,10 @@
 file_prefix: ""
 file_suffix: ""
 
-image_folder: "test"
-video_folder: "videos"
+uncensored_folder: "00_uncensored"
+censored_folder: "01_censored"
 
-debug_mode: False
+debug_mode: True
 
 # Parts Enabled
 parts_enabled:
@@ -39,17 +39,35 @@ parts_enabled:
 - "MALE_GENITALIA_EXPOSED"
 - "MALE_BREAST_EXPOSED"
 
+# Information on Merging Parts
+merging:
+  range: -1
+  merge_groups:
+  - ["FEMALE_BREAST_EXPOSED"]
+  - ["FEMALE_BREAST_COVERED"]
+
+# Rendering Settings
+rendering:
+  smoothing: True
+
+
 # Information
 information:
   # Fall Back Options as "General" Settings
   defaults:
-    minimum_score: 0.20
     censors:
-    - function: "outline"
-      args:
-        colour: "BLACK"
+    # - function: "box"
+    #   args:
+    #     colour: "BLACK"
+
+    minimum_score: 0.20
     shape: "box"
-    mergable: False
-    margin: 0.0
-
-
+  
+  reverse_censors:
+  - function: "outline" 
+    args:
+      colour: BLUE
+      thickness: 40
+  - function: "box"
+    args:
+      colour: "GREEN"

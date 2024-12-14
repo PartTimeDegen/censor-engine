@@ -1,0 +1,2 @@
+class MissingEssentialConfigSection(Exception):
+    pass

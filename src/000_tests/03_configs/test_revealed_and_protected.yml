@@ -2,42 +2,22 @@
 file_prefix: ""
 file_suffix: ""
 
-image_folder: "test"
+uncensored_folder: "00_uncensored"
+censored_folder: "01_censored"
 video_folder: "videos"
 
-debug_mode: False
+debug_mode: True
 
 # Parts Enabled
 parts_enabled:
-# Female
-- "FACE_FEMALE"
-
-- "ARMPITS_EXPOSED"
-- "ARMPITS_COVERED"
-
 - "FEMALE_BREAST_EXPOSED"
 - "FEMALE_BREAST_COVERED"
-
-- "BELLY_EXPOSED"
-- "BELLY_COVERED"
-
-- "BUTTOCKS_EXPOSED"
-- "BUTTOCKS_COVERED"
-
-- "ANUS_EXPOSED"
-- "ANUS_COVERED"
-
 - "FEMALE_GENITALIA_EXPOSED"
 - "FEMALE_GENITALIA_COVERED"
+- "BUTTOCKS_EXPOSED"
+- "BUTTOCKS_COVERED"
+- "ANUS_EXPOSED"
 
-- "FEET_EXPOSED"
-- "FEET_COVERED"
-
-
-# Male
-- "FACE_MALE"
-- "MALE_GENITALIA_EXPOSED"
-- "MALE_BREAST_EXPOSED"
 
 # Information
 information:
@@ -45,11 +25,14 @@ information:
   defaults:
     minimum_score: 0.20
     censors:
-    - function: "outline"
+    - function: "box"
       args:
-        colour: "BLACK"
+        colour: "WHITE"
+
     shape: "box"
     mergable: False
     margin: 0.0
 
-
+  ANUS_EXPOSED:
+    shape: "ellipse"
+    revealed: True

@@ -1,15 +1,22 @@
 from dataclasses import dataclass, field
-from enum import IntEnum
 import itertools
-from typing import Any, Optional
+from typing import Any, Iterable, Optional, TYPE_CHECKING
 
 import cv2
 import numpy as np
 
-from censorengine.backend.models.enums import PartLevel
+from censorengine.backend.models.enums import PartState
 from censorengine.lib_models.shapes import Shape
-from censorengine.backend.constants.typing import Mask, Config
 from censorengine.libs.shape_library.catalogue import shape_catalogue
+
+if TYPE_CHECKING:
+    from censorengine.backend.constants.typing import Mask, Config, NudeNetInfo
+
+
+@dataclass
+class Censor:
+    function: str
+    args: Optional[dict[str, Any]]
 
 
 @dataclass
@@ -20,44 +27,47 @@ class Part:
     relative_box: tuple[int, int, int, int] = field(init=False)
 
     # Derived
-    box: tuple[int, int] = field(init=False)
+    box: list[tuple[int, int]] = field(init=False)
 
-    part_id: int = itertools.count(start=1)
-    part_level: IntEnum = PartLevel.UNPROTECTED
+    part_id: Iterable[int] = itertools.count(start=1)
+    state: PartState = PartState.UNPROTECTED
 
     # Merge Groups Stuff
     merge_group_id: Optional[int] = None
     merge_group: Optional[list[str]] = None
 
     # Config Settings
-    config: Config = field(init=False)
-    shape: str = field(init=False)
-    is_default_shape: bool = field(init=False)
+    config: "Config" = field(init=False)
+    shape: Shape = field(init=False)
+    shape_name: str = field(init=False)
 
-    censors: list[dict[str, str | dict[str, Any]]] = field(
-        default_factory=list
-    )
-    is_default_censors: bool = field(init=False)
+    censors: list[Censor] = field(default_factory=list)
 
     protected_shape: Optional[Shape] = None
 
     # Masks
-    mask: Mask = field(init=False)
-    original_mask: Mask = field(init=False)
-    base_masks: Mask = field(default_factory=list)
+    mask: "Mask" = field(init=False)
+    original_mask: "Mask" = field(init=False)
+    base_masks: list["Mask"] = field(default_factory=list["Mask"])
+
+    # Information
+    is_merged: bool = field(default=False)
+    file_path: str = "INVALID"
 
     def __init__(
         self,
-        nude_net_info: dict[str, str | list[str | float]],
-        empty_mask: Mask,
-        config: Config,
+        nude_net_info: "NudeNetInfo",
+        empty_mask: "Mask",
+        config: "Config",
+        file_path: str,
     ):
         self.config = config
+        self.file_path = file_path
 
         # Basic
         self.part_name = nude_net_info["class"]
         self.score = nude_net_info["score"]
-        self.relative_box = tuple(nude_net_info["box"])
+        self.relative_box = tuple(nude_net_info["box"])  # type: ignore
 
         # Derived
         # # Box
@@ -65,15 +75,13 @@ class Part:
         self._build_box(corrected_box)
 
         # # Part IDs
-        self.part_id = next(Part.part_id)
-
-        # # Part Level
-        self._determine_part_level()
+        self.part_id = next(Part.part_id)  # type: ignore
 
         # # Merge Groups
         self._determine_merge_groups()
 
         # # Config Settings
+        self._determine_state()
         self._determine_shape()
         self._determine_censors()
 
@@ -85,25 +93,25 @@ class Part:
 
     def _correct_relative_box_size(self):
         # Get Config Margin Data
-        config_part = self.config["information"].get(self.part_name)
+        if not self.config.part_settings[self.part_name]:
+            return self.relative_box
+        config_part = self.config.part_settings[self.part_name]
 
-        if config_part and config_part.get("margin", False):
-            margin_data = self.config["information"][self.part_name]["margin"]
+        margin_data = config_part.margin
 
-            if isinstance(margin_data, float):
-                w_margin = margin_data
-                h_margin = margin_data
-            else:
-                w_margin = margin_data.get("width", 0.0)
-                h_margin = margin_data.get("height", 0.0)
+        if isinstance(margin_data, float) or isinstance(margin_data, int):
+            if isinstance(margin_data, int):
+                margin_data = float(margin_data)
+            w_margin = margin_data
+            h_margin = margin_data
+
+        elif isinstance(margin_data, dict):
+            w_margin = margin_data.get("width", 0.0)
+            h_margin = margin_data.get("height", 0.0)
 
         else:
-            w_margin = self.config["information"]["defaults"].get(
-                "margin", 0.0
-            )
-            h_margin = self.config["information"]["defaults"].get(
-                "margin", 0.0
-            )
+            w_margin = 0.0
+            h_margin = 0.0
 
         # Get Original Data
         top_left_x, top_left_y, width, height = self.relative_box
@@ -125,7 +133,12 @@ class Part:
         ]
 
     def __str__(self):
-        return f"{self.part_name}_{self.part_id}"
+        return_name = f"{self.part_name}_{self.part_id}"
+
+        if self.is_merged:
+            return return_name + "_merged"
+        else:
+            return return_name
 
     def _build_box(self, box):
         top_left_x, top_left_y, width, height = box
@@ -141,44 +154,22 @@ class Part:
             bottom_right,
         ]
 
-    def _determine_part_level(self):
-        config_info = self.config["information"]
-
-        if not config_info.get(self.part_name):
-            return
-
-        if config_info[self.part_name].get("protected"):
-            self.part_level = PartLevel.PROTECTED
-            self._determine_protected_shape()
-        elif config_info[self.part_name].get("revealed"):
-            self.part_level = PartLevel.REVEALED
-
     def _determine_protected_shape(self):
-        config_part = self.config["information"][self.part_name]
-        protected_part_shape = config_part.get("protected")
+        config_part = self.config.part_settings[self.part_name]
 
         # If True, Derive Shape from Settings
-        if isinstance(protected_part_shape, bool):
-            config_defaults = self.config["information"]["defaults"]
 
-            protected_part_shape = config_part.get("shape")
-            if not protected_part_shape:
-                protected_part_shape = config_defaults.get("protected_shape")
-            if not protected_part_shape:
-                protected_part_shape = config_defaults.get("shape")
-            if not protected_part_shape:
-                protected_part_shape = "ellipse"
+        protected_part_shape = config_part.shape
+        if not protected_part_shape:
+            protected_part_shape = "ellipse"
 
         self.protected_shape = protected_part_shape
 
     def _determine_merge_groups(self):
-        config_info = self.config["information"]
-
-        config_merge_info = config_info.get("merging")
-        if not config_merge_info:
+        if not self.config.merge_enabled:
             return
 
-        merge_groups = config_merge_info.get("merge_groups")
+        merge_groups = self.config.merge_groups
         if not merge_groups:
             return
 
@@ -187,47 +178,37 @@ class Part:
                 self.merge_group = group
                 self.merge_group_id = index
 
-    def _determine_shape(self):
-        # Get Config
-        config_info = self.config["information"]
+    def _determine_state(self):
+        if config_part := self.config.part_settings[self.part_name]:
+            if config_part.state:
+                self.state = config_part.state
+            else:
+                self.state = PartState.UNPROTECTED
 
+    def _determine_shape(self):
         # Find Shape
-        try:
-            shape = config_info[self.part_name]["shape"]
-            self.is_default_shape = True
-        except KeyError:
-            shape = config_info["defaults"]["shape"]
-            self.is_default_shape = False
+        config_part = self.config.part_settings[self.part_name]
+        shape = config_part.shape
 
         # Get Shape Object
+        self.shape_name = shape
         self.shape = Part.get_shape_class(shape)
 
     def _determine_censors(self):
-        config_info = self.config["information"]
-
-        try:
-            censors = (config_info[self.part_name]["censors"], False)
-        except KeyError:
-            if self.part_level == PartLevel.REVEALED:
-                self.censors = None
-                self.is_default_censors = True
-                return
-
-            censors = (config_info["defaults"]["censors"], True)
-
-        self.censors, self.is_default_censors = censors
+        self.censors = self.config.part_settings[self.part_name].censors
 
     def _get_base_mask(self, empty_mask):
         # Get Shape
-        base_shape_name = self.shape.base_shape
-        base_shape = Part.get_shape_class(base_shape_name)
+        base_shape = Part.get_shape_class(self.shape.base_shape)
 
         # Draw Shape
-        self.base_masks.append(base_shape.generate(self.box, empty_mask))
+        self.base_masks.append(base_shape.generate(self, empty_mask))
 
     def compile_base_masks(self):
         for mask in self.base_masks:
             self.add(mask)
+
+        self.is_merged = True
 
     def add(self, mask):
         self.mask = cv2.add(self.mask, mask)

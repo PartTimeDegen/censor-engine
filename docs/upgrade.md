@@ -1,0 +1,6 @@
+- reverse censor
+- test holes in other shapes
+- properly encode debug mode
+- mypy
+- docs
+- readmet

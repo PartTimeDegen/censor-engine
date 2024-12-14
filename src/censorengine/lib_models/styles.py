@@ -1,28 +1,27 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 import cv2
 import numpy as np
 
-from typing import TYPE_CHECKING, Any
-
-if TYPE_CHECKING:
-    from censorengine.backend.constants.typing import Mask, CVImage
+from censorengine.backend.constants.typing import Mask, CVImage
 
 
-@dataclass
 class Style(ABC):
+    # Information
     style_name: str = "invalid_style"
     style_type: str = "invalid_style"
 
+    # Supporting Information
     force_png: bool = False
+    default_linetype: int = cv2.LINE_AA
+    using_reverse_censor: bool = False
 
     @abstractmethod
     def apply_style(
         self,
         image: CVImage,
         contour,
-        *args: Any,
-        **kwargs: str | int | float,
+        *args,
+        **kwargs,
     ) -> CVImage:
         raise NotImplementedError
 
@@ -32,6 +31,9 @@ class Style(ABC):
         mask_image: Mask,
         image: CVImage,
     ) -> CVImage:
+        if len(contours) == 1:
+            contours = contours[0]
+
         mask = cv2.drawContours(
             np.zeros(image.shape, dtype=np.uint8),
             contours[0],
@@ -39,13 +41,19 @@ class Style(ABC):
             (255, 255, 255),
             -1,
             hierarchy=contours[1],
-            lineType=cv2.LINE_AA,
+            lineType=self.default_linetype,
         )
         return np.where(
             mask == np.array([255, 255, 255]),
             mask_image,
             image,
         )
+
+    def change_linetype(self, enable_aa: bool) -> None:
+        if not enable_aa:
+            self.default_linetype = cv2.LINE_4
+        else:
+            self.default_linetype = cv2.LINE_AA
 
 
 class TransparentStyle(Style):
@@ -77,7 +85,7 @@ class BlurStyle(Style):
 
         new_factor = int(normalised_size * normalised_factor * blur_rate)
 
-        if new_factor == 0:
+        if new_factor > 2:
             return int(factor)
 
         return new_factor

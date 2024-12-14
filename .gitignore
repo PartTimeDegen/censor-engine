@@ -159,23 +159,31 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-src/censorengine/test_files/
-src/censorengine/quick_test.py
+# Ignore Files
+src/censorengine/000_tests/*
+src/censorengine/00_uncensored/*
+src/censorengine/01_censored/*
+src/censorengine/02_hashes/*
+
+# Specific Files
 *.jpg
 *.png
 *.jpeg
 *.webp
 *:Zone.Identifier
-.vscode/launch.json
-.dev
-**/__pycache__
 *.gif
 *.mp4
 *.JPG
 *.json
-censorengine/configs/.devtest.yml
 *.webp
+*.PNG
+
+# Other Folders
+.vscode/launch.json
+**/__pycache__
+
+# Dev Stuff
 src/censorengine/configs/personal/
 .dev
 .dev-backups
-*.PNG
+libpng.sh

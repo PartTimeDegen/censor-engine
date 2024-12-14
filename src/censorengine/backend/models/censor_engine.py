@@ -4,12 +4,11 @@ from glob import glob
 import os
 
 import cv2
-import yaml
 
 from censorengine.backend.constants.files import APPROVED_FORMATS_IMAGE
-from censorengine.backend.constants.typing import Config
 from censorengine.backend.models.censor_manager import CensorManager
-from censorengine.backend.constants.files import CONFIGS_FOLDER
+from censorengine.backend.models.config import Config
+import onnxruntime as ort  # type: ignore
 
 
 @dataclass
@@ -17,6 +16,8 @@ class CensorEngine:
     # Booleans
     test_mode: bool = field(init=False)
     config: Config = field(init=False)
+    censor_mode: str = "image"
+    used_boot_config: bool = False
 
     # Information
     main_files_path: str = field(init=False)
@@ -42,36 +43,37 @@ class CensorEngine:
         self,
         main_file_path: str,
         censor_mode: str = "image",  # image, video, gif, default=auto
-        config: str = "00_default.yml",
+        config: str = "defaults/00_default.yml",
         show_duration: bool = False,
         test_mode: bool = False,
         debug_mode: int = 0,
         debug_log_time: bool = False,
     ):
+        # Mount Init Settings
         self.test_mode = test_mode
         self.main_files_path = main_file_path
+        self.censor_mode = censor_mode
 
         self.show_duration = show_duration
         self.debug_mode = debug_mode
         self.debug_log_time = debug_log_time
 
+        # Get Pre-init Arguments
+        if not test_mode:
+            self._get_pre_init_arguments()
+
+        # Delclare Usage
+        if debug_mode:
+            print(f"onnxruntime device: {ort.get_device()}")
+            print(f"ort available providers: {ort.get_available_providers()}")
+
         # Load Config
-        self._load_config(config)
+        if not self.used_boot_config:
+            self.load_config(config)
 
-        # Get Arguments
-        self._get_arguments()
-
-        # Find Files
-        self._find_files()
-
-        # What to Censor
-        if censor_mode == "image":
-            self._image_pipeline()
-        elif censor_mode == "video":
-            self._video_pipeline()
-        else:
-            self._image_pipeline()
-            self._video_pipeline()
+        # Get Post-init Arguments
+        if not test_mode:
+            self._get_post_init_arguments()
 
     def _find_files(self):
         self.files = []
@@ -79,7 +81,7 @@ class CensorEngine:
 
         self.full_files_path = os.path.join(
             self.main_files_path,
-            self.config["uncensored_folder"],
+            self.config.uncensored_folder,
         )
 
         if any(
@@ -108,47 +110,34 @@ class CensorEngine:
             (file_index, file_name)
             for file_index, file_name in enumerate(files, start=1)
         ]
-        self.max_file_index = files[-1][0]
+        if len(files) == 0:
+            raise FileNotFoundError(f"Empty Folder: {self.full_files_path}")
+
+        self.max_file_index = self.indexed_files[-1][0]
         self.max_index_chars = len(str(self.max_file_index))
 
     def _image_pipeline(self):
         for index, file_path in self.indexed_files:
+            index_percent = index / self.max_file_index
+            leading_spaces = " " * (self.max_index_chars - len(str(index)))
+            leading_spaces_pc = " " * (3 - len(str(int(100 * index_percent))))
+
+            index_text = f"{leading_spaces}{index}/{self.max_file_index} ({leading_spaces_pc}{index_percent:0.1%})"
+
             file_output = CensorManager(
                 file_path,
                 config=self.config,
                 debug_level=0,
                 show_duration=True,
                 debug_log_time=True,
+                index_text=index_text,
             ).return_output()
-            self._save_file(file_output)
+            self._save_file(file_output, file_path)
 
     def _video_pipeline(self):
         pass
 
-    def _load_config(self, config_path):
-
-        full_config_path = os.path.join(
-            CONFIGS_FOLDER,
-            config_path,
-        )
-
-        with open(full_config_path) as stream:
-            try:
-                # Check if Can Access Data
-                config_data = yaml.safe_load(stream)
-
-                # Reset Variable
-                self.config = {}
-
-                # Update Variable
-                self.config.update(**config_data)
-
-            except yaml.YAMLError as exc:
-                raise ValueError(exc)
-
-        return full_config_path
-
-    def _get_arguments(self):
+    def _get_pre_init_arguments(self):
         # Parser
         parser = argparse.ArgumentParser(
             prog="CensorEngine",
@@ -165,23 +154,25 @@ class CensorEngine:
             "-output", action="store"
         )  # TODO: Quiet, Slim, Verbose, Very Verbose (vv)
 
-        args = parser.parse_args()
+        self.args = parser.parse_args()
 
         # Handle Args
-        if args.config:
-            self._load_config(args.config)
+        if self.args.config:
+            self.load_config(self.args.config)
+            self.used_boot_config = True
 
-        if args.dev:
-            self.config["debug_mode"] = (
+        if self.args.dev:
+            self.config.debug_mode(
                 True  # TODO: This needs a dev handler to handle non-boolean values
             )
 
-        if args.loc:
-            self.config.update({"uncensored_folder": args.loc})
+    def _get_post_init_arguments(self):
+        if self.args.loc:
+            self.config.uncensored_folder = self.args.loc
 
-    def _save_file(self, file_output):
+    def _save_file(self, file_output, file_name):
         # Get Name
-        full_path, ext = os.path.splitext(self.full_files_path)
+        full_path, ext = os.path.splitext(file_name)
 
         # Add Word Fixes
         list_path = full_path.split(os.sep)
@@ -189,9 +180,9 @@ class CensorEngine:
         fixed_file_list = [
             word
             for word in [
-                self.config["file_prefix"],
+                self.config.file_prefix,
                 list_path[-1],
-                self.config["file_suffix"],
+                self.config.file_suffix,
             ]
             if word != ""
         ]
@@ -201,9 +192,12 @@ class CensorEngine:
         loc_base = str(self.main_files_path)
         folders_loc_base = len(loc_base.split(os.sep))
 
-        new_folder = list_path[folders_loc_base:]
         base_folder = list_path[:folders_loc_base]
-        new_folder[0] = self.config["censored_folder"]
+        new_folder = list_path[folders_loc_base:]
+
+        censored_folder = self.config.censored_folder.split(os.sep)
+        new_folder = censored_folder + new_folder[len(censored_folder) :]
+
         new_folder.pop()
 
         new_folder = base_folder + new_folder
@@ -216,6 +210,23 @@ class CensorEngine:
             ext = ".png"
 
         # File Proper
+        print(file_path_new, ext)
         cv2.imwrite(f"{file_path_new}{ext}", file_output)
 
         print(f"- Written to:\t{file_path_new}{ext}")
+
+    def load_config(self, config_path):
+        self.config = Config(self.main_files_path, config_path)
+
+    def start(self):
+        # Find Files
+        self._find_files()
+
+        # What to Censor
+        if self.censor_mode == "image":
+            self._image_pipeline()
+        elif self.censor_mode == "video":
+            self._video_pipeline()
+        else:
+            self._image_pipeline()
+            self._video_pipeline()

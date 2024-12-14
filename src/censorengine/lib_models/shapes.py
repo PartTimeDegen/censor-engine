@@ -1,27 +1,28 @@
-from dataclasses import dataclass
+from censorengine.backend.models.enums import ShapeType
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from censorengine.backend.constants.typing import Part, Mask
 
 
-@dataclass
 class Shape:
     shape_name: str = "invalid_shape"
     base_shape: str = "invalid_shape"
     single_shape: str = "invalid_shape"
 
-    is_joint_shape: bool = False
-    is_bar_shape: bool = False
+    shape_type: ShapeType = ShapeType.BASIC
 
-    def generate(self, part: "Part") -> "Mask":
+    def generate(
+        self,
+        part: "Part",
+        empty_mask: "Mask",
+    ) -> "Mask":
         raise NotImplementedError
 
 
 class JointShape(Shape):
-    is_joint_shape: bool = True
+    shape_type: ShapeType = ShapeType.JOINT
 
 
 class BarShape(Shape):
-    is_joint_shape: bool = True
-    is_bar_shape: bool = True
+    shape_type: ShapeType = ShapeType.BAR

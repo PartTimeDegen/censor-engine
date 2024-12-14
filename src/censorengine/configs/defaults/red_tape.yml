@@ -1,0 +1,132 @@
+# Config details
+file_prefix: ""
+file_suffix: ""
+
+uncensored_folder: "00_uncensored"
+censored_folder: "01_censored"
+
+debug_mode: False
+
+# Parts Enabled
+parts_enabled:
+# Female
+- "FACE_FEMALE"
+
+# - "ARMPITS_EXPOSED"
+# - "ARMPITS_COVERED"
+
+- "FEMALE_BREAST_EXPOSED"
+- "FEMALE_BREAST_COVERED"
+
+- "BELLY_EXPOSED"
+- "BELLY_COVERED"
+
+- "BUTTOCKS_EXPOSED"
+- "BUTTOCKS_COVERED"
+
+- "ANUS_EXPOSED"
+- "ANUS_COVERED"
+
+- "FEMALE_GENITALIA_EXPOSED"
+- "FEMALE_GENITALIA_COVERED"
+
+- "FEET_EXPOSED"
+- "FEET_COVERED"
+
+
+# Male
+# - "FACE_MALE"
+- "MALE_GENITALIA_EXPOSED"
+# - "MALE_BREAST_EXPOSED"
+
+
+# Information
+information:
+  # Rendering Settings
+  smoothing: True
+
+  # Information on Merging Parts
+  merging:
+    range: -1
+    merge_groups:
+    - ["FEMALE_BREAST_EXPOSED"]
+    - ["FEMALE_BREAST_COVERED"]
+
+
+  # Fall Back Options as "General" Settings
+  defaults:
+    censors:
+    - function: "outline"
+      args:
+        colour: "BLACK"
+        thickness: 1
+
+    - function: "box"
+      args:
+        colour: "BURGUNDY"
+
+    minimum_score: 0.00
+    protected_shape: "ellipse"
+    shape: "bar"
+
+  # Censored
+  FEMALE_BREAST_EXPOSED:
+    protected: True
+
+  FEMALE_BREAST_COVERED:
+    protected: True
+
+  FEMALE_GENITALIA_EXPOSED:
+    protected: True
+
+  FEMALE_GENITALIA_COVERED:
+    protected: True
+
+  # Revealed
+  FACE_FEMALE:
+    censors: []
+    revealed: True
+    shape: "ellipse"
+    margin: 0.6
+
+  BELLY_EXPOSED:
+    censors: []
+    revealed: True
+    shape: "ellipse"
+    margin: 0.3
+
+  BELLY_COVERED:
+    censors: []
+    revealed: True
+    shape: "ellipse"
+    margin: 0.3
+
+  FEET_EXPOSED:
+    censors: []
+    revealed: True
+    shape: "ellipse"
+    margin: 0.3
+
+  FEET_COVERED:
+    censors: []
+    revealed: True
+    shape: "ellipse"
+    margin: 0.3
+
+  ANUS_COVERED:
+    censors: []
+    revealed: True
+    shape: "ellipse"
+    margin: 0.2
+
+  ANUS_EXPOSED:
+    censors: []
+    revealed: True
+    shape: "ellipse"
+    margin: 0.2
+
+  MALE_GENITALIA_EXPOSED:
+    censors: []
+    revealed: True
+    shape: "ellipse"
+    margin: 0.3
