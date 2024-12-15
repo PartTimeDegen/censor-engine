@@ -5,7 +5,7 @@ file_suffix: ""
 uncensored_folder: "00_uncensored"
 censored_folder: "01_censored"
 
-debug_mode: True
+debug_mode: False
 
 # Parts Enabled
 parts_enabled:

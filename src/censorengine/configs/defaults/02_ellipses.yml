@@ -5,7 +5,7 @@ file_suffix: ""
 uncensored_folder: "00_uncensored"
 censored_folder: "01_censored"
 
-debug_mode: True
+debug_mode: False
 
 # Parts Enabled
 parts_enabled:
@@ -41,11 +41,10 @@ parts_enabled:
 
 
 # Information on Merging Parts
-merging:
-  range: -1
-  merge_groups:
-  - ["FEMALE_BREAST_EXPOSED"]
-  - ["FEMALE_BREAST_COVERED"]
+# merging:
+#   range: -1
+#   merge_groups:
+#   - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
 
 # Rendering Settings
 rendering:

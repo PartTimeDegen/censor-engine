@@ -204,6 +204,7 @@ class Config:
         # Find Config File
         full_config_path = os.path.join(
             CONFIGS_FOLDER,
+            "defaults",
             config_path,
         )
         print(full_config_path)

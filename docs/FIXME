@@ -1,1 +1,14 @@
 - cutouts doesnt work
+- - Due to `force_png` not being passed back to censor engine
+
+- bars for azula on `red tape` config test are broke
+- bars on yor on same test only cut out on one foot
+- - might be a bad config
+- - Same with "white bars"
+
+- debug tools need to be remade for OOP format
+
+- Need to implement merge range, SAT config test (Frankie) looks absurd
+
+
+- trigger focus is broken
