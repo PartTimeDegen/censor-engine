@@ -39,20 +39,18 @@ parts_enabled:
 - "MALE_GENITALIA_EXPOSED"
 # - "MALE_BREAST_EXPOSED"
 
+# Information on Merging Parts
+merging:
+  range: -1
+  merge_groups:
+  - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
+
+# Rendering Settings
+rendering:
+  smoothing: True
 
 # Information
 information:
-  # Rendering Settings
-  smoothing: True
-
-  # Information on Merging Parts
-  merging:
-    range: -1
-    merge_groups:
-    - ["FEMALE_BREAST_EXPOSED"]
-    - ["FEMALE_BREAST_COVERED"]
-
-
   # Fall Back Options as "General" Settings
   defaults:
     censors:
@@ -71,62 +69,62 @@ information:
 
   # Censored
   FEMALE_BREAST_EXPOSED:
-    protected: True
+    state: "protected"
 
   FEMALE_BREAST_COVERED:
-    protected: True
+    state: "protected"
 
   FEMALE_GENITALIA_EXPOSED:
-    protected: True
+    state: "protected"
 
   FEMALE_GENITALIA_COVERED:
-    protected: True
+    state: "protected"
 
   # Revealed
   FACE_FEMALE:
     censors: []
-    revealed: True
+    state: "revealed"
     shape: "ellipse"
     margin: 0.6
 
   BELLY_EXPOSED:
     censors: []
-    revealed: True
+    state: "revealed"
     shape: "ellipse"
     margin: 0.3
 
   BELLY_COVERED:
     censors: []
-    revealed: True
+    state: "revealed"
     shape: "ellipse"
     margin: 0.3
 
   FEET_EXPOSED:
     censors: []
-    revealed: True
+    state: "revealed"
     shape: "ellipse"
     margin: 0.3
 
   FEET_COVERED:
     censors: []
-    revealed: True
+    state: "revealed"
     shape: "ellipse"
     margin: 0.3
 
   ANUS_COVERED:
     censors: []
-    revealed: True
+    state: "revealed"
     shape: "ellipse"
     margin: 0.2
 
   ANUS_EXPOSED:
     censors: []
-    revealed: True
+    state: "revealed"
     shape: "ellipse"
     margin: 0.2
 
   MALE_GENITALIA_EXPOSED:
     censors: []
-    revealed: True
+    state: "revealed"
     shape: "ellipse"
     margin: 0.3

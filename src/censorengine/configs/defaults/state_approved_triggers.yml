@@ -125,6 +125,18 @@ information:
   ANUS_COVERED:
     margin: -0.2
 
+  BELLY_EXPOSED:
+    margin: 0.4
+  BELLY_COVERED:
+    margin: 0.4
+
+  FEET_EXPOSED:
+    margin: 0.2
+  FEET_COVERED:
+    margin: 0.2
+  FACE_FEMALE:
+    margin: 0.2
+
 
 
   

@@ -40,23 +40,22 @@ parts_enabled:
 # - "MALE_BREAST_EXPOSED"
 
 
-# Information
-information:
-  # Rendering Settings
+# Information on Merging Parts
+merging:
+  range: -1
+  merge_groups:
+  - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
+
+# Rendering Settings
+rendering:
   smoothing: True
 
-  # Information on Merging Parts
-  merging:
-    range: -1
-    merge_groups:
-    - ["FEMALE_BREAST_EXPOSED"]
-    - ["FEMALE_BREAST_COVERED"]
-
-
+# Information
+information:
   # Fall Back Options as "General" Settings
   defaults:
     censors: [{"function": "outline", args: {"colour": "BLACK"}}, {"function": "hexagon_pixelate", args: {"factor": 10}}]
 
 
     minimum_score: 0.20
-    shape: "joint_box"
+    shape: "bar"

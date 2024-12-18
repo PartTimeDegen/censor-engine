@@ -39,7 +39,6 @@ parts_enabled:
 # - "MALE_GENITALIA_EXPOSED"
 # - "MALE_BREAST_EXPOSED"
 
-
 # Information on Merging Parts
 merging:
   range: -1

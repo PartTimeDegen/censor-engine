@@ -39,87 +39,94 @@ parts_enabled:
 - "MALE_GENITALIA_EXPOSED"
 # - "MALE_BREAST_EXPOSED"
 
-# Information on Merging Parts
-merging:
-  range: -1
-  merge_groups:
-  - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
-
-# Rendering Settings
-rendering:
-  smoothing: True
 
 # Information
 information:
+  # Rendering Settings
+  smoothing: True
+
+  # Information on Merging Parts
+  merging:
+    range: -1
+    merge_groups:
+    - ["FEMALE_BREAST_EXPOSED"]
+    - ["FEMALE_BREAST_COVERED"]
+
+
   # Fall Back Options as "General" Settings
   defaults:
     censors:
+    - function: "outline"
+      args:
+        colour: "BLACK"
+        thickness: 1
+
     - function: "box"
       args:
-        colour: "WHITE"
+        colour: "BURGUNDY"
 
-    minimum_score: 0.20
+    minimum_score: 0.00
     protected_shape: "ellipse"
     shape: "bar"
 
   # Censored
   FEMALE_BREAST_EXPOSED:
-    state: "protected"
+    protected: True
 
   FEMALE_BREAST_COVERED:
-    state: "protected"
+    protected: True
 
   FEMALE_GENITALIA_EXPOSED:
-    state: "protected"
+    protected: True
 
   FEMALE_GENITALIA_COVERED:
-    state: "protected"
+    protected: True
 
   # Revealed
   FACE_FEMALE:
     censors: []
-    state: "revealed"
+    revealed: True
     shape: "ellipse"
     margin: 0.6
 
   BELLY_EXPOSED:
     censors: []
-    state: "revealed"
+    revealed: True
     shape: "ellipse"
     margin: 0.3
 
   BELLY_COVERED:
     censors: []
-    state: "revealed"
+    revealed: True
     shape: "ellipse"
     margin: 0.3
 
   FEET_EXPOSED:
     censors: []
-    state: "revealed"
+    revealed: True
     shape: "ellipse"
     margin: 0.3
 
   FEET_COVERED:
     censors: []
-    state: "revealed"
+    revealed: True
     shape: "ellipse"
     margin: 0.3
 
   ANUS_COVERED:
     censors: []
-    state: "revealed"
+    revealed: True
     shape: "ellipse"
     margin: 0.2
 
   ANUS_EXPOSED:
     censors: []
-    state: "revealed"
+    revealed: True
     shape: "ellipse"
     margin: 0.2
 
   MALE_GENITALIA_EXPOSED:
     censors: []
-    state: "revealed"
+    revealed: True
     shape: "ellipse"
     margin: 0.3

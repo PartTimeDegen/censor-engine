@@ -39,20 +39,18 @@ parts_enabled:
 - "MALE_GENITALIA_EXPOSED"
 - "MALE_BREAST_EXPOSED"
 
+# Information on Merging Parts
+merging:
+  range: -1
+  merge_groups:
+  - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
+
+# Rendering Settings
+rendering:
+  smoothing: True
 
 # Information
 information:
-  # Rendering Settings
-  smoothing: True
-
-  # Information on Merging Parts
-  merging:
-    range: -1
-    merge_groups:
-    - ["FEMALE_BREAST_EXPOSED"]
-    - ["FEMALE_BREAST_COVERED"]
-
-
   # Fall Back Options as "General" Settings
   defaults:
     minimum_score: 0.20
