@@ -1,0 +1,36 @@
+from censorengine.lib_models.detectors import Detector, DetectedPartSchema
+from nudenet import NudeDetector  # type: ignore
+
+
+class NudeNetDetector(Detector):
+    model_name: str = "NudeNet"
+    model_classifiers: tuple[str, ...] = (
+        "FACE_FEMALE",
+        "ARMPITS_EXPOSED",
+        "ARMPITS_COVERED",
+        "FEMALE_BREAST_EXPOSED",
+        "FEMALE_BREAST_COVERED",
+        "BELLY_EXPOSED",
+        "BELLY_COVERED",
+        "BUTTOCKS_EXPOSED",
+        "BUTTOCKS_COVERED",
+        "ANUS_EXPOSED",
+        "ANUS_COVERED",
+        "FEMALE_GENITALIA_EXPOSED",
+        "FEMALE_GENITALIA_COVERED",
+        "FEET_EXPOSED",
+        "FEET_COVERED",
+        "FACE_MALE",
+        "MALE_GENITALIA_EXPOSED",
+        "MALE_BREAST_EXPOSED",
+    )
+
+    def detect_image(self, file_path: str):
+        return [
+            DetectedPartSchema(
+                label=found_part["class"],
+                score=found_part["score"],
+                relative_box=found_part["box"],
+            )
+            for found_part in NudeDetector().detect(file_path)
+        ]

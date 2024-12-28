@@ -14,12 +14,12 @@ if TYPE_CHECKING:
     from censorengine.backend.constants.typing import (
         CVImage,
         Config,
-        NudeNetInfo,
     )
 from censorengine.backend.models.detected_part import Part
 from censorengine.libs.style_library.catalogue import style_catalogue
 
-from nudenet import NudeDetector  # type: ignore
+from censorengine.libs.detector_library.catelogue import enabled_detectors
+from censorengine.lib_models.detectors import DetectedPartSchema
 
 
 @dataclass
@@ -161,16 +161,22 @@ class CensorManager:
         )
 
     def _append_parts(self):
+        # Acquire Settings
         self.parts = []
         config_parts_enabled = self.config.parts_enabled
-        detected_parts = NudeDetector().detect(self.file_loc)
 
-        def add_parts(detect_part: "NudeNetInfo"):
-            if detect_part["class"] not in config_parts_enabled:
+        # Collect Detected Data
+        detected_parts = []
+        for detector in enabled_detectors:
+            detected_parts += detector().detect_image(self.file_loc)
+
+        # Map and Filter Parts for Missing Information
+        def add_parts(detect_part: DetectedPartSchema):
+            if detect_part.label not in config_parts_enabled:
                 return
 
             return Part(
-                nude_net_info=detect_part,
+                detected_information=detect_part,
                 empty_mask=self._create_empty_mask(),
                 config=self.config,
                 file_path=self.file_loc,

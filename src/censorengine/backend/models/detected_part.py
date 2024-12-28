@@ -8,9 +8,11 @@ import numpy as np
 from censorengine.backend.models.enums import PartState
 from censorengine.lib_models.shapes import Shape
 from censorengine.libs.shape_library.catalogue import shape_catalogue
+from censorengine.lib_models.detectors import DetectedPartSchema
+
 
 if TYPE_CHECKING:
-    from censorengine.backend.constants.typing import Mask, Config, NudeNetInfo
+    from censorengine.backend.constants.typing import Mask, Config
 
 
 @dataclass
@@ -24,10 +26,10 @@ class Part:
     # From NudeNet
     part_name: str = field(init=False)
     score: float = field(init=False)
-    relative_box: tuple[int, int, int, int] = field(init=False)
+    relative_box: tuple[int, ...] = field(init=False)  # x, y, width, height
 
     # Derived
-    box: list[tuple[int, int]] = field(init=False)
+    box: list[tuple[int, int]] = field(init=False)  # top left, bottom right
 
     part_id: Iterable[int] = itertools.count(start=1)
     state: PartState = PartState.UNPROTECTED
@@ -56,7 +58,7 @@ class Part:
 
     def __init__(
         self,
-        nude_net_info: "NudeNetInfo",
+        detected_information: DetectedPartSchema,
         empty_mask: "Mask",
         config: "Config",
         file_path: str,
@@ -65,9 +67,9 @@ class Part:
         self.file_path = file_path
 
         # Basic
-        self.part_name = nude_net_info["class"]
-        self.score = nude_net_info["score"]
-        self.relative_box = tuple(nude_net_info["box"])  # type: ignore
+        self.part_name = detected_information.label
+        self.score = detected_information.score
+        self.relative_box = tuple(detected_information.relative_box)
 
         # Derived
         # # Box

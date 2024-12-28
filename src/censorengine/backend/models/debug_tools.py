@@ -10,15 +10,23 @@ class _TimeLogger: ...
 
 @dataclass
 class Debugger:
+    # General
     debug_level: int = 0
+
+    # Masks
+
+    # Timer
     debug_time_logger: list[tuple[int, str, float, float]] = field(
         default_factory=list[tuple[int, str, float, float]]
     )
+
+    # # Stats
     stats_duration: float = field(init=False)
 
     def save_masks(self, label=None):
         def arg_layer():
             def wrapper():
+                # Check for Existing Variables
                 def check_attr(attr):
                     try:
                         getattr(self, attr)
@@ -33,11 +41,7 @@ class Debugger:
                     self._debug_mask_counter = 0
 
                 # Handle Folder Name
-                folder_list = [
-                    ".debug",
-                    label,
-                    self.file_image_name,
-                ]
+                folder_list = [".debug", label, self.file_image_name]
                 if label:
                     folder_list[1] = (
                         f"{self._debug_mask_counter}_{folder_list[1]}"
@@ -54,10 +58,7 @@ class Debugger:
                     )
 
                     # Make Folder
-                    os.makedirs(
-                        folder,
-                        exist_ok=True,
-                    )
+                    os.makedirs(folder, exist_ok=True)
 
                     # Write File
                     cv2.imwrite(file, part.mask)

@@ -1,6 +1,6 @@
 Body Parts (Both genders, both covered and exposed):
 
-* Puryfi's suite (NudeNet)
+* Puryfi's suite (NudeNet) # DONE
     * Face
     * Armpit
     * Chest
