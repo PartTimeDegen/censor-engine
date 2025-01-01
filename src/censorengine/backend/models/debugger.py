@@ -1,27 +1,75 @@
 from dataclasses import dataclass, field
+from enum import IntEnum
+from functools import wraps
 import os
 import timeit
+import onnxruntime as ort  # type: ignore
 
 import cv2
 
 
-class _TimeLogger: ...
+class DebugLevels(IntEnum):
+    NONE = 0
+    BASIC = 1
+    DETAILED = 2
+    ADVANCED = 3
+    FULL = 4
 
 
 @dataclass
+class TimerSchema:
+    name: str
+    timestamp: float
+    duration: float
+
+    def __str__(self):
+        return f"{self.name} = {self.duration:0.2d} seconds"
+
+    def __repr__(self):
+        return f"{self.name} = {self.duration:0.2d} seconds ({self.timestamp})"
+
+
 class Debugger:
+    # THIS IS USED, NOT INHERITED
     # General
-    debug_level: int = 0
+    debug_name: str = "MISSING_NAME"
+    debug_level: DebugLevels = DebugLevels.NONE
 
     # Masks
 
     # Timer
-    debug_time_logger: list[tuple[int, str, float, float]] = field(
-        default_factory=list[tuple[int, str, float, float]]
-    )
+    time_logger: list[TimerSchema] = []
 
     # # Stats
     stats_duration: float = field(init=False)
+
+    def __init__(self, name: str, level: DebugLevels):
+        self.debug_name = name.upper()
+        self.debug_level = level
+        self.time_logger = []
+
+    # @staticmethod # FIXME: use Python's module
+    # def time_function(func):
+    #     @wraps(func)
+    #     def wrapper(*args, **kwargs):
+    #         # Function Proper
+    #         before = timeit.default_timer()
+    #         func(*args, **kwargs)
+    #         after = timeit.default_timer()
+    #         duration = after - before
+
+    #         # Time Management
+    #         timer = TimerSchema(
+    #             name=func.__name__,
+    #             timestamp=before,
+    #             duration=duration,
+    #         )
+    #         if not Debugger.time_logger:
+    #             Debugger.time_logger = [timer]
+    #         else:
+    #             Debugger.time_logger += [timer]
+
+    #     return wrapper
 
     def save_masks(self, label=None):
         def arg_layer():
@@ -67,7 +115,25 @@ class Debugger:
 
             return arg_layer
 
-    def log_time(self): ...
+    # Display Information
+    def display_onnx_info(self):
+        if self.debug_level >= DebugLevels.DETAILED:
+            print(f"[ DEBUG {self.debug_name}: ONNX_INFO")
+            print(f"[ - Onnxruntime device: {ort.get_device()}")
+            print(
+                f"[ - Ort available providers: {ort.get_available_providers()}"
+            )
+            print()
+
+    def display_times(self):
+        if self.debug_level >= DebugLevels.BASIC:
+            print(f"[ DEBUG {self.debug_name}: FUNCTION TIMES")
+
+            for time in reversed(
+                sorted(self.debug_time_logger, key=lambda x: x.duration)
+            ):
+                print(f"[ - {time}")
+            print()
 
 
 def _debug_save_time(self, name):
@@ -103,11 +169,11 @@ def _display_debug_times(self):
 
         spacing = 40
         gap = " " * (spacing - len(time_name))
-        addtional_text = (
+        additional_text = (
             f", {relative:2.1f}x minimum" if min_duration > 0.001 else ""
         )
         print(
-            f"{time_id:>2} {time_name}{gap}: {duration:0.3f} seconds{addtional_text}"
+            f"{time_id:>2} {time_name}{gap}: {duration:0.3f} seconds{additional_text}"
         )
 
 

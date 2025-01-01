@@ -3,6 +3,13 @@ from nudenet import NudeDetector  # type: ignore
 
 
 class NudeNetDetector(Detector):
+    """
+    This Detector is the code of CensorEngine, it is the NudeNet model.
+
+    This handles the core labels of the engine.
+
+    """
+
     model_name: str = "NudeNet"
     model_classifiers: tuple[str, ...] = (
         "FACE_FEMALE",

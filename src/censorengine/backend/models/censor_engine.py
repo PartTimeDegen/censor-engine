@@ -8,7 +8,6 @@ import cv2
 from censorengine.backend.constants.files import APPROVED_FORMATS_IMAGE
 from censorengine.backend.models.censor_manager import CensorManager
 from censorengine.backend.models.config import Config
-import onnxruntime as ort  # type: ignore
 
 
 @dataclass
@@ -34,38 +33,21 @@ class CensorEngine:
 
     durations: list[str] = field(default_factory=list)
 
-    # Debug Stuff
-    show_duration: bool = field(init=False)
-    debug_mode: int = field(init=False)
-    debug_log_time: bool = field(init=False)
-
     def __init__(
         self,
         main_file_path: str,
         censor_mode: str = "image",  # image, video, gif, default=auto
         config: str = "defaults/00_default.yml",
-        show_duration: bool = False,
         test_mode: bool = False,
-        debug_mode: int = 0,
-        debug_log_time: bool = False,
     ):
         # Mount Init Settings
         self.test_mode = test_mode
         self.main_files_path = main_file_path
         self.censor_mode = censor_mode
 
-        self.show_duration = show_duration
-        self.debug_mode = debug_mode
-        self.debug_log_time = debug_log_time
-
         # Get Pre-init Arguments
         if not test_mode:
             self._get_pre_init_arguments()
-
-        # Delclare Usage
-        if debug_mode:
-            print(f"onnxruntime device: {ort.get_device()}")
-            print(f"ort available providers: {ort.get_available_providers()}")
 
         # Load Config
         if not self.used_boot_config:
@@ -124,14 +106,14 @@ class CensorEngine:
 
             index_text = f"{leading_spaces}{index}/{self.max_file_index} ({leading_spaces_pc}{index_percent:0.1%})"
 
-            file_output = CensorManager(
-                file_path,
+            censor_manager = CensorManager(
+                file_path=file_path,
                 config=self.config,
-                debug_level=0,
                 show_duration=True,
-                debug_log_time=True,
                 index_text=index_text,
-            ).return_output()
+            )
+            file_output = censor_manager.return_output()
+
             self._save_file(file_output, file_path)
 
     def _video_pipeline(self):

@@ -8,6 +8,7 @@ import cv2
 import numpy as np
 from typing import TYPE_CHECKING
 
+from censorengine.backend.models.debugger import Debugger, DebugLevels
 from censorengine.backend.models.enums import PartState, ShapeType
 
 if TYPE_CHECKING:
@@ -18,7 +19,7 @@ if TYPE_CHECKING:
 from censorengine.backend.models.detected_part import Part
 from censorengine.libs.style_library.catalogue import style_catalogue
 
-from censorengine.libs.detector_library.catelogue import enabled_detectors
+from censorengine.libs.detector_library.catalogue import enabled_detectors
 from censorengine.lib_models.detectors import DetectedPartSchema
 
 
@@ -37,12 +38,6 @@ class CensorManager:
     file_image_name: str = field(init=False)
     force_png: bool = False
 
-    # TODO: Move to Debugger
-    debug_level: int = field(default=0)
-    debug_time_logger: list[tuple[int, str, float, float]] = field(
-        default_factory=list[tuple[int, str, float, float]]
-    )
-
     # Manager Info
     config: "Config" = field(init=False)
 
@@ -57,18 +52,10 @@ class CensorManager:
         file_path: str,
         config: "Config",
         show_duration: bool = False,
-        debug_level: int = 0,
-        debug_log_time: bool = False,
         index_text: str = "",
     ):
         self.config = config
-
-        # Statistics
         timer_start = timeit.default_timer()
-        self.debug_time_logger = [(1, "init", timer_start, 0.0)]
-
-        # Debug
-        self.debug_level = debug_level
         Part.part_id = itertools.count(start=1)
 
         # File Stuff
@@ -86,6 +73,10 @@ class CensorManager:
             index_text += " "
         print()
         print(f'{index_text}Censoring: "{self.file_image_name}"')
+
+        # Debug
+        debugger = Debugger("CensorManager", level=DebugLevels.DETAILED)
+        debugger.display_onnx_info()
 
         # Empty Mask
         self.empty_mask = self._create_empty_mask()
@@ -108,16 +99,18 @@ class CensorManager:
         # Apply Censors
         self._apply_censors()
 
+        # DEBUG: Times
+        debugger.display_times()
+
         # Print Duration
         timer_stop = timeit.default_timer()
         duration = timer_stop - timer_start
-        self.stats_duration = duration
 
-        # Display Output
-        self.display()
-        if show_duration:
-            print(f"- Duration:\t{self.stats_duration:0.3f} seconds")
-        print()
+        # # Display Output # TODO: Make into a level system
+        # self.display()
+        # if show_duration:
+        #     print(f"- Duration:\t{duration:0.3f} seconds")
+        # print()
 
     def display(self):
         count = 1
@@ -143,7 +136,15 @@ class CensorManager:
                 print(f"- - Protected shape   : {part.protected_shape}")
 
     # Private
+    @Debugger.time_function
     def _create_empty_mask(self, inverse: bool = False):
+        """
+        This function acts as a factory for empty masks, due to 1) bad copying
+        issues, and 2) because it's not a one-liner
+
+        :param bool inverse: Inverses the mask to make it white on black, not black on white, defaults to False
+
+        """
         if inverse:
             return Part.normalise_mask(
                 np.ones(
@@ -161,6 +162,26 @@ class CensorManager:
         )
 
     def _append_parts(self):
+        """
+        This function creates the list of Parts for CensorEngine to keep track
+        of.
+
+        Method:
+            1)  It will create an empty list and also find the enabled parts
+            2)  It will then collect a list of all of the parts from all of the
+                enable AI models/detectors.
+            3)  It will then use the parts list to make `Part` objects from the
+                found parts, while also discarding any that aren't enabled.
+            4)  It then will filter for `None` values (by product of the
+                function)
+
+        Notes:
+            -   The reason a Map/Filter function is used is because this part
+                of the code takes a while to run, using map/filter reduces the
+                time massively, as ugly as it looks (I did try to learn it up
+                but there's only so much makeup you can put on a pig)
+
+        """
         # Acquire Settings
         self.parts = []
         config_parts_enabled = self.config.parts_enabled
@@ -258,7 +279,7 @@ class CensorManager:
                 # NOTE: This is done in respect to Target
 
                 # Quality of Life Booleans
-                compared_ettings = {
+                compared_settings = {
                     "censors": target_part.censors == comp_part.censors,
                     "states": target_part.state == comp_part.state,
                 }
@@ -267,7 +288,7 @@ class CensorManager:
 
                 # Flow Chart
                 # # MATCHING
-                if all(compared_ettings.values()):
+                if all(compared_settings.values()):
                     # ALL MATCHING CRITERIA
                     # Combine Parts
                     target_part.add(comp_part.mask)
@@ -278,7 +299,7 @@ class CensorManager:
                     target_part.state == PartState.PROTECTED
                     or comp_part.state == PartState.PROTECTED
                 ):
-                    if compared_ettings["states"]:
+                    if compared_settings["states"]:
                         comp_part.subtract(target_part.mask)
                     elif target_part.state == PartState.PROTECTED:
                         comp_part.subtract(target_part.mask)
@@ -294,7 +315,7 @@ class CensorManager:
 
                 # # UNPROTECTED
                 elif target_part.state == PartState.UNPROTECTED:
-                    if is_comp_higher and compared_ettings["censors"]:
+                    if is_comp_higher and compared_settings["censors"]:
                         comp_part.add(target_part.mask)
                         self.parts.remove(target_part)
 
