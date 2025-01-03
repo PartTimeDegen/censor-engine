@@ -10,5 +10,5 @@ files (yet, maybe, might be overkill)
 
 
 enabled_detectors = [
-    NudeNetDetector,
+    NudeNetDetector(),
 ]

@@ -1,14 +1,16 @@
 from dataclasses import dataclass, field
 import itertools
 import statistics
-import timeit
 from typing import Optional
 
 import cv2
 import numpy as np
 from typing import TYPE_CHECKING
 
-from censorengine.backend.models.debugger import Debugger, DebugLevels
+from censorengine.backend.models.debugger import (
+    Debugger,
+    DebugLevels,
+)
 from censorengine.backend.models.enums import PartState, ShapeType
 
 if TYPE_CHECKING:
@@ -41,6 +43,9 @@ class CensorManager:
     # Manager Info
     config: "Config" = field(init=False)
 
+    # Debugger
+    debugger: Debugger = field(init=False)
+
     # Stats
     # TODO: Expand on part_type_id, make an Enum and can include part "area"
     # (ie group exposed and covered variants)
@@ -55,7 +60,6 @@ class CensorManager:
         index_text: str = "",
     ):
         self.config = config
-        timer_start = timeit.default_timer()
         Part.part_id = itertools.count(start=1)
 
         # File Stuff
@@ -76,41 +80,50 @@ class CensorManager:
 
         # Debug
         debugger = Debugger("CensorManager", level=DebugLevels.DETAILED)
+        debugger.time_total_start()
         debugger.display_onnx_info()
 
         # Empty Mask
+        debugger.time_start("Create Empty Mask")
         self.empty_mask = self._create_empty_mask()
+        debugger.time_stop()
 
         # NudeNet Stuff
+        debugger.time_start("Append Parts")
         self._append_parts()
+        debugger.time_stop()
 
         # Merge Parts
+        debugger.time_start("Merge Parts")
         self._merge_parts_if_in_merge_groups()
+        debugger.time_stop()
 
         # Handle More Advanced Parts (i.e., Bars and Joints)
+        debugger.time_start("Handle Advanced Shapes")
         self._apply_mask_shapes()
+        debugger.time_stop()
 
         # Test Parts for Overlap
+        debugger.time_start("Process Overlaps")
         self._process_overlaps_for_masks()
+        debugger.time_stop()
 
         # Generate and Apply Reverse Censor
+        debugger.time_start("Generate Reverse Censor")
         self._handle_reverse_censor()
+        debugger.time_stop()
 
         # Apply Censors
+        debugger.time_start("Apply Censors")
         self._apply_censors()
+        debugger.time_stop()
 
         # DEBUG: Times
+        debugger.time_total_end()
         debugger.display_times()
 
-        # Print Duration
-        timer_stop = timeit.default_timer()
-        duration = timer_stop - timer_start
-
-        # # Display Output # TODO: Make into a level system
-        # self.display()
-        # if show_duration:
-        #     print(f"- Duration:\t{duration:0.3f} seconds")
-        # print()
+        # Save Debugger in case of Flushing
+        self.debugger = debugger
 
     def display(self):
         count = 1
@@ -136,7 +149,6 @@ class CensorManager:
                 print(f"- - Protected shape   : {part.protected_shape}")
 
     # Private
-    @Debugger.time_function
     def _create_empty_mask(self, inverse: bool = False):
         """
         This function acts as a factory for empty masks, due to 1) bad copying
@@ -187,9 +199,20 @@ class CensorManager:
         config_parts_enabled = self.config.parts_enabled
 
         # Collect Detected Data
-        detected_parts = []
-        for detector in enabled_detectors:
-            detected_parts += detector().detect_image(self.file_loc)
+        detected_parts = list(
+            map(
+                lambda detector: detector.detect_image(self.file_loc),
+                enabled_detectors,
+            )
+        )
+        detected_parts = [
+            part
+            for per_detector_parts in detected_parts
+            for part in per_detector_parts
+        ]  # TODO: Need to optimise
+
+        # for detector in enabled_detectors:
+        #     detected_parts += detector().detect_image(self.file_loc)
 
         # Map and Filter Parts for Missing Information
         def add_parts(detect_part: DetectedPartSchema):
@@ -203,7 +226,7 @@ class CensorManager:
                 file_path=self.file_loc,
             )
 
-        self.parts = list(map(add_parts, detected_parts))
+        self.parts = list((map(add_parts, detected_parts)))
         self.parts = list(filter(lambda x: x is not None, self.parts))
 
     def _merge_parts_if_in_merge_groups(self):
@@ -401,9 +424,9 @@ class CensorManager:
 
         return list_matching_parts_attributes
 
-    # Dev
-    def logging_decompose_mask(self, part_name: str, prefix: str):
-        pass
+    # Debugger
+    def flush_debugger(self):
+        return self.debugger
 
     # Static
     @staticmethod
