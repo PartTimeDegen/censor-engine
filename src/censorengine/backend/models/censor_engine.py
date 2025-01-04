@@ -9,6 +9,10 @@ from censorengine.backend.constants.files import APPROVED_FORMATS_IMAGE
 from censorengine.backend.models.censor_manager import CensorManager
 from censorengine.backend.models.config import Config
 
+from censorengine.libs.detector_library.catalogue import enabled_detectors
+from censorengine.libs.shape_library.catalogue import shape_catalogue
+from censorengine.libs.style_library.catalogue import style_catalogue
+
 
 @dataclass
 class CensorEngine:
@@ -131,10 +135,10 @@ class CensorEngine:
 
         parser.add_argument("-config", action="store")
 
-        parser.add_argument("-dev", action="store")  # Debug, Profile
+        parser.add_argument("-dev", action="store")  # Debug
         parser.add_argument(
             "-output", action="store"
-        )  # TODO: Quiet, Slim, Verbose, Very Verbose (vv)
+        )  # TODO: debug, true false
 
         self.args = parser.parse_args()
 
@@ -212,3 +216,13 @@ class CensorEngine:
         else:
             self._image_pipeline()
             self._video_pipeline()
+
+    # Reporting
+    def get_models(self):
+        return [detector.model_name for detector in enabled_detectors]
+
+    def get_shapes(self):
+        return list(shape_catalogue.keys())
+
+    def get_censor_styles(self):
+        return list(style_catalogue.keys())

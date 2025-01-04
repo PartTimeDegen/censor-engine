@@ -84,7 +84,7 @@ class Debugger:
 
     def time_total_start(self):
         self.program_start = TimerSchema(
-            name="Program",
+            name=self.debug_name,
             timestamp=time.time(),
             duration=0.0,
             program_start_time=True,
@@ -188,29 +188,35 @@ class Debugger:
             print()
 
     def display_times(self):
-        if self.debug_level >= DebugLevels.BASIC:
-            print(f"[ DEBUG {self.debug_name}: FUNCTION TIMES")
+        if self.debug_level < DebugLevels.BASIC:
+            return
 
-            sorted_times = reversed(
-                sorted(self.time_logger, key=lambda x: x.duration)
-            )
-            max_time = max(logged.duration for logged in self.time_logger)
-            min_time = min(logged.duration for logged in self.time_logger)
-            min_time = min(
-                logged.duration
-                for logged in self.time_logger
-                if logged.duration > (min_time * 2)
-            )
+        print(f"[ DEBUG {self.debug_name}: FUNCTION TIMES")
 
-            for time in sorted_times:
-                if time.program_start_time:
-                    print(f"{time}")
-                else:
-                    factor = int(time.duration / min_time)
-                    print(
-                        f"[ {time.time_id:02d}) {time} [{factor if factor > 0 else 1}x / {time.duration/max_time:2.1%}]"
-                    )
-            print()
+        sorted_times = list(
+            reversed(sorted(self.time_logger, key=lambda x: x.duration))
+        )
+        if len(sorted_times) == 1:
+            print(sorted_times[0])
+            return
+
+        max_time = max(logged.duration for logged in self.time_logger)
+        min_time = min(logged.duration for logged in self.time_logger)
+        min_time = min(
+            logged.duration
+            for logged in self.time_logger
+            if logged.duration > (min_time * 2)
+        )
+
+        for proc_time in sorted_times:
+            if proc_time.program_start_time:
+                print(f"{proc_time}")
+            else:
+                factor = int(proc_time.duration / min_time)
+                print(
+                    f"[ {proc_time.time_id:02d}) {proc_time} [{factor if factor > 0 else 1}x / {proc_time.duration/max_time:2.1%}]"
+                )
+        print()
 
 
 # def _debug_save_time(self, name):
@@ -294,23 +300,17 @@ class Debugger:
 #         cv2.imwrite(file, part.mask)
 
 
-def time_function(debugger_object: Debugger):
-    def decorator(function):
-        def wrapper(*args, **kwargs):
-            before = time.time()
-            result = function(*args, **kwargs)
-            after = time.time()
+class TempTimer:
+    def __init__(self, name):
+        self.debugger = Debugger(name, DebugLevels.DETAILED)
+        self.debugger.time_total_start()
 
-            debugger_object.time_logger.append(
-                TimerSchema(
-                    name=function.__name__,
-                    timestamp=before,
-                    duration=after - before,
-                )
-            )
+    def time_start(self, name):
+        self.debugger.time_start(name)
 
-            return result
+    def time_stop(self):
+        self.debugger.time_stop()
 
-        return wrapper
-
-    return decorator
+    def time_end(self):
+        self.debugger.time_total_end()
+        self.debugger.display_times()

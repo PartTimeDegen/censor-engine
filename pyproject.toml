@@ -16,11 +16,6 @@ opencv-python   = "^4"
 pillow          = "^10"
 pytest          = "^8"
 nudenet         = "^3"
-ruff            = "^0"
-mypy            = "^1"
-pyclean         = "^3"
-pre-commit      = "^4"
-autoflake       = "^2"
 opencv-stubs    = "^0"
 opencv-python-headless = "^4"
 types-pyyaml = "^6.0.12.20240917"
@@ -28,6 +23,16 @@ pytest-timeout = "^2.3.1"
 onnxruntime-gpu = "^1.19.2"
 torch = "^2.5.0"
 
+[tool.poetry.dev-dependencies]
+ruff            = "^0"
+mypy            = "^1"
+autoflake       = "^2"
+pre-commit      = "^4"
+pyclean         = "^3"
+
+
+[tool.poetry.group.dev.dependencies]
+snakeviz = "^2.2.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

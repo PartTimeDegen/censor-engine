@@ -79,7 +79,7 @@ class CensorManager:
         print(f'{index_text}Censoring: "{self.file_image_name}"')
 
         # Debug
-        debugger = Debugger("CensorManager", level=DebugLevels.DETAILED)
+        debugger = Debugger("Censor Manager", level=DebugLevels.DETAILED)
         debugger.time_total_start()
         debugger.display_onnx_info()
 
@@ -191,7 +191,13 @@ class CensorManager:
             -   The reason a Map/Filter function is used is because this part
                 of the code takes a while to run, using map/filter reduces the
                 time massively, as ugly as it looks (I did try to learn it up
-                but there's only so much makeup you can put on a pig)
+                but there's only so much makeup you can put on a pig).
+
+            -   NudeNet (and I assume others) were found to be 98% of the time
+                taken for this to run, so it's slow but it's because of the
+                package/model itself, not the rest of the code. It's pretty
+                much optimised as much as it can be (even the Part creation in
+                total was only 0.005s, which is nothing)
 
         """
         # Acquire Settings
@@ -205,14 +211,12 @@ class CensorManager:
                 enabled_detectors,
             )
         )
+
         detected_parts = [
             part
             for per_detector_parts in detected_parts
             for part in per_detector_parts
-        ]  # TODO: Need to optimise
-
-        # for detector in enabled_detectors:
-        #     detected_parts += detector().detect_image(self.file_loc)
+        ]
 
         # Map and Filter Parts for Missing Information
         def add_parts(detect_part: DetectedPartSchema):
