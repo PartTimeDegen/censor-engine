@@ -2,9 +2,7 @@ def rgb_to_bgr(colour: tuple[int, int, int]) -> tuple[int, int, int]:
     return (colour[2], colour[1], colour[0])
 
 
-def get_colour(
-    colour_name: str | tuple[int, int, int]
-) -> tuple[int, int, int]:
+def get_colour(colour_name: str | tuple[int, int, int]) -> tuple[int, int, int]:
     if isinstance(colour_name, str):
         return colours[colour_name]
     elif isinstance(colour_name, tuple):

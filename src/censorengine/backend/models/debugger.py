@@ -91,9 +91,7 @@ class Debugger:
         )
 
     def time_total_end(self):
-        self.program_start.duration = (
-            time.time() - self.program_start.timestamp
-        )
+        self.program_start.duration = time.time() - self.program_start.timestamp
 
         self.time_logger.append(self.program_start)
 
@@ -146,15 +144,11 @@ class Debugger:
                 # Handle Folder Name
                 folder_list = [".debug", label, self.file_image_name]
                 if label:
-                    folder_list[1] = (
-                        f"{self._debug_mask_counter}_{folder_list[1]}"
-                    )
+                    folder_list[1] = f"{self._debug_mask_counter}_{folder_list[1]}"
 
                 for part in self.parts:
                     # Get Names
-                    folder = os.path.join(
-                        *[fold for fold in folder_list if fold]
-                    )
+                    folder = os.path.join(*[fold for fold in folder_list if fold])
                     file = os.path.join(
                         folder,
                         f"{part.part_id}_{part.part_name}_{part.state}.jpg",
@@ -182,9 +176,7 @@ class Debugger:
         if self.debug_level >= DebugLevels.DETAILED:
             print(f"[ DEBUG {self.debug_name}: ONNX_INFO")
             print(f"[ - Onnxruntime device: {ort.get_device()}")
-            print(
-                f"[ - Ort available providers: {ort.get_available_providers()}"
-            )
+            print(f"[ - Ort available providers: {ort.get_available_providers()}")
             print()
 
     def display_times(self):

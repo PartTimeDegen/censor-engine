@@ -40,9 +40,9 @@ class Debug(DevStyle):
         )
         coords_box = (
             coords_text[0]
-            + cv2.getTextSize(
-                max(list_text, key=len), font, fontscale, text_thickness
-            )[0][0]
+            + cv2.getTextSize(max(list_text, key=len), font, fontscale, text_thickness)[
+                0
+            ][0]
             + margin * 2,
             coords_text[1]
             + int(
@@ -80,9 +80,7 @@ class Debug(DevStyle):
                     coords_text[0],
                     int(
                         coords_text[1]
-                        + cv2.getTextSize(
-                            text, font, fontscale, text_thickness
-                        )[0][1]
+                        + cv2.getTextSize(text, font, fontscale, text_thickness)[0][1]
                         * index
                         * vertical_spacing
                         + margin

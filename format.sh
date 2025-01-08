@@ -3,7 +3,7 @@ echo "=== Formatting ==="
 # # Linters
 echo ""
 echo "Running Ruff"
-poetry run ruff check --fix censorengine
+poetry run ruff format .
 
 # Check
 echo ""

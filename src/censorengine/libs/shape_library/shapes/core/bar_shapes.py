@@ -55,12 +55,10 @@ class Bar(BarShape, _BarInfo):
         point_two = sorted_points[2]
 
         radius_one = math.sqrt(
-            (top_point[0] - point_one[0]) ** 2
-            + (top_point[1] - point_one[1]) ** 2
+            (top_point[0] - point_one[0]) ** 2 + (top_point[1] - point_one[1]) ** 2
         )
         radius_two = math.sqrt(
-            (top_point[0] - point_two[0]) ** 2
-            + (top_point[1] - point_two[1]) ** 2
+            (top_point[0] - point_two[0]) ** 2 + (top_point[1] - point_two[1]) ** 2
         )
 
         # Find Side
@@ -182,9 +180,9 @@ class Bar(BarShape, _BarInfo):
 
         # # Calculate Gradient
         try:
-            gradient = -(
-                dict_corners["top_right"][1] - dict_corners["top_left"][1]
-            ) / (dict_corners["top_right"][0] - dict_corners["top_left"][0])
+            gradient = -(dict_corners["top_right"][1] - dict_corners["top_left"][1]) / (
+                dict_corners["top_right"][0] - dict_corners["top_left"][0]
+            )
         except ZeroDivisionError:
             gradient = 0.0
 

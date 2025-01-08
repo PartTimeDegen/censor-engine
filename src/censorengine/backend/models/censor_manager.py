@@ -213,9 +213,7 @@ class CensorManager:
         )
 
         detected_parts = [
-            part
-            for per_detector_parts in detected_parts
-            for part in per_detector_parts
+            part for per_detector_parts in detected_parts for part in per_detector_parts
         ]
 
         # Map and Filter Parts for Missing Information
@@ -275,33 +273,22 @@ class CensorManager:
                     pass
 
                 case ShapeType.JOINT:
-                    part.mask = part.shape.generate(
-                        part, self.empty_mask.copy()
-                    )
+                    part.mask = part.shape.generate(part, self.empty_mask.copy())
 
                 case ShapeType.BAR:
                     shape_joint = Part.get_shape_class("joint_ellipse")
-                    part.mask = shape_joint.generate(
-                        part, self.empty_mask.copy()
-                    )
-                    part.mask = part.shape.generate(
-                        part, self.empty_mask.copy()
-                    )
+                    part.mask = shape_joint.generate(part, self.empty_mask.copy())
+                    part.mask = part.shape.generate(part, self.empty_mask.copy())
 
     def _process_overlaps_for_masks(self):
-        full_parts = sorted(self.parts, key=lambda x: (-x.state, x.part_name))[
-            ::-1
-        ]
+        full_parts = sorted(self.parts, key=lambda x: (-x.state, x.part_name))[::-1]
 
         for index, target_part in enumerate(full_parts):
             if target_part not in self.parts:
                 continue
 
             for comp_part in full_parts[index + 1 :]:
-                if (
-                    target_part not in self.parts
-                    or comp_part not in self.parts
-                ):
+                if target_part not in self.parts or comp_part not in self.parts:
                     continue
                 # NOTE: This is done in respect to Target
 
@@ -420,8 +407,7 @@ class CensorManager:
             part
             for part in self.parts
             if all(
-                part.__dict__.get(key)
-                and (str(part.__dict__.get(key)) == str(value))
+                part.__dict__.get(key) and (str(part.__dict__.get(key)) == str(value))
                 for key, value in search.items()
             )
         ]

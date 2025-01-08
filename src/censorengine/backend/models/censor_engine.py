@@ -41,7 +41,7 @@ class CensorEngine:
         self,
         main_file_path: str,
         censor_mode: str = "image",  # image, video, gif, default=auto
-        config: str = "defaults/00_default.yml",
+        config: str = "00_default.yml",
         test_mode: bool = False,
     ):
         # Mount Init Settings
@@ -70,10 +70,7 @@ class CensorEngine:
             self.config.uncensored_folder,
         )
 
-        if any(
-            self.full_files_path.endswith(ext)
-            for ext in APPROVED_FORMATS_IMAGE
-        ):
+        if any(self.full_files_path.endswith(ext) for ext in APPROVED_FORMATS_IMAGE):
             if not os.path.exists(self.full_files_path):
                 raise FileNotFoundError
             self.is_file = True
@@ -136,9 +133,7 @@ class CensorEngine:
         parser.add_argument("-config", action="store")
 
         parser.add_argument("-dev", action="store")  # Debug
-        parser.add_argument(
-            "-output", action="store"
-        )  # TODO: debug, true false
+        parser.add_argument("-output", action="store")  # TODO: debug, true false
 
         self.args = parser.parse_args()
 

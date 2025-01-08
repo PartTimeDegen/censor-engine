@@ -89,12 +89,8 @@ class _ConfigPart:
         _ConfigPart.censors = _ConfigPart.load_censors(
             _ConfigPart._get_else_default(default_section, "censors")
         )
-        _ConfigPart.shape = _ConfigPart._get_else_default(
-            default_section, "shape"
-        )
-        _ConfigPart.margin = _ConfigPart._get_else_default(
-            default_section, "margin"
-        )
+        _ConfigPart.shape = _ConfigPart._get_else_default(default_section, "shape")
+        _ConfigPart.margin = _ConfigPart._get_else_default(default_section, "margin")
         _ConfigPart.state = _ConfigPart.load_state(
             _ConfigPart._get_else_default(default_section, "state")
         )
@@ -248,9 +244,7 @@ class Config:
         ]
 
         attributes = [
-            attribute
-            for attribute in vars(self)
-            if attribute not in manual_attributes
+            attribute for attribute in vars(self) if attribute not in manual_attributes
         ]
 
         # Root Level Attributes
@@ -299,6 +293,4 @@ class Config:
                 self.part_settings[part] = _ConfigPart(name=part)
 
     def dev_load_censors(self, part, list_of_censors):
-        self.part_settings[part].censors = _ConfigPart.load_censors(
-            list_of_censors
-        )
+        self.part_settings[part].censors = _ConfigPart.load_censors(list_of_censors)

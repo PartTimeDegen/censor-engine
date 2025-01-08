@@ -22,7 +22,6 @@ def test_basic(root_path):
         root_path,
         config="000_tests/03_configs/advanced/overlaps.yml",
         test_mode=True,
-        debug_mode=True,
     )
 
     folder_uncen = os.path.join("000_tests/00_uncensored", test_loc)
@@ -69,7 +68,6 @@ def test_overlapping_parts(root_path):
         root_path,
         config="000_tests/03_configs/advanced/overlaps.yml",
         test_mode=True,
-        debug_mode=True,
     )
 
     folder_uncen = os.path.join("000_tests/00_uncensored", test_loc)

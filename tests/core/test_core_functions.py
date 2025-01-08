@@ -42,7 +42,6 @@ def test_classes(part_name, root_path):
         root_path,
         config="000_tests/03_configs/test_core.yml",
         test_mode=True,
-        debug_mode=True,
     )
 
     folder_uncen = os.path.join("000_tests/00_uncensored", test_loc)
@@ -71,7 +70,6 @@ def test_shapes(shape, root_path):
         root_path,
         config="000_tests/03_configs/test_core.yml",
         test_mode=True,
-        debug_mode=True,
     )
 
     folder_uncen = os.path.join("000_tests/00_uncensored", test_loc)
@@ -107,7 +105,6 @@ def test_styles(style, root_path):
         root_path,
         config="000_tests/03_configs/test_core.yml",
         test_mode=True,
-        debug_mode=True,
     )
 
     folder_uncen = os.path.join("000_tests/00_uncensored", test_loc)
@@ -146,9 +143,7 @@ def test_styles(style, root_path):
                 {
                     "function": "outline",
                     "args": {
-                        "colour": "BLACK"
-                        if style != "dev_debug"
-                        else colours[index]
+                        "colour": "BLACK" if style != "dev_debug" else colours[index]
                     },
                 },
                 {
@@ -175,7 +170,6 @@ def test_reverse_censor(root_path):
         root_path,
         config="000_tests/03_configs/test_reverse_censor.yml",
         test_mode=True,
-        debug_mode=True,
     )
 
     folder_uncen = os.path.join("000_tests/00_uncensored", test_loc)

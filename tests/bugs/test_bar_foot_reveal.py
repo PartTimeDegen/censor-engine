@@ -14,7 +14,6 @@ def test_shapes(root_path):
         root_path,
         config="000_tests/03_configs/bugs/bar_foot_reveal/red_tape.yml",
         test_mode=True,
-        debug_mode=True,
     )
 
     folder_uncen = os.path.join("000_tests/00_uncensored", test_loc)

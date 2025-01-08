@@ -29,7 +29,6 @@ def test_states(state_config, root_path):
         root_path,
         config=state_combinations[state_config],
         test_mode=True,
-        debug_mode=True,
     )
 
     folder_uncen = os.path.join("000_tests/00_uncensored", test_loc)

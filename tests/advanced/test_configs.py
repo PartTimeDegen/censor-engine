@@ -32,7 +32,6 @@ def test_configs(config, root_path):
         root_path,
         config=f"{config}.yml",
         test_mode=True,
-        debug_mode=True,
     )
 
     folder_uncen = os.path.join("000_tests/00_uncensored", test_loc)
