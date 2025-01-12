@@ -22,6 +22,7 @@ types-pyyaml = "^6.0.12.20240917"
 pytest-timeout = "^2.3.1"
 onnxruntime-gpu = "^1.19.2"
 torch = "^2.5.0"
+nsfw-detector = "^1.1.1"
 
 [tool.poetry.group.dev.dependencies]
 snakeviz = "^2.2.2"

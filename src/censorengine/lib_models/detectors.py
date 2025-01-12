@@ -43,3 +43,23 @@ class Detector:
     @abstractmethod
     def detect_image(self, file_path: str) -> list[DetectedPartSchema]:
         raise NotImplementedError
+
+
+class Determiner:
+    """
+    This class is a variant of Detector used from "determiners", it uses AI
+    however rather than returning objects like the Detectors do, it determines
+    (shocking I know), this is mostly used for tools where refinement can be
+    made from the information returned.
+
+    For instance this class was made for the "ImageGenreDeterminer" which
+    determines if an image is hentai (well drawing) or real, such that one can
+    make refinements based on this info (check the class as it explains more).
+    """
+
+    model_name: str
+    model_classifiers: tuple[str, ...]
+
+    @abstractmethod
+    def detect_image(self, file_path: str) -> str:
+        raise NotImplementedError
