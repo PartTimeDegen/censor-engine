@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 import itertools
 import statistics
@@ -137,6 +138,8 @@ class CensorManager:
 
         :param bool inverse: Inverses the mask to make it white on black, not black on white, defaults to False
 
+        # TODO: Cache this if it's made
+
         """
         if inverse:
             return Part.normalise_mask(
@@ -171,18 +174,17 @@ class CensorManager:
 
         """
         # Collect Detected Data
-        detected_parts = list(
-            map(
-                lambda detector: detector.detect_image(self.file_loc),
-                enabled_detectors,
+        with ThreadPoolExecutor() as executor:
+            detected_parts = list(
+                executor.map(
+                    lambda detector: detector.detect_image(self.file_loc),
+                    enabled_detectors,
+                )
             )
-        )
 
-        self.detected_parts = [
-            part for per_detector_parts in detected_parts for part in per_detector_parts
-        ]
+        self.detected_parts = list(itertools.chain(*detected_parts))
 
-    def _part_creation(self):
+    def _create_parts(self):
         """
         This function creates the list of Parts for CensorEngine to keep track
         of. # TODO: Update me to account for split with _detection
@@ -377,7 +379,7 @@ class CensorManager:
                 image=part.mask,
                 mode=cv2.RETR_TREE,
                 method=cv2.CHAIN_APPROX_SIMPLE,
-            )
+            )  # TODO: reduce image size to just part
 
             # Reversed to represent YAML order
             for censor in part.censors[::-1]:
@@ -443,7 +445,7 @@ class CensorManager:
     def start(self):
         # Create Parts
         self.debugger.time_start("Create Parts")
-        self._part_creation()
+        self._create_parts()
         self.debugger.time_stop()
 
         # Merge Parts

@@ -214,8 +214,74 @@ class HexagonPixelate(BlurStyle):
         return self.draw_effect_on_mask(contour, pixel_image, image)
 
 
+class MotionBlur(BlurStyle):
+    style_name: str = "motion_blur"
+
+    def apply_style(
+        self,
+        image: CVImage,
+        contour,
+        offset: int = 20,
+        angle: int = -45,
+    ) -> CVImage:
+        blur_image = image.copy()
+
+        kernel = np.zeros((offset, offset))
+        kernel[int((offset - 1) / 2), :] = np.ones(offset)
+        kernel = kernel / offset
+
+        # Step 2: Rotate the kernel to the specified angle
+        center = (offset // 2, offset // 2)
+        rot_matrix = cv2.getRotationMatrix2D(center, angle, 1)
+        rotated_kernel = cv2.warpAffine(kernel, rot_matrix, (offset, offset))
+
+        # Step 3: Apply the kernel to the image
+        noise_image = cv2.filter2D(blur_image, -1, rotated_kernel)
+
+        return self.draw_effect_on_mask([contour], noise_image, image)
+
+
+class Crystalise(BlurStyle):
+    style_name: str = "crystalise"
+
+    def apply_style(
+        self,
+        image: CVImage,
+        contour,
+        point_density: int = 50,
+    ) -> CVImage:
+        blur_image = image.copy()
+        h, w, c = image.shape
+
+        points = np.vstack(
+            [
+                np.random.randint(0, w, point_density),
+                np.random.randint(0, h, point_density),
+            ]
+        ).T.astype(np.float32)
+
+        subdiv = cv2.Subdiv2D((0, 0, w, h))
+        for p in points:
+            subdiv.insert((p[0], p[1]))
+
+        triangle_list = subdiv.getTriangleList().astype(np.int32)  # type: ignore
+
+        result = np.zeros_like(blur_image)
+
+        for t in triangle_list:
+            pts = t.reshape(3, 2)
+            mask = np.zeros((h, w), dtype=np.uint8)
+            cv2.fillConvexPoly(mask, pts, 1)  # type: ignore
+            mean_color = cv2.mean(image, mask=mask)[:3]
+            cv2.fillConvexPoly(result, pts, mean_color)
+
+        return self.draw_effect_on_mask([contour], result, image)
+
+
 effects = {
     "blur": Blur,
     "pixelate": Pixelate,
     "hexagon_pixelate": HexagonPixelate,
+    "motion_blur": MotionBlur,
+    "crystalise": Crystalise,
 }

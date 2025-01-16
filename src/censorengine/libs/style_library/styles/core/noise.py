@@ -6,7 +6,7 @@ from censorengine.backend.constants.typing import CVImage
 
 
 class ChromaticAberration(BlurStyle):
-    style_name: str = "noise"
+    style_name: str = "chromatic_aberration"
 
     def apply_style(
         self,
@@ -53,33 +53,6 @@ class ChromaticAberration(BlurStyle):
         return self.draw_effect_on_mask([contour], noise_image, image)
 
 
-class MotionBlur(BlurStyle):
-    style_name: str = "noise"
-
-    def apply_style(
-        self,
-        image: CVImage,
-        contour,
-        offset: int = 20,
-        angle: int = -45,
-    ) -> CVImage:
-        blur_image = image.copy()
-
-        kernel = np.zeros((offset, offset))
-        kernel[int((offset - 1) / 2), :] = np.ones(offset)
-        kernel = kernel / offset
-
-        # Step 2: Rotate the kernel to the specified angle
-        center = (offset // 2, offset // 2)
-        rot_matrix = cv2.getRotationMatrix2D(center, angle, 1)
-        rotated_kernel = cv2.warpAffine(kernel, rot_matrix, (offset, offset))
-
-        # Step 3: Apply the kernel to the image
-        noise_image = cv2.filter2D(blur_image, -1, rotated_kernel)
-
-        return self.draw_effect_on_mask([contour], noise_image, image)
-
-
 class Noise(BlurStyle):
     style_name: str = "noise"
 
@@ -113,6 +86,5 @@ class Noise(BlurStyle):
 
 effects = {
     "chromatic_aberration": ChromaticAberration,
-    "motion_blur": MotionBlur,
     "noise": Noise,
 }

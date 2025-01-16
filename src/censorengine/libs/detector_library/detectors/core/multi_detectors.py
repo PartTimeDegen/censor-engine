@@ -31,6 +31,7 @@ class NudeNetDetector(Detector):
         "MALE_GENITALIA_EXPOSED",
         "MALE_BREAST_EXPOSED",
     )
+    model_object = NudeDetector()
 
     def detect_image(self, file_path: str):
         return [
@@ -39,5 +40,5 @@ class NudeNetDetector(Detector):
                 score=found_part["score"],
                 relative_box=found_part["box"],
             )
-            for found_part in NudeDetector().detect(file_path)
+            for found_part in self.model_object.detect(file_path)
         ]
