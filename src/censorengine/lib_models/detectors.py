@@ -1,5 +1,12 @@
 from abc import abstractmethod
 from dataclasses import dataclass
+import os
+from typing import Any
+
+import pydload  # type: ignore
+
+# import tensorflow as tf  # type: ignore # NOTE: I can't run this due to my shitty Xeon CPU
+import torch
 
 
 @dataclass
@@ -24,7 +31,78 @@ class DetectedPartSchema:
     relative_box: tuple[int, int, int, int]
 
 
-class Detector:
+class AIModel:
+    """
+    It seems that the standard for AI packages for Python is to give you the
+    code via Pip but then give you the model seperately (probably to alleviate
+    the payload).
+
+    This class is to give the AI using models the ability to download and mount
+    the models.
+
+    Downloading is simple enough since it's just getting the link.
+
+    Mounting requires more work especially since I'm not an AI dev (yet lol)
+
+    """
+
+    ai_model_folder_name: str = ".ai_models"
+    model_path: str
+    ai_model: Any
+
+    def download_model(self, url: str):
+        # Download the Model When the Package Doesn't -.-
+        home = os.path.expanduser("~")
+        model_folder = os.path.join(home, self.ai_model_folder_name, "")
+        if not os.path.exists(model_folder):
+            os.mkdir(model_folder)
+
+        model_path = os.path.join(model_folder, os.path.basename(url))
+
+        if not os.path.exists(model_path):
+            print("Downloading the checkpoint to", model_path)
+            pydload.dload(url, save_to_path=model_path, max_time=None)
+
+        self.model_path = model_path
+
+    def load_model(self):
+        file_extension = self.model_path.split(".")[-1]
+
+        # # TensorFlow Models
+        # if file_extension in ["h5", "savedmodel"]:
+        #     self.model = tf.keras.models.load_model(self.model_path)
+
+        # PyTorch
+        if file_extension == "pt":
+            self.model = torch.load(self.model_path)
+            self.model.eval()
+        else:
+            raise ValueError(f"Unsupported model format: {file_extension}")
+
+    def predict(self, input_data: Any):
+        if self.model is None:
+            raise ValueError("Missing AI model.")
+
+        # # TensorFlow Model
+        # if isinstance(self.model, tf.keras.Model):
+        #     return self.model.predict(input_data)
+
+        # PyTorch
+        if isinstance(self.model, torch.nn.Module):
+            with torch.no_grad():
+                input_tensor = torch.tensor(input_data, dtype=torch.float32)
+                return self.model(input_tensor).numpy()
+
+        else:
+            raise ValueError("Cannot find model type")
+
+    def proceed_model(self, url: str, input_data: Any):
+        self.download_model(url)
+        self.load_model()
+        self.predict(input_data)
+
+
+class Detector(AIModel):
     """
     This is the model used for detectors, it's pretty simple, just maintains a
     valid method to use/overwrite, and some meta information.
@@ -45,7 +123,7 @@ class Detector:
         raise NotImplementedError
 
 
-class Determiner:
+class Determiner(AIModel):
     """
     This class is a variant of Detector used from "determiners", it uses AI
     however rather than returning objects like the Detectors do, it determines
@@ -61,5 +139,5 @@ class Determiner:
     model_classifiers: tuple[str, ...]
 
     @abstractmethod
-    def detect_image(self, file_path: str) -> str:
+    def determine_image(self, file_path: str) -> str:
         raise NotImplementedError

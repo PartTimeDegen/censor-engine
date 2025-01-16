@@ -48,7 +48,33 @@ class TimerSchema:
     time_id: Iterable[int] = itertools.count(start=1)
 
     def __str__(self):
-        return f"({self.duration: >8.3f}s) {self.name}"
+        time = f"{self.duration*1_000:> 10.6f}"
+
+        # Decimal Sep
+        # # Splitting into Components
+        whole, decimal = time.split(".")
+
+        # # Adding Missing Zeros
+
+        if (missing_zeros := len(decimal) % 3) != 0:
+            decimal += "0" * missing_zeros
+
+        # # Adding Spacers
+        offset = False
+        if decimal[-1] == "0":
+            offset = True
+            decimal = list(decimal)
+            decimal[-1] = "1"
+            decimal = "".join(decimal)
+        fixed_decimal = f"{int(decimal[::-1]):,}".replace(",", " ")[::-1]
+        if offset:
+            fixed_decimal = list(fixed_decimal)
+            fixed_decimal[-1] = "0"
+            fixed_decimal = "".join(fixed_decimal)
+
+        # # Merging
+        fixed_time = f"{whole}.{fixed_decimal}"
+        return f"({fixed_time}ms) {self.name}"
 
     def __repr__(self):
         return f"{self.name} ({self.timestamp})"
@@ -112,7 +138,6 @@ class Debugger:
             raise TypeError("Missing Start for Timer")
 
         duration = time.time() - self.temp_time_holder[1]
-
         self.time_logger.append(
             TimerSchema(
                 name=self.temp_time_holder[0],
@@ -195,9 +220,7 @@ class Debugger:
         max_time = max(logged.duration for logged in self.time_logger)
         min_time = min(logged.duration for logged in self.time_logger)
         min_time = min(
-            logged.duration
-            for logged in self.time_logger
-            if logged.duration > (min_time * 2)
+            logged.duration for logged in self.time_logger if logged.duration > min_time
         )
 
         for proc_time in sorted_times:

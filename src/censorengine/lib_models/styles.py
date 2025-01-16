@@ -105,3 +105,30 @@ class TextStyle(Style):
 
 class DevStyle(Style):
     style_type: str = "dev"
+
+
+class EdgeDetectionStyle(Style):
+    style_type = "edge_detection"
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (11, 11))
+
+    def prepare_mask(self, mask_image):
+        mask_image = cv2.cvtColor(
+            mask_image,
+            cv2.COLOR_BGR2GRAY,
+        )
+
+        mask_image = cv2.GaussianBlur(
+            mask_image, (3, 3), 0
+        )  # Minor blur for better results
+
+        return mask_image
+
+    def clean_image(self, mask_image):
+        # Dilute/Erode to Connect Noise
+        mask_image = cv2.dilate(mask_image, self.kernel, iterations=2)
+        mask_image = cv2.erode(mask_image, self.kernel, iterations=2)
+        # mask_image = cv2.morphologyEx(mask_image, cv2.MORPH_CLOSE, self.kernel)
+        # mask_image = cv2.erode(mask_image, self.kernel, iterations=1)
+
+        mask_image = cv2.cvtColor(mask_image, cv2.COLOR_GRAY2BGR)
+        return mask_image

@@ -1,5 +1,5 @@
 from censorengine.lib_models.detectors import Determiner
-from nsfw_detector import predict  # type: ignore
+
 from typing import TypeAlias, Any
 
 Model: TypeAlias = Any
@@ -45,7 +45,7 @@ class ImageGenreDeterminer(Determiner):
     model_used: Model = None
 
     def __init__(self):
-        self.model = predict.load_model("./nsfw_mobilenet2.224x224.h5")
+        pass
 
     def reduce_results_to_broad_groups(self, results: dict[str, Any]) -> str:
         """
@@ -70,7 +70,7 @@ class ImageGenreDeterminer(Determiner):
         else:
             return self.broad_groups["hentai"]
 
-    def detect_image(self, file_path: str) -> str:
+    def determine_image(self, file_path: str) -> str:
         """
         Determines the type of pornographic image in question.
 
@@ -78,9 +78,10 @@ class ImageGenreDeterminer(Determiner):
 
         :return str: Returns one of the broad groups; hentai or porn
         """
-        return self.reduce_results_to_broad_groups(
-            predict.classify(
-                self.model,
-                file_path,
-            )
-        )
+        return f"{self.model_name}: not working"
+        # return self.reduce_results_to_broad_groups(
+        #     self.model.classify(
+        #         self.model,
+        #         file_path,
+        #     )
+        # )

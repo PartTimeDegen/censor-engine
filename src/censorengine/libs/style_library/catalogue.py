@@ -5,6 +5,8 @@ from censorengine.libs.style_library.styles.core import (
     transparent,
     dev,
     text,
+    edge_detection,
+    noise,
 )
 
 
@@ -15,4 +17,6 @@ style_catalogue = {
     **transparent.effects,
     **dev.effects,
     # **text.effects,
+    **edge_detection.effects,
+    **noise.effects,
 }  # type: ignore

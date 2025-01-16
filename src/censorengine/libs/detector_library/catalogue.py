@@ -1,6 +1,9 @@
 from censorengine.libs.detector_library.detectors.core.multi_detectors import (
     NudeNetDetector,
 )
+from censorengine.libs.detector_library.detectors.core.determination_tools import (
+    ImageGenreDeterminer,
+)
 
 """
 This is used for enabling new models. You may notice it's different from the
@@ -11,4 +14,8 @@ files (yet, maybe, might be overkill)
 
 enabled_detectors = [
     NudeNetDetector(),
+]
+
+enabled_determiners = [
+    ImageGenreDeterminer(),
 ]

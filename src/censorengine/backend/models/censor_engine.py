@@ -9,7 +9,10 @@ from censorengine.backend.constants.files import APPROVED_FORMATS_IMAGE
 from censorengine.backend.models.censor_manager import CensorManager
 from censorengine.backend.models.config import Config
 
-from censorengine.libs.detector_library.catalogue import enabled_detectors
+from censorengine.libs.detector_library.catalogue import (
+    enabled_detectors,
+    enabled_determiners,
+)
 from censorengine.libs.shape_library.catalogue import shape_catalogue
 from censorengine.libs.style_library.catalogue import style_catalogue
 
@@ -99,20 +102,23 @@ class CensorEngine:
         self.max_file_index = self.indexed_files[-1][0]
         self.max_index_chars = len(str(self.max_file_index))
 
+    def _get_index_text(self, index):
+        index_percent = index / self.max_file_index
+        leading_spaces = " " * (self.max_index_chars - len(str(index)))
+        leading_spaces_pc = " " * (3 - len(str(int(100 * index_percent))))
+
+        return f"{leading_spaces}{index}/{self.max_file_index} ({leading_spaces_pc}{index_percent:0.1%})"
+
     def _image_pipeline(self):
         for index, file_path in self.indexed_files:
-            index_percent = index / self.max_file_index
-            leading_spaces = " " * (self.max_index_chars - len(str(index)))
-            leading_spaces_pc = " " * (3 - len(str(int(100 * index_percent))))
-
-            index_text = f"{leading_spaces}{index}/{self.max_file_index} ({leading_spaces_pc}{index_percent:0.1%})"
+            index_text = self._get_index_text(index)
 
             censor_manager = CensorManager(
                 file_path=file_path,
                 config=self.config,
-                show_duration=True,
                 index_text=index_text,
             )
+            censor_manager.start()
             file_output = censor_manager.return_output()
 
             self._save_file(file_output, file_path)
@@ -213,11 +219,50 @@ class CensorEngine:
             self._video_pipeline()
 
     # Reporting
-    def get_models(self):
+    def get_detectors(self):
         return [detector.model_name for detector in enabled_detectors]
+
+    def get_determiners(self):
+        return [detector.model_name for detector in enabled_determiners]
 
     def get_shapes(self):
         return list(shape_catalogue.keys())
 
     def get_censor_styles(self):
         return list(style_catalogue.keys())
+
+    # Sample
+    def get_parts(self):
+        files = []
+        for index, file_path in self.indexed_files:
+            index_text = self._get_index_text(index)
+
+            censor_manager = CensorManager(
+                file_path=file_path,
+                config=self.config,
+                index_text=index_text,
+            )
+
+            files.append(
+                {"file_path": file_path, "parts_found": censor_manager.detected_parts}
+            )
+        return files
+
+    def get_determinations(self):
+        files = []
+        for index, file_path in self.indexed_files:
+            index_text = self._get_index_text(index)
+
+            censor_manager = CensorManager(
+                file_path=file_path,
+                config=self.config,
+                index_text=index_text,
+            )
+
+            files.append(
+                {
+                    "file_path": file_path,
+                    "determined_features": censor_manager.extracted_information,
+                }
+            )
+        return files
