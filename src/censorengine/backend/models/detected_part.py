@@ -47,6 +47,8 @@ class Part:
 
     protected_shape: Optional[Shape] = None
 
+    use_global_area: bool = True
+
     # Masks
     mask: "Mask" = field(init=False)
     original_mask: "Mask" = field(init=False)
@@ -86,6 +88,7 @@ class Part:
         self._determine_state()
         self._determine_shape()
         self._determine_censors()
+        self._determine_meta()
 
         # Generate Masks
         self.mask = empty_mask
@@ -198,6 +201,9 @@ class Part:
 
     def _determine_censors(self):
         self.censors = self.config.part_settings[self.part_name].censors
+
+    def _determine_meta(self):
+        self.use_global_area = self.config.part_settings[self.part_name].use_global_area
 
     def _get_base_mask(self, empty_mask):
         # Get Shape

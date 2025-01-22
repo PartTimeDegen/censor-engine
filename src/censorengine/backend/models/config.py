@@ -12,9 +12,6 @@ from types import MappingProxyType
 
 
 class _ConfigPart:
-    def __str__(self):
-        return self.name
-
     name: str
     minimum_score: Optional[float] = None
     censors: Optional[list[Censor]] = None
@@ -22,6 +19,7 @@ class _ConfigPart:
     margin: Optional[int | float | dict[str, float]] = None
     state: Optional[PartState] = None
     protected_shape: Optional[str] = None
+    use_global_area: Optional[bool] = None
 
     internal_defaults = MappingProxyType(
         {
@@ -31,11 +29,15 @@ class _ConfigPart:
             "margin": 0.0,
             "state": PartState.UNPROTECTED,
             "protected_shape": None,
+            "use_global_area": True,
         }
     )
 
     def __init__(self, name):
         self.name = name
+
+    def __str__(self):
+        return self.name
 
     @staticmethod
     def _get_else_default(section: dict[str, Any], name: str) -> Any:
@@ -97,6 +99,9 @@ class _ConfigPart:
         _ConfigPart.protected_shape = _ConfigPart._get_else_default(
             default_section, "minimum_score"
         )
+        _ConfigPart.protected_shape = _ConfigPart._get_else_default(
+            default_section, "use_global_area"
+        )
 
     def set_part_fields(self, config_info: dict[str, Any]) -> None:
         part_section = config_info.get(self.name)
@@ -132,6 +137,7 @@ class _ConfigPart:
         self.margin = get_part(self, part_section, "margin")
         self.state = get_part(self, part_section, "state")
         self.protected_shape = get_part(self, part_section, "protected_shape")
+        self.use_global_area = get_part(self, part_section, "use_global_area")
 
 
 class ReverseCensorPart:

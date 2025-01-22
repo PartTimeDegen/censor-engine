@@ -107,29 +107,6 @@ class CensorManager:
         self._detect_image()
         self.debugger.time_stop()
 
-    # def display(self):
-    #     count = 1
-    #     if self.debug_level == 0:
-    #         return
-
-    #     print("- Parts Found:")  # TODO: Move this function to Debug Class
-    #     for part in self.parts:
-    #         print(f"- {count:02d}) {part.part_name}")
-    #         count += 1
-
-    #         if self.debug_level >= 1:
-    #             print(f"- - Score             : {part.score:02.0%}")
-    #             print(f"- - Box               : {part.box}")
-    #             print(f"- - Level             : {part.state}")
-    #             print(f"- - Merge Group       : {part.merge_group}")
-    #             print(f"- - Shape             : {part.shape.shape_name}")
-
-    #         if self.debug_level >= 2:
-    #             print(f"- - ID                : {part.part_id}")
-    #             print(f"- - Merge ID          : {part.merge_group_id}")
-    #             print(f"- - Censors           : {part.censors}")
-    #             print(f"- - Protected shape   : {part.protected_shape}")
-
     # Private
     def _create_empty_mask(self, inverse: bool = False):
         """
@@ -159,7 +136,11 @@ class CensorManager:
 
     def _determine_image(self):
         """
-        #TODO : Write me
+        This method is used for the enabled determiners, ie ai_models that
+        extract information from the photo (that don't provide locations).
+
+        Oirignally meant for `nsfw_detector` however my computer can't run
+        tensorflow but I will keep it here.
 
         """
         # Collect Detected Data
@@ -372,30 +353,59 @@ class CensorManager:
         parts = sorted(self.parts, key=lambda x: (x.state, x.part_name))
 
         for part in parts:
-            if not part.censors:
+            if not part.censors or not part:
                 continue
 
-            part_contour = cv2.findContours(
-                image=part.mask,
-                mode=cv2.RETR_TREE,
-                method=cv2.CHAIN_APPROX_SIMPLE,
-            )  # TODO: reduce image size to just part
+            if part.use_global_area:
+                part_contour = cv2.findContours(
+                    image=part.mask,
+                    mode=cv2.RETR_TREE,
+                    method=cv2.CHAIN_APPROX_SIMPLE,
+                )  # TODO: reduce image size to just part
 
-            # Reversed to represent YAML order
-            for censor in part.censors[::-1]:
-                censor_object = style_catalogue[censor.function]()
-                censor_object.change_linetype(enable_aa=True)
-                arguments = [
-                    self.file_image,
-                    part_contour,
-                ]
-                if censor_object.style_type == "dev":
-                    arguments.append(part)
+                # Reversed to represent YAML order
+                for censor in part.censors[::-1]:
+                    censor_object = style_catalogue[censor.function]()
+                    censor_object.change_linetype(enable_aa=True)
+                    arguments = [
+                        self.file_image,
+                        part_contour,
+                    ]
+                    if censor_object.style_type == "dev":
+                        arguments.append(part)
 
-                self.file_image = censor_object.apply_style(
-                    *arguments,
-                    **censor.args,
-                )
+                    self.file_image = censor_object.apply_style(
+                        *arguments,
+                        **censor.args,
+                    )
+
+            # NOTE: Unused Local Area
+            # This was meant to be used as a way to only do censors on a local
+            # area. I can't think of a use at the moment but I'll keep the
+            # infrastructure in for the moment.
+            else:
+                # Convert Image
+                part_contour = cv2.findContours(
+                    image=part.mask,
+                    mode=cv2.RETR_TREE,
+                    method=cv2.CHAIN_APPROX_SIMPLE,
+                )  # TODO: reduce image size to just part
+
+                # Reversed to represent YAML order
+                for censor in part.censors[::-1]:
+                    censor_object = style_catalogue[censor.function]()
+                    censor_object.change_linetype(enable_aa=True)
+                    arguments = [
+                        self.file_image,
+                        part_contour,
+                    ]
+                    if censor_object.style_type == "dev":
+                        arguments.append(part)
+
+                    self.file_image = censor_object.apply_style(
+                        *arguments,
+                        **censor.args,
+                    )
 
     # Lists of Parts
     def get_list_of_parts_total(self, search: Optional[dict[str, str]] = None):
