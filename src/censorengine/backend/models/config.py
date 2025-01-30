@@ -13,12 +13,15 @@ from types import MappingProxyType
 
 class _ConfigPart:
     name: str
+
     minimum_score: Optional[float] = None
     censors: Optional[list[Censor]] = None
     shape: Optional[str] = None
     margin: Optional[int | float | dict[str, float]] = None
     state: Optional[PartState] = None
     protected_shape: Optional[str] = None
+    fade_percent: Optional[float] = None
+
     use_global_area: Optional[bool] = None
 
     internal_defaults = MappingProxyType(
@@ -30,6 +33,7 @@ class _ConfigPart:
             "state": PartState.UNPROTECTED,
             "protected_shape": None,
             "use_global_area": True,
+            "fade_percent": 0,
         }
     )
 
@@ -138,6 +142,7 @@ class _ConfigPart:
         self.state = get_part(self, part_section, "state")
         self.protected_shape = get_part(self, part_section, "protected_shape")
         self.use_global_area = get_part(self, part_section, "use_global_area")
+        self.fade_percent = get_part(self, part_section, "fade_percent")
 
 
 class ReverseCensorPart:

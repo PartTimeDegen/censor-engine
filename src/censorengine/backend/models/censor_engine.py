@@ -149,9 +149,8 @@ class CensorEngine:
             self.used_boot_config = True
 
         if self.args.dev:
-            self.config.debug_mode(
-                True  # TODO: This needs a dev handler to handle non-boolean values
-            )
+            # TODO: This needs a dev handler to handle non-boolean values
+            self.config.debug_mode(True)
 
     def _get_post_init_arguments(self):
         if self.args.loc:

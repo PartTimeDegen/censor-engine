@@ -33,7 +33,6 @@ parts_enabled:
 - "FEET_EXPOSED"
 - "FEET_COVERED"
 
-
 # Male
 # - "FACE_MALE"
 - "MALE_GENITALIA_EXPOSED"
@@ -44,7 +43,7 @@ parts_enabled:
 merging:
   range: -1
   merge_groups:
-  - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
+  - [ "FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED" ]
 
 # Rendering Settings
 rendering:
@@ -55,11 +54,10 @@ information:
   # Fall Back Options as "General" Settings
   defaults:
     censors: []
-    
+
     state: "revealed"
     minimum_score: 0.20
     shape: "joint_box"
-  
 
   FEMALE_BREAST_EXPOSED:
     state: "protected"
@@ -119,7 +117,7 @@ information:
     - function: "box"
       args:
         colour: "BLACK"
-  
+
   ANUS_EXPOSED:
     margin: -0.2
   ANUS_COVERED:
@@ -137,9 +135,6 @@ information:
   FACE_FEMALE:
     margin: 0.2
 
-
-
-  
   reverse_censors:
   - function: "outline"
     args:
@@ -151,6 +146,3 @@ information:
   - function: "blur"
     args:
       factor: 8
-
-    
-      

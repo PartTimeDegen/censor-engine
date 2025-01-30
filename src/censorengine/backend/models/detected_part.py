@@ -48,6 +48,7 @@ class Part:
     protected_shape: Optional[Shape] = None
 
     use_global_area: bool = True
+    fade_percent: int = 0
 
     # Masks
     mask: "Mask" = field(init=False)
@@ -204,6 +205,7 @@ class Part:
 
     def _determine_meta(self):
         self.use_global_area = self.config.part_settings[self.part_name].use_global_area
+        self.fade_percent = self.config.part_settings[self.part_name].fade_percent
 
     def _get_base_mask(self, empty_mask):
         # Get Shape

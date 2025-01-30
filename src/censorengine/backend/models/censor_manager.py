@@ -356,56 +356,86 @@ class CensorManager:
             if not part.censors or not part:
                 continue
 
-            if part.use_global_area:
-                part_contour = cv2.findContours(
-                    image=part.mask,
-                    mode=cv2.RETR_TREE,
-                    method=cv2.CHAIN_APPROX_SIMPLE,
-                )  # TODO: reduce image size to just part
+            # if part.use_global_area:
+            part_contour = cv2.findContours(
+                image=part.mask,
+                mode=cv2.RETR_TREE,
+                method=cv2.CHAIN_APPROX_SIMPLE,
+            )  # TODO: reduce image size to just part
 
-                # Reversed to represent YAML order
-                for censor in part.censors[::-1]:
-                    censor_object = style_catalogue[censor.function]()
-                    censor_object.change_linetype(enable_aa=True)
-                    arguments = [
-                        self.file_image,
-                        part_contour,
-                    ]
-                    if censor_object.style_type == "dev":
-                        arguments.append(part)
+            # Save Copy for Effects
+            processed_image = self.file_image.copy()
 
-                    self.file_image = censor_object.apply_style(
-                        *arguments,
-                        **censor.args,
-                    )
+            # Gather default args
+            arguments = [
+                processed_image,
+                part_contour,
+            ]
 
-            # NOTE: Unused Local Area
-            # This was meant to be used as a way to only do censors on a local
-            # area. I can't think of a use at the moment but I'll keep the
-            # infrastructure in for the moment.
-            else:
-                # Convert Image
-                part_contour = cv2.findContours(
-                    image=part.mask,
-                    mode=cv2.RETR_TREE,
-                    method=cv2.CHAIN_APPROX_SIMPLE,
-                )  # TODO: reduce image size to just part
+            # Reversed to represent YAML order
+            for censor in part.censors[::-1]:
+                # Acquire Function
+                censor_object = style_catalogue[censor.function]()
 
-                # Reversed to represent YAML order
-                for censor in part.censors[::-1]:
-                    censor_object = style_catalogue[censor.function]()
-                    censor_object.change_linetype(enable_aa=True)
-                    arguments = [
-                        self.file_image,
-                        part_contour,
-                    ]
-                    if censor_object.style_type == "dev":
-                        arguments.append(part)
+                # Turn on AA
+                censor_object.change_linetype(enable_aa=True)
 
-                    self.file_image = censor_object.apply_style(
-                        *arguments,
-                        **censor.args,
-                    )
+                # Handle Args
+                loop_args = arguments  # Optimisation
+                if censor_object.style_type == "dev":
+                    arguments.append(part)
+
+                # Apply Censor
+                processed_image = censor_object.apply_style(
+                    *loop_args,
+                    **censor.args,
+                )
+
+            # Apply Potential Feather Fade
+            if not part.fade_percent:
+                continue
+
+            # # Get Mask
+            contour_mask = cv2.drawContours(
+                np.zeros(self.file_image.shape, dtype=np.uint8),
+                part_contour[0],
+                -1,
+                (255, 255, 255),
+                -1,
+            )
+
+            # # Convert Mask to Right Format
+            contour_mask = cv2.cvtColor(contour_mask, cv2.COLOR_BGR2GRAY)
+            contour_mask = contour_mask.astype(float) / 255.0
+
+            # # Calculate Feather Effect based on Contour
+            _, _, w, h = cv2.boundingRect(part_contour[0][0])
+            fade_percent = np.clip(int(part.fade_percent), 0, 100)
+            max_dim = max(w, h)
+            feathering_amount = int((fade_percent / 100.0) * max_dim)
+            kernel_size = min(51, max(3, feathering_amount // 2 * 2 + 1))
+
+            # # Apply Gaussian blur for feathering
+            contour_mask = cv2.erode(
+                contour_mask,
+                np.ones((kernel_size, kernel_size), np.uint8),
+                iterations=1,
+            ).astype(float)
+            feathered_mask = cv2.GaussianBlur(
+                contour_mask, (kernel_size, kernel_size), 0
+            )
+
+            # # Convert the mask back to 3-channel for blending
+            feathered_mask = cv2.merge([feathered_mask] * 3)
+
+            # # Blend the images using the feathered mask
+            feathered_mask *= 1.0
+            merged_image = (
+                feathered_mask * processed_image
+                + (1 - feathered_mask) * self.file_image
+            )
+
+            self.file_image = merged_image
 
     # Lists of Parts
     def get_list_of_parts_total(self, search: Optional[dict[str, str]] = None):

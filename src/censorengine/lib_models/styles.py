@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import cv2
 import numpy as np
 
-from censorengine.backend.constants.typing import Mask, CVImage
+from censorengine.backend.constants.typing import Mask, CVImage, ProcessedImage
 
 
 class Style(ABC):
@@ -15,6 +15,7 @@ class Style(ABC):
     default_linetype: int = cv2.LINE_AA
     using_reverse_censor: bool = False
 
+    # This is the ra
     @abstractmethod
     def apply_style(
         self,
@@ -22,7 +23,7 @@ class Style(ABC):
         contour,
         *args,
         **kwargs,
-    ) -> CVImage:
+    ) -> ProcessedImage:
         raise NotImplementedError
 
     def draw_effect_on_mask(

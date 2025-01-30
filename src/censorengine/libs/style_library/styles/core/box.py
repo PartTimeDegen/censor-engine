@@ -25,7 +25,6 @@ class Overlay(BoxStyle):
         colour="WHITE",
         alpha=1.0,
     ) -> CVImage:
-        # FIXME: It colours the whole Image
         if isinstance(colour, str):
             colour = get_colour(colour)
 
