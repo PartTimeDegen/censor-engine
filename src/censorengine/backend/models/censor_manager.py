@@ -352,6 +352,7 @@ class CensorManager:
     def _apply_censors(self):
         parts = sorted(self.parts, key=lambda x: (x.state, x.part_name))
 
+        working_image = self.file_image.copy()
         for part in parts:
             if not part.censors or not part:
                 continue
@@ -363,14 +364,11 @@ class CensorManager:
                 method=cv2.CHAIN_APPROX_SIMPLE,
             )  # TODO: reduce image size to just part
 
-            # Save Copy for Effects
-            processed_image = self.file_image.copy()
-
             # Gather default args
-            arguments = [
-                processed_image,
-                part_contour,
-            ]
+            arguments = {
+                "image": working_image,
+                "contour": part_contour,
+            }
 
             # Reversed to represent YAML order
             for censor in part.censors[::-1]:
@@ -381,18 +379,22 @@ class CensorManager:
                 censor_object.change_linetype(enable_aa=True)
 
                 # Handle Args
-                loop_args = arguments  # Optimisation
                 if censor_object.style_type == "dev":
-                    arguments.append(part)
+                    arguments["part"] = part
 
                 # Apply Censor
-                processed_image = censor_object.apply_style(
-                    *loop_args,
+                arguments["image"] = censor_object.apply_style(
+                    **arguments,
                     **censor.args,
                 )
 
+                # Forces PNG if the Censor Requires it
+                if censor_object.force_png:
+                    self.force_png = censor_object.force_png
+
             # Apply Potential Feather Fade
             if not part.fade_percent:
+                working_image = arguments["image"]
                 continue
 
             # # Get Mask
@@ -431,11 +433,12 @@ class CensorManager:
             # # Blend the images using the feathered mask
             feathered_mask *= 1.0
             merged_image = (
-                feathered_mask * processed_image
-                + (1 - feathered_mask) * self.file_image
+                feathered_mask * working_image + (1 - feathered_mask) * self.file_image
             )
 
-            self.file_image = merged_image
+            working_image = merged_image
+
+        self.file_image = working_image
 
     # Lists of Parts
     def get_list_of_parts_total(self, search: Optional[dict[str, str]] = None):

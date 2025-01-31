@@ -128,12 +128,10 @@ class HexagonPixelate(BlurStyle):
     style_name: str = "hexagon_pixelate"
 
     def _hexagon_corners(self, center, size):
-        x = center[0]
-        y = center[1]
-
+        """Compute hexagon vertices around a center."""
+        x, y = center
         w = math.sqrt(3) * size
         h = 2 * size
-
         return [
             (x - w / 2, y - h / 4),
             (x, y - h / 2),
@@ -143,74 +141,56 @@ class HexagonPixelate(BlurStyle):
             (x - w / 2, y + h / 4),
         ]
 
-    def _rectangle_corners(self, center, width, height):
-        x = center[0]
-        y = center[1]
-
-        return [
-            (x - width / 2, y - height / 2),
-            (x + width / 2, y - height / 2),
-            (x + width / 2, y + height / 2),
-            (x - width / 2, y + height / 2),
-        ]
-
     def _hexagonify(self, image, hexagon_size):
+        """Apply hexagonal pixelation to an image."""
         img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         im = Image.fromarray(img)
-
-        image_from_numpy = np.asarray(im)
         draw = ImageDraw.Draw(im)
 
+        np_image = np.array(im)
+        img_h, img_w = im.size[1], im.size[0]  # (height, width)
+
+        # Hexagon width and height
         w = math.sqrt(3) * hexagon_size
         h = 2 * hexagon_size
 
-        # numer of hexagons horizontally and vertically
-        num_hor = int(im.size[0] / w) + 2
-        num_ver = int(im.size[1] / h * 4 / 3) + 2
+        # Compute the number of hexagons in each direction
+        num_hor = math.ceil(img_w / w) + 1
+        num_ver = math.ceil(img_h / (h * 3 / 4)) + 1
 
-        for i in range(0, num_hor * num_ver):
-            column = i % num_hor
-            row = i // num_hor
-            even = (
-                row % 2
-            )  # the even rows of hexagons has w/2 offset on the x-axis compared to odd rows.
+        # Iterate through hexagon grid
+        for row in range(num_ver):
+            for col in range(num_hor):
+                even = row % 2  # Even rows have an offset
 
-            p = self._hexagon_corners(
-                (column * w + even * w / 2, row * h * 3 / 4), hexagon_size
-            )
+                center_x = col * w + even * (w / 2)
+                center_y = row * h * 3 / 4
 
-            # compute the average color of the hexagon, use a rectangle approximation.
-            raw = self._rectangle_corners(
-                (column * w + even * w / 2, row * h * 3 / 4), w, h
-            )
-            r = []
-            for points in raw:
-                np0 = int(np.clip(points[0], 0, im.size[0]))
-                np1 = int(np.clip(points[1], 0, im.size[1]))
-                r.append((np0, np1))
+                # Compute hexagon polygon points
+                hex_corners = self._hexagon_corners((center_x, center_y), hexagon_size)
 
-            color = np.average(
-                image_from_numpy[r[0][1] : r[3][1], r[0][0] : r[1][0]],
-                axis=(0, 1),
-            )
-            color = tuple(color.astype(np.uint8))
+                # Define bounding box for color sampling
+                x_min, x_max = (
+                    max(0, int(center_x - w / 2)),
+                    min(img_w, int(center_x + w / 2)),
+                )
+                y_min, y_max = (
+                    max(0, int(center_y - h / 2)),
+                    min(img_h, int(center_y + h / 2)),
+                )
 
-            draw.polygon(p, fill=color)
-        return cv2.cvtColor(np.asarray(im), cv2.COLOR_RGB2BGR)
+                # Average color within bounding box
+                color = np.mean(np_image[y_min:y_max, x_min:x_max], axis=(0, 1)).astype(
+                    np.uint8
+                )
+                draw.polygon(hex_corners, fill=tuple(color))
 
-    def apply_style(
-        self,
-        image: CVImage,
-        contour,
-        factor: int | float = 12,
-    ) -> CVImage:
-        # """
-        # Credit : https://github.com/McJazzy/hexagonpy
-        # """
+        return cv2.cvtColor(np.array(im), cv2.COLOR_RGB2BGR)
 
+    def apply_style(self, image: CVImage, contour, factor: int | float = 12) -> CVImage:
+        """Apply hexagonal pixelation to the image within the given contour."""
         factor = self.normalise_factor(image, factor)
         pixel_image = self._hexagonify(image, factor)
-
         return self.draw_effect_on_mask(contour, pixel_image, image)
 
 

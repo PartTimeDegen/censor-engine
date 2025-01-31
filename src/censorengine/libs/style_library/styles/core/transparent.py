@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 
 class Cutout(TransparentStyle):
     style_name: str = "cutout"
+    force_png: bool = True
 
     def apply_style(
         self,

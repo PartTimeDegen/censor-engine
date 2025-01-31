@@ -121,6 +121,8 @@ class CensorEngine:
             censor_manager.start()
             file_output = censor_manager.return_output()
 
+            self.force_png = censor_manager.force_png
+
             self._save_file(file_output, file_path)
 
     def _video_pipeline(self):
