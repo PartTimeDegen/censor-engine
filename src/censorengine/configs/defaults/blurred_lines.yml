@@ -44,7 +44,7 @@ parts_enabled:
 merging:
   range: -1
   merge_groups:
-  - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
+  - [ "FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED" ]
 
 # Rendering Settings
 rendering:
@@ -66,3 +66,6 @@ information:
 
     minimum_score: 0.20
     shape: "bar"
+
+  ANUS_EXPOSED:
+    state: "revealed"

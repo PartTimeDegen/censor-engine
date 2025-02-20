@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 import itertools
 from typing import Any, Iterable, Optional, TYPE_CHECKING
+from uuid import UUID
 
 import cv2
 import numpy as np
@@ -57,17 +58,16 @@ class Part:
 
     # Information
     is_merged: bool = field(default=False)
-    file_path: str = "INVALID"
+    file_uuid: UUID = field(default=False)
 
     def __init__(
         self,
         detected_information: DetectedPartSchema,
         empty_mask: "Mask",
         config: "Config",
-        file_path: str,
+        file_uuid: UUID,
     ):
         self.config = config
-        self.file_path = file_path
 
         # Basic
         self.part_name = detected_information.label
@@ -81,6 +81,7 @@ class Part:
 
         # # Part IDs
         self.part_id = next(Part.part_id)  # type: ignore
+        self.file_uuid = file_uuid  # Used to reset bars
 
         # # Merge Groups
         self._determine_merge_groups()

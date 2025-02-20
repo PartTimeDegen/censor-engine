@@ -1,3 +1,4 @@
+from censorengine.backend.constants.typing import CVImage
 from censorengine.lib_models.detectors import Determiner
 
 from typing import TypeAlias, Any
@@ -70,7 +71,7 @@ class ImageGenreDeterminer(Determiner):
         else:
             return self.broad_groups["hentai"]
 
-    def determine_image(self, file_path: str) -> str:
+    def determine_image(self, file_image: CVImage) -> str:
         """
         Determines the type of pornographic image in question.
 

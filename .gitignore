@@ -188,3 +188,4 @@ src/censorengine/configs/personal/
 .dev-backups
 libpng.sh
 *.Identifier
+.test_stuff

@@ -27,6 +27,7 @@ from censorengine.libs.detector_library.catalogue import (
     enabled_determiners,
 )
 from censorengine.lib_models.detectors import DetectedPartSchema
+from uuid import uuid4, UUID
 
 
 @dataclass
@@ -41,12 +42,11 @@ class CensorManager:
     # File Info
     file_original_image: "CVImage" = field(init=False)
     file_image: "CVImage" = field(init=False)
-    file_loc: str = field(init=False)
-    file_image_name: str = field(init=False)
     force_png: bool = False
 
     # Manager Info
     config: "Config" = field(init=False)
+    file_uuid: UUID = field(init=False)
 
     # Image Determiners
     extracted_information: dict[str, str] = field(default_factory=dict)
@@ -62,33 +62,23 @@ class CensorManager:
 
     def __init__(
         self,
-        file_path: str,
+        file_image: "CVImage",
         config: "Config",
-        index_text: str = "",
     ):
         self.config = config
         Part.part_id = itertools.count(start=1)
         self.detected_parts = []
         self.extracted_information = {}
-
-        # File Stuff
-        self.file_loc = file_path
-        self.file_image_name = file_path.split("/")[-1]
+        self.file_uuid = uuid4()
 
         # NOTE: This may produce
         #       "libpng warning: iCCP: known incorrect sRGB profile" errors
         #       I tried suppressing them but it doesn't work
-        self.file_original_image = cv2.imread(file_path)
-        self.file_image = cv2.imread(file_path)
-
-        # Declare Start
-        if index_text != "":
-            index_text += " "
-        print()
-        print(f'{index_text}Censoring: "{self.file_image_name}"')
+        self.file_original_image = file_image
+        self.file_image = file_image
 
         # Debug
-        self.debugger = Debugger("Censor Manager", level=DebugLevels.DETAILED)
+        self.debugger = Debugger("Censor Manager", level=DebugLevels.NONE)
         self.debugger.time_total_start()
         self.debugger.display_onnx_info()
 
@@ -145,7 +135,7 @@ class CensorManager:
         """
         # Collect Detected Data
         self.extracted_information = {
-            determiner.model_name: determiner.determine_image(self.file_loc)
+            determiner.model_name: determiner.determine_image(self.file_image)
             for determiner in enabled_determiners
         }
 
@@ -158,7 +148,7 @@ class CensorManager:
         with ThreadPoolExecutor() as executor:
             detected_parts = list(
                 executor.map(
-                    lambda detector: detector.detect_image(self.file_loc),
+                    lambda detector: detector.detect_image(self.file_image),
                     enabled_detectors,
                 )
             )
@@ -205,7 +195,7 @@ class CensorManager:
                 detected_information=detect_part,
                 empty_mask=self._create_empty_mask(),
                 config=self.config,
-                file_path=self.file_loc,
+                file_uuid=self.file_uuid,
             )
 
         self.parts = list((map(add_parts, self.detected_parts)))

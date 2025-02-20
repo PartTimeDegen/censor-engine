@@ -1,4 +1,5 @@
 import math
+from uuid import UUID, uuid4
 
 import cv2
 import numpy as np
@@ -20,7 +21,7 @@ class _BarInfo:
     force_vertical: bool = False
 
     # Meta
-    file_path: str = ""
+    file_uuid: UUID = uuid4()
 
 
 class Bar(BarShape, _BarInfo):
@@ -146,8 +147,8 @@ class Bar(BarShape, _BarInfo):
         force_vertical=False,
     ) -> "Mask":
         # Check if Bar Info should be Reset
-        if part.file_path != self.file_path:
-            self._reset_bar(part.file_path)
+        if part.file_uuid != self.file_uuid:
+            self._reset_bar(part.file_uuid)
 
         cont_boxes = cv2.findContours(
             image=part.mask,
