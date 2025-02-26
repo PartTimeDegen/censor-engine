@@ -1,7 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 import itertools
-import statistics
 from typing import Optional
 
 import cv2
@@ -450,32 +449,11 @@ class CensorManager:
     def flush_debugger(self):
         return self.debugger
 
-    # Static
-    @staticmethod
-    def get_statistics(
-        durations: list[float],
-    ) -> dict[str, float]:
-        collection = {}
-        collection["mean"] = statistics.mean(durations)
-        collection["median"] = statistics.median(durations)
-        collection["max"] = max(durations)
-        collection["min"] = min(durations)
-        collection["range"] = max(durations) - min(durations)
-
-        if len(durations) != 1:
-            collection["stdev"] = statistics.stdev(durations)
-            if collection["stdev"] and collection["mean"] != 0.0:
-                collection["coefficient_of_variation"] = (
-                    collection["stdev"] / collection["mean"]
-                )
-
-        return collection
-
+    # Public
     def return_output(self):
         return self.file_image
 
-    # Public
-    def start(self):
+    def generate_parts_and_shapes(self):
         # Create Parts
         self.debugger.time_start("Create Parts")
         self._create_parts()
@@ -496,6 +474,7 @@ class CensorManager:
         self._process_overlaps_for_masks()
         self.debugger.time_stop()
 
+    def apply_censors(self):
         # Generate and Apply Reverse Censor
         self.debugger.time_start("Generate Reverse Censor")
         self._handle_reverse_censor()
@@ -509,3 +488,25 @@ class CensorManager:
         # DEBUG: Times
         self.debugger.time_total_end()
         self.debugger.display_times()
+
+    def start(self):
+        self.generate_parts_and_shapes()
+        self.apply_censors()
+
+    # Util
+    def get_part_list(self) -> dict[str, Part]:
+        counter = 0
+        final_dict = {}
+        last_part = ""
+        sorted_parts_list = sorted(
+            self.parts, key=lambda part: (part.part_name, part.part_id)
+        )
+        for part in sorted_parts_list:
+            if last_part == part.part_name:
+                final_dict[f"{part.part_name}_{counter}"] = part
+                counter += 1
+            else:
+                counter = 0
+                final_dict[f"{part.part_name}_{counter}"] = part
+
+        return final_dict

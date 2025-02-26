@@ -147,6 +147,14 @@ class Part:
         else:
             return return_name
 
+    def get_name_and_merged(self):
+        return_name = f"{self.part_name}"
+
+        if self.is_merged:
+            return return_name + "_merged"
+        else:
+            return return_name
+
     def _build_box(self, box):
         top_left_x, top_left_y, width, height = box
 

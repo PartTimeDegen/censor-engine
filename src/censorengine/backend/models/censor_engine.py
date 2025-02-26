@@ -5,6 +5,7 @@ import os
 
 import cv2
 
+import numpy as np
 import progressbar
 
 from censorengine.backend.constants.files import (
@@ -20,6 +21,7 @@ from censorengine.libs.detector_library.catalogue import (
 )
 from censorengine.libs.shape_library.catalogue import shape_catalogue
 from censorengine.libs.style_library.catalogue import style_catalogue
+from censorengine.backend.models.detected_part import Part
 
 
 @dataclass
@@ -27,7 +29,7 @@ class CensorEngine:
     # Booleans
     test_mode: bool = field(init=False)
     config: Config = field(init=False)
-    censor_mode: str = "image"
+    censor_mode: str = "auto"
     used_boot_config: bool = False
 
     # Information
@@ -45,10 +47,14 @@ class CensorEngine:
 
     durations: list[str] = field(default_factory=list)
 
+    # Constants
+    FRAME_DIFFERENCE_THRESHOLD: float = 0.02  # Percentage # TODO: Add to config
+    FRAME_HOLD = 3
+
     def __init__(
         self,
         main_file_path: str,
-        censor_mode: str = "video",  # image, video, default=auto
+        censor_mode: str = "auto",  # image, video, default=auto
         config: str = "00_default.yml",
         test_mode: bool = False,
     ):
@@ -85,13 +91,16 @@ class CensorEngine:
         ]
 
     def _find_files(self):
+        # Set Mutables
         self.files = []
         self.indexed_files = []
 
+        # Get Full Path
         self.full_files_path = os.path.join(
-            self.main_files_path,
-            self.config.uncensored_folder,
+            self.main_files_path, self.config.uncensored_folder
         )
+
+        # Check and Filter for Approved File Formats Only
         approved_formats = APPROVED_FORMATS_IMAGE + APPROVED_FORMATS_VIDEO
         if any(self.full_files_path.endswith(ext) for ext in approved_formats):
             if not os.path.exists(self.full_files_path):
@@ -101,6 +110,7 @@ class CensorEngine:
             self.indexed_files = [(1, self.full_files_path)]
             return
 
+        # Scan Folders
         files = [
             filename
             for filename in glob(
@@ -111,44 +121,80 @@ class CensorEngine:
             and filename[filename.rfind(".") :] in approved_formats
         ]
 
+        # Set Files with an Index to Keep Track
         self.files = files
         self.indexed_files = [
-            (file_index, file_name)
+            (
+                file_index,
+                file_name,
+                "video"
+                if ("." + file_name.split(".")[-1]) in APPROVED_FORMATS_VIDEO
+                else "image",
+            )
             for file_index, file_name in enumerate(files, start=1)
         ]
+
+        # Throw Error on Empty Folder
         if len(files) == 0:
             raise FileNotFoundError(f"Empty Folder: {self.full_files_path}")
 
+        # Handle Max Index
         self.max_file_index = self.indexed_files[-1][0]
         self.max_index_chars = len(str(self.max_file_index))
 
-    def _get_index_text(self, index):
+    def _get_index_text(self, index: int):
         index_percent = index / self.max_file_index
         leading_spaces = " " * (self.max_index_chars - len(str(index)))
         leading_spaces_pc = " " * (3 - len(str(int(100 * index_percent))))
 
         return f"{leading_spaces}{index}/{self.max_file_index} ({leading_spaces_pc}{index_percent:0.1%})"
 
+    def _compare_frames(self, old_part: Part, new_part: Part):
+        def convert_to_edges(mask):
+            edges = cv2.Canny(mask, 100, 200)
+            kernel = np.ones((3, 3), np.uint8)
+            return cv2.dilate(edges, kernel, iterations=1)
+
+        old_mask = convert_to_edges(old_part.mask)
+        new_mask = convert_to_edges(new_part.mask)
+
+        original = np.count_nonzero(old_mask)
+        difference = np.count_nonzero(cv2.absdiff(old_mask, new_mask))
+
+        percentage = difference / original
+        if percentage >= self.FRAME_DIFFERENCE_THRESHOLD:
+            return True
+        return False
+
     def _image_pipeline(self):
-        for index, file_path in self.indexed_files:
+        for index, file_path, file_type in self.indexed_files:
+            # Check it's an Image
+            if file_type != "image":
+                continue
+
+            # Print that it's Censoring
             index_text = self._get_index_text(index)
 
-            print(f'{index_text}Censoring: "{file_path.split(os.sep)[-1]}"')
+            # Read the File
             file_image = cv2.imread(file_path)
+
+            # Run the Censor Manager
             censor_manager = CensorManager(
                 file_image=file_image,
                 config=self.config,
             )
             censor_manager.start()
+
+            # Output File Handling
             file_output = censor_manager.return_output()
-
             self.force_png = censor_manager.force_png
-
             new_file_name = self._save_file(file_path)
 
             # File Save
             cv2.imwrite(new_file_name, file_output)
-            print(f"- Written to:\t{new_file_name}")
+            print(f'{index_text} Censored: "{file_path.split(os.sep)[-1]}"')
+
+        print("Finished Censoring Images!")
 
     def _video_pipeline(self):
         def get_codec_from_extension(filename: str):
@@ -167,7 +213,11 @@ class CensorEngine:
             }
             return CODEC_MAPPING.get(ext, "mp4v")  # Default to 'mp4v' if unknown
 
-        for index, file_path in self.indexed_files:
+        for index, file_path, file_type in self.indexed_files:
+            # Check it's an Image
+            if file_type != "video":
+                continue
+
             # Get Index
             index_text = self._get_index_text(index)
             print(f'{index_text}Censoring: "{file_path.split(os.sep)[-1]}"')
@@ -191,6 +241,9 @@ class CensorEngine:
             total_frames = int(video_capture.get(cv2.CAP_PROP_FRAME_COUNT))
 
             # Iterate through Frames
+            last_frame = None
+            frame_lag_counter = 0
+            held_frame = None
             for frame in progressbar.progressbar(
                 range(total_frames),
                 widgets=self._make_progress_bar_widgets(total_frames),
@@ -201,11 +254,60 @@ class CensorEngine:
                     break
 
                 # Run Censor Manager
-                censor_manager = CensorManager(
-                    file_image=frame,
-                    config=self.config,
-                )
-                censor_manager.start()
+                censor_manager = CensorManager(file_image=frame, config=self.config)
+
+                # # Get the Part and Censors
+                censor_manager.generate_parts_and_shapes()
+
+                # # Stabilise Parts between Frames
+                if last_frame:
+                    this_frame = censor_manager.get_part_list()
+                    for part_name in last_frame.keys():
+                        # Handle Cases where Parts Disappear
+                        if not this_frame.get(part_name):
+                            continue
+
+                        # Handle if the difference in Frames (Stops Part Shaking)
+                        old_part = last_frame[part_name]
+                        this_part = this_frame[part_name]
+                        is_worthwhile_difference = self._compare_frames(
+                            old_part, this_part
+                        )
+
+                        # Update Parts
+                        if is_worthwhile_difference:
+                            last_frame[part_name] = this_part
+
+                    # Finalise the Frame
+                    filtered_last_frame = {
+                        k: v for k, v in last_frame.items() if k in this_frame.keys()
+                    }  # This is to match the keys
+                    this_frame.update(filtered_last_frame)
+
+                    # Frame Lag and Hold
+                    filtered_held_frame = {
+                        k: v
+                        for k, v in held_frame.items()
+                        if k not in this_frame.keys()
+                    }
+                    if frame_lag_counter < self.FRAME_HOLD:
+                        this_frame.update(filtered_held_frame)
+                        frame_lag_counter += 1
+                    else:
+                        temp_frame_hold = this_frame.copy()
+                        this_frame.update(filtered_held_frame)
+                        held_frame = temp_frame_hold
+                        frame_lag_counter = 0
+
+                    # Update the Parts
+                    censor_manager.parts = list(this_frame.values())
+                    last_frame = this_frame
+
+                else:
+                    last_frame = {f"{part}": part for part in censor_manager.parts}
+                    held_frame = last_frame.copy()
+
+                censor_manager.apply_censors()
 
                 # Save Output
                 file_output = censor_manager.return_output()

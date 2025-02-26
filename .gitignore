@@ -189,3 +189,5 @@ src/censorengine/configs/personal/
 libpng.sh
 *.Identifier
 .test_stuff
+*:shield
+*:mshield
