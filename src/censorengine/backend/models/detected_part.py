@@ -1,114 +1,107 @@
 from dataclasses import dataclass, field
 import itertools
-from typing import Any, Iterable, Optional, TYPE_CHECKING
+from typing import Iterable, Optional, TYPE_CHECKING
 from uuid import UUID
 
 import cv2
 import numpy as np
 
-from censorengine.backend.models.enums import PartState
+from censorengine.backend.models.config import PartSettingsConfig
 from censorengine.lib_models.shapes import Shape
 from censorengine.libs.shape_library.catalogue import shape_catalogue
-from censorengine.lib_models.detectors import DetectedPartSchema
+from censorengine.backend.models.config import Config
 
 
 if TYPE_CHECKING:
-    from censorengine.backend.constants.typing import Mask, Config
-
-
-@dataclass
-class Censor:
-    function: str
-    args: Optional[dict[str, Any]]
+    from censorengine.backend.constants.typing import Mask
 
 
 @dataclass
 class Part:
-    # From NudeNet
-    part_name: str = field(init=False)
-    score: float = field(init=False)
-    relative_box: tuple[int, ...] = field(init=False)  # x, y, width, height
+    # Input
+    part_name: str
+    score: float
+    relative_box: tuple[int, int, int, int]  # x, y, width, height
+    config: Config
 
-    # Derived
-    box: list[tuple[int, int]] = field(init=False)  # top left, bottom right
+    empty_mask: "Mask"
+    file_uuid: UUID
 
+    # Internal
+    # # Found
+    part_settings: PartSettingsConfig = field(init=False)
+
+    # # Meta
+    is_merged: bool = False
     part_id: Iterable[int] = itertools.count(start=1)
-    state: PartState = PartState.UNPROTECTED
-
-    # Merge Groups Stuff
     merge_group_id: Optional[int] = None
-    merge_group: Optional[list[str]] = None
 
-    # Config Settings
-    config: "Config" = field(init=False)
-    shape: Shape = field(init=False)
-    shape_name: str = field(init=False)
+    # # Generated
+    box: tuple[tuple[int, int], tuple[int, int]] = field(
+        init=False
+    )  # top left, bottom right
+    merge_group: list[str] = field(default_factory=list, init=False)
+    shape_object: Shape = field(default_factory=Shape, init=False)
+    protected_shape_object: Shape = field(default_factory=Shape, init=False)
 
-    censors: list[Censor] = field(default_factory=list)
-
-    protected_shape: Optional[Shape] = None
-
-    use_global_area: bool = True
-    fade_percent: int = 0
-
-    # Masks
+    # # Masks
     mask: "Mask" = field(init=False)
     original_mask: "Mask" = field(init=False)
-    base_masks: list["Mask"] = field(default_factory=list["Mask"])
+    base_masks: list["Mask"] = field(default_factory=list, init=False)
 
-    # Information
-    is_merged: bool = field(default=False)
-    file_uuid: UUID = field(default=False)
-
-    def __init__(
-        self,
-        detected_information: DetectedPartSchema,
-        empty_mask: "Mask",
-        config: "Config",
-        file_uuid: UUID,
-    ):
-        self.config = config
-
+    def __post_init__(self):
         # Basic
-        self.part_name = detected_information.label
-        self.score = detected_information.score
-        self.relative_box = tuple(detected_information.relative_box)
+        self.mask = self.empty_mask.copy()
+        self.original_mask = self.empty_mask.copy()
+
+        # Connect Settings
+        self.part_settings = self.config.censor_settings.parts_settings[self.part_name]
 
         # Derived
         # # Box
-        corrected_box = self._correct_relative_box_size()
-        self._build_box(corrected_box)
+        self._correct_relative_box_size()
 
         # # Part IDs
         self.part_id = next(Part.part_id)  # type: ignore
-        self.file_uuid = file_uuid  # Used to reset bars
 
         # # Merge Groups
-        self._determine_merge_groups()
+        for index, group in enumerate(
+            self.config.censor_settings.merge_settings.merge_groups
+        ):
+            if self.part_name in group:
+                self.merge_group = group
+                self.merge_group_id = index
 
-        # # Config Settings
-        self._determine_state()
-        self._determine_shape()
-        self._determine_censors()
-        self._determine_meta()
+        # Determine Shape
+        self.shape_object = Part.get_shape_class(self.part_settings.shape)
+        self.shape_name = self.shape_object.shape_name
+
+        # Determine Protected Shape
+        if protected_part_shape := self.part_settings.protected_shape:
+            protected_shape = Part.get_shape_class(protected_part_shape)
+        else:
+            protected_part_shape = self.part_settings.shape
+            protected_shape = Part.get_shape_class(protected_part_shape)
+        self.protected_shape_object = protected_shape
 
         # Generate Masks
-        self.mask = empty_mask
-        self.original_mask = empty_mask
-        self.base_masks = []
-        self._get_base_mask(empty_mask)
+        self.original_mask = self.empty_mask
 
-    def _correct_relative_box_size(self):
-        # Get Config Margin Data
-        if not self.config.part_settings[self.part_name]:
-            return self.relative_box
-        config_part = self.config.part_settings[self.part_name]
+        self.base_masks.clear()
+        base_shape = Part.get_shape_class(self.shape_object.base_shape)
+        self.base_masks.append(base_shape.generate(self, self.empty_mask))
 
-        margin_data = config_part.margin
+    def __str__(self) -> str:
+        return f"{self.part_name}_{self.part_id}{"_merged" if self.is_merged else ""}"
 
-        if isinstance(margin_data, float) or isinstance(margin_data, int):
-            if isinstance(margin_data, int):
-                margin_data = float(margin_data)
+    def _repr__(self) -> str:
+        return self.part_name
+
+    def _correct_relative_box_size(self) -> None:
+        margin_data = self.part_settings.margin
+
+        if isinstance(margin_data, (float, int)):
+            margin_data = float(margin_data)
             w_margin = margin_data
             h_margin = margin_data
 
@@ -117,141 +110,60 @@ class Part:
             h_margin = margin_data.get("height", 0.0)
 
         else:
-            w_margin = 0.0
-            h_margin = 0.0
+            w_margin = h_margin = 0.0
 
         # Get Original Data
         top_left_x, top_left_y, width, height = self.relative_box
 
         # Calculate New Values
-        margin_width = w_margin * width
-        margin_height = h_margin * height
+        margin_width, margin_height = w_margin * width, h_margin * height
 
         top_left_x -= margin_width / 2
         top_left_y -= margin_height / 2
         width += margin_width
         height += margin_height
 
-        return [
-            top_left_x,
-            top_left_y,
-            width,
-            height,
-        ]
+        # Format Box Values to Int and Make to Standard Box Format
+        top_left_x = int(top_left_x)
+        top_left_y = int(top_left_y)
+        width = int(width)
+        height = int(height)
 
-    def __str__(self):
-        return_name = f"{self.part_name}_{self.part_id}"
+        self.box = ((top_left_x, top_left_y), (top_left_x + width, top_left_y + height))
 
-        if self.is_merged:
-            return return_name + "_merged"
-        else:
-            return return_name
+    # Public Methods
+    def get_name_and_merged(self) -> str:
+        return f"{self.part_name}{"_merged" if self.is_merged else ""}"
 
-    def get_name_and_merged(self):
-        return_name = f"{self.part_name}"
+    def get_name(self) -> str:
+        return self.part_name
 
-        if self.is_merged:
-            return return_name + "_merged"
-        else:
-            return return_name
-
-    def _build_box(self, box):
-        top_left_x, top_left_y, width, height = box
-
-        bottom_right_x = top_left_x + width
-        bottom_right_y = top_left_y + height
-
-        top_left = (int(top_left_x), int(top_left_y))
-        bottom_right = (int(bottom_right_x), int(bottom_right_y))
-
-        self.box = [
-            top_left,  # X, Y
-            bottom_right,
-        ]
-
-    def _determine_protected_shape(self):
-        config_part = self.config.part_settings[self.part_name]
-
-        # If True, Derive Shape from Settings
-
-        protected_part_shape = config_part.shape
-        if not protected_part_shape:
-            protected_part_shape = "ellipse"
-
-        self.protected_shape = protected_part_shape
-
-    def _determine_merge_groups(self):
-        if not self.config.merge_enabled:
-            return
-
-        merge_groups = self.config.merge_groups
-        if not merge_groups:
-            return
-
-        for index, group in enumerate(merge_groups):
-            if self.part_name in group:
-                self.merge_group = group
-                self.merge_group_id = index
-
-    def _determine_state(self):
-        if config_part := self.config.part_settings[self.part_name]:
-            if config_part.state:
-                self.state = config_part.state
-            else:
-                self.state = PartState.UNPROTECTED
-
-    def _determine_shape(self):
-        # Find Shape
-        config_part = self.config.part_settings[self.part_name]
-        shape = config_part.shape
-
-        # Get Shape Object
-        self.shape_name = shape
-        self.shape = Part.get_shape_class(shape)
-
-    def _determine_censors(self):
-        self.censors = self.config.part_settings[self.part_name].censors
-
-    def _determine_meta(self):
-        self.use_global_area = self.config.part_settings[self.part_name].use_global_area
-        self.fade_percent = self.config.part_settings[self.part_name].fade_percent
-
-    def _get_base_mask(self, empty_mask):
-        # Get Shape
-        base_shape = Part.get_shape_class(self.shape.base_shape)
-
-        # Draw Shape
-        self.base_masks.append(base_shape.generate(self, empty_mask))
-
-    def compile_base_masks(self):
+    def compile_base_masks(self) -> None:
         for mask in self.base_masks:
             self.add(mask)
 
         self.is_merged = True
 
-    def add(self, mask):
+    def add(self, mask: "Mask") -> None:
         self.mask = cv2.add(self.mask, mask)
 
-    def subtract(self, mask):
+    def subtract(self, mask: "Mask") -> None:
         self.mask = cv2.subtract(self.mask, mask)
 
     @staticmethod
-    def normalise_mask(mask):
+    def normalise_mask(mask: "Mask") -> "Mask":
         if len(mask.shape) > 2:
             mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
 
         # # Convert to Type
-        if mask.dtype != "unit8":
+        if mask.dtype != np.uint8:
             mask = mask.astype(np.uint8)
-
-        if len(mask.shape) > 2:
-            mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
 
         return mask
 
     @staticmethod
-    def get_shape_class(shape):
+    def get_shape_class(shape: str) -> Shape:
         if shape not in shape_catalogue.keys():
-            return None
+            raise ValueError(f"Shape {shape} does not Exist!")
 
         return shape_catalogue[shape]()

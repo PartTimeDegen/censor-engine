@@ -35,7 +35,7 @@ class DetectedPartSchema:
 class AIModel:
     """
     It seems that the standard for AI packages for Python is to give you the
-    code via Pip but then give you the model seperately (probably to alleviate
+    code via Pip but then give you the model separately (probably to alleviate
     the payload).
 
     This class is to give the AI using models the ability to download and mount
@@ -62,7 +62,7 @@ class AIModel:
 
         if not os.path.exists(model_path):
             print("Downloading the checkpoint to", model_path)
-            pydload.dload(url, save_to_path=model_path, max_time=None)
+            pydload.dload(url, save_to_path=model_path, max_time=None)  # type: ignore
 
         self.model_path = model_path
 
@@ -77,7 +77,7 @@ class AIModel:
 
         if not os.path.exists(model_path):
             print("Downloading the checkpoint to", model_path)
-            gdown.download(url, model_path, max_time=None)
+            gdown.download(url, model_path, max_time=None)  # type: ignore
 
         self.model_path = model_path
 

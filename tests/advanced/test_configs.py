@@ -1,8 +1,7 @@
 import os
 from censorengine import CensorEngine  # type: ignore
 from censorengine.backend._dev import assert_files_are_intended  # type: ignore
-from censorengine.libs.shape_library.catalogue import shape_catalogue  # type: ignore
-from censorengine.libs.style_library.catalogue import style_catalogue  # type: ignore
+
 import pytest
 
 CONFIGS = [
@@ -10,15 +9,15 @@ CONFIGS = [
     "01_cooler_default",
     "02_ellipses",
     "03_joint_ellipses",
-    "black_bars",
-    "blurred_lines",
-    "cutouts",
-    "only_blur",
-    "pixel_paradise",
-    "red_tape",
-    "state_approved_triggers",
-    "trigger_focus",
-    "white_bars",
+    "04_black_bars",
+    "05_blurred_lines",
+    "06_cutouts",
+    "07_only_blur",
+    "08_pixel_paradise",
+    "09_red_tape",
+    "10_state_approved_triggers",
+    "11_trigger_focus",
+    "12_white_bars",
 ]
 
 
@@ -30,7 +29,7 @@ def test_configs(config, root_path):
     # Initiate
     ce = CensorEngine(
         root_path,
-        config=f"{config}.yml",
+        config_data=f"{config}.yml",
         test_mode=True,
     )
 
@@ -38,8 +37,8 @@ def test_configs(config, root_path):
     folder_cen = "000_tests/01_censored"
 
     # Set Config
-    ce.config.uncensored_folder = folder_uncen
-    ce.config.censored_folder = folder_cen
+    ce.config.file_settings.uncensored_folder = folder_uncen
+    ce.config.file_settings.censored_folder = folder_cen
 
     # Start CensorEngine
     ce.start()

@@ -1,4 +1,3 @@
-import math
 from uuid import UUID, uuid4
 
 import cv2
@@ -8,7 +7,8 @@ from censorengine.lib_models.shapes import BarShape
 from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
-    from censorengine.backend.constants.typing import Part, Mask
+    from censorengine.backend.constants.typing import Mask
+    from censorengine.backend.models.detected_part import Part
 
 
 class _BarInfo:
@@ -33,110 +33,59 @@ class Bar(BarShape, _BarInfo):
     landscape_qualifier: float = 1.2
     cutoff_horizontal_gradient: float = 0.2
 
-    # Bar Info
     def _get_bar_coord_info(self, sorted_points):
-        """
-        We know top_right is higher than top_left (top_left.y > top_right.y),
-        therefore tilt can be found to be positive if top_right.x > top_left.x as
-        well. However if rotation is so much that the bottom_right is higher than
-        top_left, then the calculation is invalid. Therefore tests need to be done
-        to determine which is higher.
-
-        We do not know which point is which, so by taking the middle two points and
-        comparing them to the top to find the one with the one with the shortest
-        distance, we can find a "side" of the rectangle, which means the other one
-        must be the other top.
-
-        """
-        # Get Known Points
+        """Extract relevant bar coordinates and tilt direction."""
         top_point = sorted_points[0]
+        point_one, point_two = sorted_points[1:3]
 
-        # Calculate Radii
-        point_one = sorted_points[1]
-        point_two = sorted_points[2]
+        # Use squared distances to avoid sqrt for efficiency
+        radius_one_sq = (top_point[0] - point_one[0]) ** 2 + (
+            top_point[1] - point_one[1]
+        ) ** 2
+        radius_two_sq = (top_point[0] - point_two[0]) ** 2 + (
+            top_point[1] - point_two[1]
+        ) ** 2
 
-        radius_one = math.sqrt(
-            (top_point[0] - point_one[0]) ** 2 + (top_point[1] - point_one[1]) ** 2
+        side_point, length_point = (
+            (point_one, point_two)
+            if radius_one_sq < radius_two_sq
+            else (point_two, point_one)
         )
-        radius_two = math.sqrt(
-            (top_point[0] - point_two[0]) ** 2 + (top_point[1] - point_two[1]) ** 2
-        )
 
-        # Find Side
-        if radius_one < radius_two:
-            side_point = point_one
-            length_point = point_two
-        else:
-            side_point = point_two
-            length_point = point_one
+        # Tilt direction based on y-difference
+        tilt = 1 if (top_point[1] - length_point[1]) < 0 else -1
 
-        # Determine Which Side the Length Point is on via Delta X
-        # NOTE: Positive means it's on the left of the top point, therefore the
-        #       tilt is positive, and vice versa for if it's one the right
-        #
-        delta_x = top_point[1] - length_point[1]
-        eq_tilt = delta_x < 0
-        tilt = 1 if eq_tilt else -1
+        dict_corners = {
+            "top_left": sorted_points[1] if tilt > 0 else sorted_points[0],
+            "top_right": sorted_points[0] if tilt > 0 else sorted_points[1],
+            "bottom_left": sorted_points[3] if tilt > 0 else sorted_points[2],
+            "bottom_right": sorted_points[2] if tilt > 0 else sorted_points[3],
+            "top_point": top_point,
+            "length_point": length_point,
+            "side_point": side_point,
+            "bottom_point": sorted_points[3],
+            "tilt": tilt,
+        }
 
-        # Write Points
-        dict_corners = {}
-        if tilt > 0:
-            dict_corners["top_left"] = sorted_points[1]
-            dict_corners["top_right"] = sorted_points[0]
-
-            dict_corners["bottom_left"] = sorted_points[3]
-            dict_corners["bottom_right"] = sorted_points[2]
-
-        else:
-            dict_corners["top_left"] = sorted_points[0]
-            dict_corners["top_right"] = sorted_points[1]
-
-            dict_corners["bottom_left"] = sorted_points[2]
-            dict_corners["bottom_right"] = sorted_points[3]
-
-        # Useful Stuff
-        dict_corners["top_point"] = top_point
-        dict_corners["length_point"] = length_point
-        dict_corners["side_point"] = side_point
-        dict_corners["bottom_point"] = sorted_points[3]
-        dict_corners["tilt"] = tilt
-        dict_corners["part_height_width_ratio"] = (
-            dict_corners["bottom_left"][0] - dict_corners["top_left"][0]
-        ) / (dict_corners["top_right"][1] - dict_corners["top_left"][1])
+        dx = dict_corners["bottom_left"][0] - dict_corners["top_left"][0]
+        dy = dict_corners["top_right"][1] - dict_corners["top_left"][1]
+        dict_corners["part_height_width_ratio"] = dx / dy if dy else 0
 
         return dict_corners
 
-    def _line(self, gradient, coords, x_coord_to_find_y):
-        """
-        The format of this is [Y, X] (technically [-Y, X] compared to the standard
-        axis format).
-
-        The calculation for Y is the point-slope formula:
-
-            y - y_1 = m * (x - x_1)
-
-        Which is when y is the subject:
-
-            y = m * (x - x_1) + y_1
-
-        """
-        x_one = coords[1]
-        y_one = coords[0]
-        x_base = x_coord_to_find_y
-        point_y = gradient * (x_base - x_one) + y_one
-        coords = [int(point_y), int(x_base)]
-
-        return tuple(coords)
+    @staticmethod
+    def _line(gradient, coords, x_coord):
+        x1, y1 = coords[1], coords[0]
+        if gradient == float("inf"):  # Handle vertical line (infinite gradient)
+            return int(y1), int(x_coord)
+        else:
+            return int(gradient * (x_coord - x1) + y1), int(x_coord)
 
     def _reset_bar(self, new_file_path):
-        # Values
         Bar.bar_gradient = None
-
-        # Settings
         Bar.force_already_determined = False
         Bar.force_horizontal = False
         Bar.force_vertical = False
-
         Bar.file_path = new_file_path
 
     def generate(
@@ -146,189 +95,126 @@ class Bar(BarShape, _BarInfo):
         force_horizontal=False,
         force_vertical=False,
     ) -> "Mask":
-        # Check if Bar Info should be Reset
+        """Generates the bar mask based on detected contours."""
         if part.file_uuid != self.file_uuid:
             self._reset_bar(part.file_uuid)
 
-        cont_boxes = cv2.findContours(
-            image=part.mask,
-            mode=cv2.RETR_TREE,
-            method=cv2.CHAIN_APPROX_SIMPLE,
+        contours = cv2.findContours(
+            part.mask,
+            cv2.RETR_TREE,
+            cv2.CHAIN_APPROX_SIMPLE,
+        )[0]
+        points = (
+            cv2.boxPoints(cv2.minAreaRect(np.vstack(contours).squeeze())).tolist()
+            if contours
+            else []
         )
 
-        if len(cont_boxes[0]) >= 1:
-            points = cv2.boxPoints(
-                cv2.minAreaRect(np.vstack(cont_boxes[0]).squeeze())
-            ).tolist()
-        else:
-            try:
-                points = cont_boxes[0][0].tolist()
-                points = tuple([tuple(point[0]) for point in points])
-            except Exception:
-                points = cont_boxes[0]
-
-        if len(points) == 0:
+        if not points:
             return part.mask
 
-        points = [[int(point[0]), int(point[1])] for point in points]
-
-        # Determine Points, Tilt, and Gradient
-        # # Points
-        sorted_points = sorted(points, key=lambda coord: (coord[0], coord[1]))
-
-        # # Tilt
+        sorted_points = np.array(points, dtype=np.int32)
         dict_corners = self._get_bar_coord_info(sorted_points)
 
-        # # Calculate Gradient
-        try:
+        # Compute gradient with error handling (avoid repeated code)
+        frac_bottom = dict_corners["top_right"][0] - dict_corners["top_left"][0]
+        if frac_bottom == 0:
+            gradient = float("inf")  # Infinite gradient for vertical lines
+        else:
             gradient = -(dict_corners["top_right"][1] - dict_corners["top_left"][1]) / (
-                dict_corners["top_right"][0] - dict_corners["top_left"][0]
+                frac_bottom
             )
-        except ZeroDivisionError:
-            gradient = 0.0
 
-        # # Check for if it Makes More Sense to Inverse Gradient
-        HEIGHT = empty_mask.shape[0]
-        WIDTH = empty_mask.shape[1]
-        is_image_landscape = WIDTH > (self.landscape_qualifier * HEIGHT)
+        height, width = empty_mask.shape[:2]
+        is_landscape = width > (self.landscape_qualifier * height)
+        is_gradient_low = abs(gradient) < self.cutoff_horizontal_gradient
 
-        # # Calculate Cutoffs
-        is_gradient_in_horizontal_cutoff = (
-            abs(gradient) < self.cutoff_horizontal_gradient
-        )
-
-        # # Determine if Tilt is even (used for single parts)
-        if is_gradient_in_horizontal_cutoff:
+        if is_gradient_low:
             dict_corners["tilt"] = 0
 
-        # # Save Gradient if not Use Saved Gradient
+        # Simplified logic for gradient assignment and bar shape orientation
+        gradient = Bar.bar_gradient if Bar.bar_gradient is not None else gradient
         if not Bar.bar_gradient:
             Bar.bar_gradient = gradient
-        else:
-            gradient = Bar.bar_gradient
-            Bar.force_already_determined = True
+        Bar.force_already_determined = True
 
-        # # Declaring Booleans
-        should_be_vertical = False
-        should_be_horizontal = is_gradient_in_horizontal_cutoff
+        should_be_vertical = is_landscape and is_gradient_low
+        should_be_horizontal = is_gradient_low
 
-        # # Check for Force Settings
-        if not Bar.force_already_determined:
-            if is_image_landscape and is_gradient_in_horizontal_cutoff:
-                should_be_vertical = True
-                should_be_horizontal = False
+        if force_horizontal:
+            Bar.force_horizontal = True
+            Bar.force_vertical = (
+                False  # Ensure it doesn't force vertical at the same time
+            )
+        elif force_vertical:
+            Bar.force_vertical = True
+            Bar.force_horizontal = (
+                False  # Ensure it doesn't force horizontal at the same time
+            )
+        elif not Bar.force_already_determined:
+            Bar.force_horizontal = should_be_horizontal
+            Bar.force_vertical = should_be_vertical
 
-            if force_horizontal or should_be_horizontal:
-                Bar.force_horizontal = True
+        Bar.force_already_determined = True  # Lock the determination
 
-            if force_vertical or should_be_vertical:
-                Bar.force_vertical = True
-
-        if Bar.force_horizontal and Bar.force_vertical:
-            if force_horizontal:
-                Bar.force_vertical = False
-            elif force_vertical:
-                Bar.force_horizontal = False
-            elif should_be_vertical:
-                Bar.force_horizontal = False
-            else:
-                Bar.force_vertical = False
-
-        # # Horizontal
+        # Define bar shape based on orientation
         if Bar.force_horizontal:
-            # List Coords for Readability
-            y_top = dict_corners["top_point"][1]
-            y_bottom = dict_corners["bottom_point"][1]
-            x_left = 0
-            x_right = empty_mask.shape[1]
-
-            # Overwrite for Tilt
+            y_top, y_bottom = (
+                dict_corners["top_point"][1],
+                dict_corners["bottom_point"][1],
+            )
             if dict_corners["tilt"] > 0:
-                y_top = dict_corners["top_left"][1]
-                y_bottom = dict_corners["bottom_right"][1]
+                y_top, y_bottom = (
+                    dict_corners["top_left"][1],
+                    dict_corners["bottom_right"][1],
+                )
             elif dict_corners["tilt"] < 0:
-                y_top = dict_corners["top_right"][1]
-                y_bottom = dict_corners["bottom_left"][1]
+                y_top, y_bottom = (
+                    dict_corners["top_right"][1],
+                    dict_corners["bottom_left"][1],
+                )
 
-            bar_points = [
-                (x_right, y_top),
-                (x_left, y_top),
-                (x_left, y_bottom),
-                (x_right, y_bottom),
-            ]
+            bar_points = [(width, y_top), (0, y_top), (0, y_bottom), (width, y_bottom)]
 
-        # # Vertical
         elif Bar.force_vertical:
-            # List Coords for Readability
-            x_left = dict_corners["top_point"][0]
-            x_right = dict_corners["bottom_point"][0]
-            y_top = 0
-            y_bottom = empty_mask.shape[0]
-
+            x_left, x_right = (
+                dict_corners["top_point"][0],
+                dict_corners["bottom_point"][0],
+            )
             bar_points = [
-                (x_right, y_top),
-                (x_left, y_top),
-                (x_left, y_bottom),
-                (x_right, y_bottom),
+                (x_right, 0),
+                (x_left, 0),
+                (x_left, height),
+                (x_right, height),
             ]
 
-        # # Angled
         else:
-            if Bar.bar_gradient is None:
-                raise ValueError
-
-            # Multiple Part Positive Tilt
-            if dict_corners["tilt"] > 0:
-                top_right_bottom_left_point = dict_corners["length_point"]
-                top_left_bottom_right_point = dict_corners["bottom_left"]
-
-            # Single Part Negative Tilt
-            elif dict_corners["tilt"] == 0 and Bar.bar_gradient > 0:
-                top_right_bottom_left_point = dict_corners["top_right"]
-                top_left_bottom_right_point = dict_corners["bottom_left"]
-
-            # Single Part Positive Tilt
-            elif dict_corners["tilt"] == 0 and Bar.bar_gradient < 0:
-                top_right_bottom_left_point = dict_corners["bottom_right"]
-                top_left_bottom_right_point = dict_corners["top_left"]
-
-            # Multiple Part Negative Tilt
-            else:
-                top_right_bottom_left_point = dict_corners["top_right"]
-                top_left_bottom_right_point = dict_corners["bottom_left"]
+            # Optimized multiple cases for gradient-based calculation
+            top_right_bl = (
+                dict_corners["length_point"]
+                if dict_corners["tilt"] > 0
+                else dict_corners["top_right"]
+            )
+            top_left_br = (
+                dict_corners["bottom_left"]
+                if dict_corners["tilt"] > 0
+                else dict_corners["top_left"]
+            )
 
             bar_points = [
-                self._line(
-                    gradient=Bar.bar_gradient,
-                    coords=top_right_bottom_left_point,
-                    x_coord_to_find_y=0,
-                ),  # Top Right Corner
-                self._line(
-                    gradient=Bar.bar_gradient,
-                    coords=top_left_bottom_right_point,
-                    x_coord_to_find_y=0,
-                ),  # Top Left Corner
-                self._line(
-                    gradient=Bar.bar_gradient,
-                    coords=top_left_bottom_right_point,
-                    x_coord_to_find_y=empty_mask.shape[0],
-                ),  # Bottom Right Corner
-                self._line(
-                    gradient=Bar.bar_gradient,
-                    coords=top_right_bottom_left_point,
-                    x_coord_to_find_y=empty_mask.shape[0],
-                ),  # Bottom Left Corner
+                self._line(Bar.bar_gradient, top_right_bl, 0),
+                self._line(Bar.bar_gradient, top_left_br, 0),
+                self._line(Bar.bar_gradient, top_left_br, height),
+                self._line(Bar.bar_gradient, top_right_bl, height),
             ]
 
-        np_bar_points = np.array(bar_points, dtype=np.int32)
-
+        # Convert to NumPy and draw polygon efficiently
         mask = cv2.fillPoly(
-            img=empty_mask,
-            pts=[np_bar_points],
-            color=(255, 255, 255),
+            empty_mask,  # type: ignore
+            [np.array(bar_points, dtype=np.int32)],
+            (255, 255, 255),
             lineType=cv2.LINE_AA,
-        )  # type: ignore
-
+        )
         return mask
 
 

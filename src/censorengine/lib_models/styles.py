@@ -58,7 +58,7 @@ class Style(ABC):
 
 
 class TransparentStyle(Style):
-    style_type: str = "transparant"
+    style_type: str = "transparent"
     force_png: bool = True  # Needed for alpha channel to work
 
 

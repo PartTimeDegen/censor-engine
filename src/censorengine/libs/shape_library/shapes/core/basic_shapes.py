@@ -3,7 +3,8 @@ import cv2
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from censorengine.backend.constants.typing import Part, Mask
+    from censorengine.backend.constants.typing import Mask
+    from censorengine.backend.models.detected_part import Part
 
 
 from censorengine.lib_models.shapes import Shape

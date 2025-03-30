@@ -5,7 +5,8 @@ from censorengine.lib_models.shapes import JointShape
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from censorengine.backend.constants.typing import Part, Mask
+    from censorengine.backend.constants.typing import Mask
+    from censorengine.backend.models.detected_part import Part
 
 
 class JointBox(JointShape):
@@ -53,7 +54,7 @@ class JointEllipse(JointShape):
         cont_flat = np.vstack(cont_rect[0]).squeeze()
         shape_ellipse = cv2.fitEllipse(cont_flat)
 
-        mask = cv2.ellipse(empty_mask, shape_ellipse, (255, 255, 255), -1)
+        mask = cv2.ellipse(empty_mask, shape_ellipse, (255, 255, 255), -1)  # type: ignore
 
         return mask
 

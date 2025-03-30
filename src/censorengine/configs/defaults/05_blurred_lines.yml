@@ -15,7 +15,17 @@ censor_settings:
 
   default_part_settings:
     censors:
-    - function: "box"
+    - function: "outline"
       args:
         colour: "BLACK"
-    shape: "joint_ellipse"
+        thickness: 1
+    - function: "greyscale"
+    - function: "blur"
+      args:
+        factor: 10
+
+    minimum_score: 0.20
+    shape: "bar"
+
+  ANUS_EXPOSED:
+    state: "revealed"

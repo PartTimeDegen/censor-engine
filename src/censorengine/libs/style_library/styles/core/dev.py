@@ -97,13 +97,13 @@ class Debug(DevStyle):
         self,
         image: CVImage,
         contour,
-        part: Optional["Part"] = None,
+        part: "Part",
         colour: tuple[int, int, int] | str = "WHITE",
     ) -> CVImage:
         colour = get_colour(colour)
         # Avoiding it for testing
-        if not part:
-            return
+        # if not part:
+        #     return
 
         # Inputs
         text = f"{part.part_name}\nSCORE={float(part.score):0.2%}"

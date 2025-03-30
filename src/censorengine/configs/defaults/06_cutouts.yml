@@ -15,7 +15,5 @@ censor_settings:
 
   default_part_settings:
     censors:
-    - function: "box"
-      args:
-        colour: "BLACK"
-    shape: "joint_ellipse"
+    - function: "cutout"
+    shape: "bar"

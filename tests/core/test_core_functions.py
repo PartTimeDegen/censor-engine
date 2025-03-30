@@ -4,6 +4,7 @@ from censorengine.backend._dev import assert_files_are_intended  # type: ignore
 from censorengine.libs.shape_library.catalogue import shape_catalogue  # type: ignore
 from censorengine.libs.style_library.catalogue import style_catalogue  # type: ignore
 import pytest
+from censorengine.backend.models.schemas import Censor
 
 # Note: Commented out ones are ones I couldn't get to work
 classes = [
@@ -40,7 +41,7 @@ def test_classes(part_name, root_path):
     # Initiate
     ce = CensorEngine(
         root_path,
-        config="000_tests/03_configs/test_core.yml",
+        config_data="000_tests/03_configs/test_core.yml",
         test_mode=True,
     )
 
@@ -48,10 +49,10 @@ def test_classes(part_name, root_path):
     folder_cen = "000_tests/01_censored"
 
     # Set Config
-    ce.config.uncensored_folder = folder_uncen
-    ce.config.censored_folder = folder_cen
+    ce.config.file_settings.uncensored_folder = folder_uncen
+    ce.config.file_settings.censored_folder = folder_cen
 
-    ce.config.parts_enabled = [part_name]
+    ce.config.censor_settings.enabled_parts = [part_name]
 
     # Start CensorEngine
     ce.start()
@@ -65,32 +66,32 @@ def test_shapes(shape, root_path):
     # Test Type
     test_loc = os.path.join("core/shapes", shape)
 
-    # Initiate
-    ce = CensorEngine(
-        root_path,
-        config="000_tests/03_configs/test_core.yml",
-        test_mode=True,
-    )
-
-    folder_uncen = os.path.join("000_tests/00_uncensored", test_loc)
-    folder_cen = "000_tests/01_censored"
-
     # Set Config
-    ce.config.uncensored_folder = folder_uncen
-    ce.config.censored_folder = folder_cen
-    ce.config.parts_enabled = [
+    enabled_parts = [
         "FEMALE_BREAST_EXPOSED",
         "FEMALE_BREAST_COVERED",
         "FEMALE_GENITALIA_EXPOSED",
         "FEMALE_GENITALIA_COVERED",
     ]
+    config_data = {
+        "file_settings": {
+            "uncensored_folder": os.path.join("000_tests/00_uncensored", test_loc),
+            "censored_folder": "000_tests/01_censored",
+        },
+        "censor_settings": {
+            "enabled_parts": enabled_parts,
+            "default_part_settings": {
+                "shape": shape,
+                "censors": [{"function": "box", "args": {"colour": "BLACK"}}],
+            },
+        },
+    }
 
-    for part in ce.config.parts_enabled:
-        ce.config.part_settings[part].shape = shape
+    # Initiate
+    ce = CensorEngine(root_path, config_data=config_data, test_mode=True)
 
     # Start CensorEngine
     ce.start()
-
     assert_files_are_intended(root_path, test_loc)
 
 
@@ -103,7 +104,7 @@ def test_styles(style, root_path):
     # Initiate
     ce = CensorEngine(
         root_path,
-        config="000_tests/03_configs/test_core.yml",
+        config_data="000_tests/03_configs/test_core.yml",
         test_mode=True,
     )
 
@@ -111,8 +112,8 @@ def test_styles(style, root_path):
     folder_cen = "000_tests/01_censored"
 
     # Set Config
-    ce.config.uncensored_folder = folder_uncen
-    ce.config.censored_folder = folder_cen
+    ce.config.file_settings.uncensored_folder = folder_uncen
+    ce.config.file_settings.censored_folder = folder_cen
 
     colours = [
         "BLACK",
@@ -136,22 +137,14 @@ def test_styles(style, root_path):
         "DARK_PINK",
     ]
 
-    for index, part in enumerate(ce.config.parts_enabled):
-        ce.config.dev_load_censors(
-            part,
-            [
-                {
-                    "function": "outline",
-                    "args": {
-                        "colour": "BLACK" if style != "dev_debug" else colours[index]
-                    },
-                },
-                {
-                    "function": style,
-                    "args": {},
-                },
-            ],
-        )
+    for index, part in enumerate(ce.config.censor_settings.enabled_parts):
+        ce.config.censor_settings.parts_settings[part].censors = [
+            Censor(
+                "outline",
+                {"colour": "BLACK" if style != "dev_debug" else colours[index]},
+            ),
+            Censor(style, {}),
+        ]
 
     # Start CensorEngine
     ce.start()
@@ -168,7 +161,7 @@ def test_reverse_censor(root_path):
     # Initiate
     ce = CensorEngine(
         root_path,
-        config="000_tests/03_configs/test_reverse_censor.yml",
+        config_data="000_tests/03_configs/test_reverse_censor.yml",
         test_mode=True,
     )
 
@@ -176,8 +169,8 @@ def test_reverse_censor(root_path):
     folder_cen = "000_tests/01_censored"
 
     # Set Config
-    ce.config.uncensored_folder = folder_uncen
-    ce.config.censored_folder = folder_cen
+    ce.config.file_settings.uncensored_folder = folder_uncen
+    ce.config.file_settings.censored_folder = folder_cen
 
     # Start CensorEngine
     ce.start()

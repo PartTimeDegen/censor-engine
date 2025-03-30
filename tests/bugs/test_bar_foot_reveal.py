@@ -12,7 +12,7 @@ def test_shapes(root_path):
     # Initiate
     ce = CensorEngine(
         root_path,
-        config="000_tests/03_configs/bugs/bar_foot_reveal/red_tape.yml",
+        config_data="000_tests/03_configs/bugs/bar_foot_reveal/red_tape.yml",
         test_mode=True,
     )
 
@@ -20,8 +20,8 @@ def test_shapes(root_path):
     folder_cen = "000_tests/01_censored"
 
     # Set Config
-    ce.config.uncensored_folder = folder_uncen
-    ce.config.censored_folder = folder_cen
+    ce.config.file_settings.uncensored_folder = folder_uncen
+    ce.config.file_settings.censored_folder = folder_cen
 
     # Start CensorEngine
     ce.start()

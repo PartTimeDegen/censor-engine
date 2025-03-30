@@ -1,59 +1,11 @@
-# Config details
-file_prefix: ""
-file_suffix: ""
+censor_settings:
+  enabled_parts:
+  - "FEMALE_BREAST_EXPOSED"
+  - "FEMALE_GENITALIA_EXPOSED"
+  - "FEMALE_GENITALIA_COVERED"
+  - "MALE_GENITALIA_EXPOSED"
 
-uncensored_folder: "00_uncensored"
-censored_folder: "01_censored"
-
-debug_mode: True
-
-# Parts Enabled
-parts_enabled:
-# Female
-# - "FACE_FEMALE"
-
-# - "ARMPITS_EXPOSED"
-# - "ARMPITS_COVERED"
-
-- "FEMALE_BREAST_EXPOSED"
-# - "FEMALE_BREAST_COVERED"
-
-# - "BELLY_EXPOSED"
-# - "BELLY_COVERED"
-
-# - "BUTTOCKS_EXPOSED"
-# - "BUTTOCKS_COVERED"
-
-# - "ANUS_EXPOSED"
-# - "ANUS_COVERED"
-
-- "FEMALE_GENITALIA_EXPOSED"
-- "FEMALE_GENITALIA_COVERED"
-
-# - "FEET_EXPOSED"
-# - "FEET_COVERED"
-
-
-# Male
-# - "FACE_MALE"
-- "MALE_GENITALIA_EXPOSED"
-# - "MALE_BREAST_EXPOSED"
-
-# Information on Merging Parts
-# merging:
-#   range: -1
-#   merge_groups:
-#   - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
-
-# Rendering Settings
-rendering:
-  smoothing: True
-
-
-# Information
-information:
-  # Fall Back Options as "General" Settings
-  defaults:
+  default_part_settings:
     censors:
     - function: "overlay"
       args:
@@ -64,7 +16,7 @@ information:
     shape: "joint_ellipse"
     margin: 1.5
     state: revealed
-  
+
   FEMALE_BREAST_EXPOSED:
     state: revealed
     censors:
