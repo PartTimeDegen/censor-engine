@@ -28,7 +28,7 @@ from uuid import uuid4, UUID
 
 
 @dataclass
-class CensorManager:
+class ImageProcessor:
     file_image: "CVImage"
     config: "Config"
 

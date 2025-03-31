@@ -195,3 +195,4 @@ libpng.sh
 *:mshield
 
 .ruff_cache
+src/000_tests/*

@@ -13,7 +13,7 @@ from censorengine.backend.constants.files import (
     APPROVED_FORMATS_IMAGE,
     APPROVED_FORMATS_VIDEO,
 )
-from censorengine.backend.models.censor_manager import CensorManager
+from censorengine.backend.models.image import ImageProcessor
 from censorengine.backend.models.config import Config
 
 from censorengine.backend.models.debugger import DebugLevels
@@ -158,7 +158,7 @@ class CensorEngine:
             file_image = cv2.imread(file_path)
 
             # Run the Censor Manager
-            censor_manager = CensorManager(
+            censor_manager = ImageProcessor(
                 file_image=file_image,
                 config=self.config,
             )
@@ -208,7 +208,7 @@ class CensorEngine:
                     break
 
                 # Run Censor Manager
-                censor_manager = CensorManager(file_image=frame, config=self.config)
+                censor_manager = ImageProcessor(file_image=frame, config=self.config)
                 censor_manager.generate_parts_and_shapes()
 
                 # # Apply Stability Stuff
