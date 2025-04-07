@@ -5,11 +5,10 @@ import os
 import cv2
 import numpy as np
 
-from censorengine.backend.models.detected_part import Part
-from censorengine.backend.constants.typing import Mask
+from censorengine.backend.models.structures.detected_part import Part
 
 
-@dataclass
+@dataclass(slots=True)
 class VideoProcessor:
     file_path: str
     new_file_name: str
@@ -58,6 +57,18 @@ class VideoProcessor:
 
 
 @dataclass
+class FramePart:
+    part: Part
+
+    part_name: str = field(init=False)
+    is_merged: bool = field(init=False)
+
+    def __post_init__(self):
+        self.part_name = self.part.get_name()
+        self.is_merged = self.part.is_merged
+
+
+@dataclass
 class VideoFrame:
     """
     This class handles the processing of the parts between frames, such to
@@ -76,23 +87,16 @@ class VideoFrame:
     frame_lag_counter: int = field(default=0, init=False)
     debug_counter: int = field(default=0, init=False)
 
-    current_frame: dict[str, Part] = field(default_factory=dict, init=False)
-    last_frame: dict[str, Part] = field(default_factory=dict, init=False)
-    held_frame: dict[str, Part] = field(default_factory=dict, init=False)
+    current_frame: dict[str, FramePart] = field(default_factory=dict, init=False)
+    last_frame: dict[str, FramePart] = field(default_factory=dict, init=False)
+    held_frame: dict[str, FramePart] = field(default_factory=dict, init=False)
 
     first_frame: bool = field(default=True, init=False)
 
-    def _convert_to_edges(self, mask: Mask, temp_disable: bool = False):
-        if temp_disable:
-            return mask
-        edges = cv2.Canny(mask, 100, 200)
-        kernel = np.ones((15, 15), np.uint8)
-        return cv2.dilate(edges, kernel, iterations=2)
-
     def _compare_parts_areas(
         self,
-        current_part: Part,
-        held_part: Part,
+        current_part: FramePart,
+        held_part: FramePart,
         for_part_persistence: bool = False,
     ) -> bool:
         """
@@ -104,8 +108,8 @@ class VideoFrame:
         :return bool: True means use the current part, False means use the held part
         """
         # Compute individual mask areas
-        current_area = np.count_nonzero(current_part.mask)
-        held_area = np.count_nonzero(held_part.mask)
+        current_area = np.count_nonzero(current_part.part.mask)
+        held_area = np.count_nonzero(held_part.part.mask)
 
         # Compute pixel difference Equations
         diff_percentage = (current_area - held_area) / max(current_area, held_area)
@@ -135,20 +139,30 @@ class VideoFrame:
 
         return True
 
-    def _compare_frames(self, old_part: Part, new_part: Part) -> bool:
-        temp_disable = True  # Change to False if you want edge-based comparison
-        old_mask = self._convert_to_edges(old_part.mask, temp_disable)
-        new_mask = self._convert_to_edges(new_part.mask, temp_disable)
+    # def _convert_to_edges(self, mask: Mask, temp_disable: bool = False):
+    #     if temp_disable:
+    #         return mask
+    #     edges = cv2.Canny(mask, 100, 200)
+    #     kernel = np.ones((15, 15), np.uint8)
+    #     return cv2.dilate(edges, kernel, iterations=2)
 
-        # Check movement and size change constraints
-        return (
-            self._compare_parts_areas(old_part.mask, new_part.mask)
-            and bool(np.any(old_mask))
-            and bool(np.any(new_mask))
-        )
+    # def _compare_frames(self, old_part: Part, new_part: Part) -> bool:
+    #     temp_disable = True  # Change to False if you want edge-based comparison
+    #     old_mask = self._convert_to_edges(old_part.mask, temp_disable)
+    #     new_mask = self._convert_to_edges(new_part.mask, temp_disable)
+
+    #     # Check movement and size change constraints
+    #     return (
+    #         self._compare_parts_areas(old_part.mask, new_part.mask)
+    #         and bool(np.any(old_mask))
+    #         and bool(np.any(new_mask))
+    #     )
 
     def load_parts(self, parts: list[Part]) -> None:
-        self.current_frame = {f"{part.get_name()}": part for part in parts}
+        frame_parts = [FramePart(part) for part in parts]
+        self.current_frame = {
+            frame_part.part_name: frame_part for frame_part in frame_parts
+        }
         if self.first_frame:
             # Correct Frame
             self.first_frame = False
@@ -159,6 +173,31 @@ class VideoFrame:
             # Save Held Frame
             self.held_frame = self.current_frame.copy()
 
+    def set_held_frame(self):
+        dict_temp_held = {}
+        for key, value in self.current_frame.items():
+            if not self.held_frame.get(key):
+                dict_temp_held[key] = value
+                continue
+
+            # Check if Parts are actually Correct over Previous
+            output = self._compare_parts_areas(
+                value,
+                self.held_frame[key],
+                for_part_persistence=True,  # TODO: Allow it to be turned off
+            )
+
+            # If it's an Okay Size, Current is used, else use the last held one
+            dict_temp_held[key] = value if output else self.held_frame[key]
+
+        self.held_frame.clear()
+        self.held_frame = dict_temp_held
+
+    def update_missing_parts_to_held_frame(self):
+        for key, value in self.held_frame.items():
+            if not self.current_frame.get(key):
+                self.current_frame[key] = value
+
     def apply_part_persistence(self) -> None:
         """
         Holds the frame for the duration specified by frame_hold_amount.
@@ -166,34 +205,11 @@ class VideoFrame:
         """
         # Counter Logic
         if self.frame_lag_counter >= self.frame_hold_amount:
-            dict_temp_held = {}
-            for key, value in self.current_frame.items():
-                if not self.held_frame.get(key):
-                    dict_temp_held[key] = value
-                    continue
-
-                # Check if Parts are actually Correct over Previous
-                output = self._compare_parts_areas(
-                    value,
-                    self.held_frame[key],
-                    for_part_persistence=True,  # TODO: Allow it to be turned off
-                )
-
-                dict_temp_held[key] = value if output else self.held_frame[key]
-
-            self.held_frame.clear()
-            self.held_frame = dict_temp_held
-
-            # Counter Logic
-            self.frame_lag_counter = 0  # Reset lag Counter
+            self.set_held_frame()
+            self.frame_lag_counter = 0
         else:
-            # Used to Add Missing Parts Normally
-            for key, value in self.held_frame.items():
-                if not self.current_frame.get(key):
-                    self.current_frame[key] = value
-
-            # Counter Logic
-            self.frame_lag_counter += 1  # Update Lag Counter
+            # self.update_missing_parts_to_held_frame()
+            self.frame_lag_counter += 1
 
     def apply_part_size_correction(self) -> None:
         for key, value in self.held_frame.items():
@@ -204,23 +220,26 @@ class VideoFrame:
             # Update Frames
             self.current_frame[key] = output_part
 
-    def apply_frame_stability(self) -> None:
-        """
-        Applies frame stability by ensuring that parts don't update for small differences.
-        A significant difference (as determined by frame_difference_threshold) is required to update the part.
-        """
-        for part_name in self.current_frame.keys():
-            # Ignore new parts that don't exist in the last frame
-            if part_name not in self.last_frame:
-                continue
+    # def apply_frame_stability(self) -> None:
+    #     """
+    #     Applies frame stability by ensuring that parts don't update for small differences.
+    #     A significant difference (as determined by frame_difference_threshold) is required to update the part.
+    #     """
+    #     for part_name in self.current_frame.keys():
+    #         # Ignore new parts that don't exist in the last frame
+    #         if part_name not in self.last_frame:
+    #             continue
 
-            old_part = self.last_frame[part_name]
-            this_part = self.current_frame[part_name]
+    #         old_part = self.last_frame[part_name]
+    #         this_part = self.current_frame[part_name]
 
-            # Check if the difference between frames is large enough to update
-            self.current_frame[part_name] = (
-                this_part if self._compare_frames(old_part, this_part) else old_part
-            )
+    #         # Check if the difference between frames is large enough to update
+    #         self.current_frame[part_name] = (
+    #             this_part if self._compare_frames(old_part, this_part) else old_part
+    #         )
 
     def save_frame(self):
         self.last_frame = self.current_frame.copy()
+
+    def retrieve_parts(self):
+        return [frame_part.part for frame_part in self.current_frame.values()]

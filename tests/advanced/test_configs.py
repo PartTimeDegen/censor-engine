@@ -37,8 +37,8 @@ def test_configs(config, root_path):
     folder_cen = "000_tests/01_censored"
 
     # Set Config
-    ce.config.file_settings.uncensored_folder = folder_uncen
-    ce.config.file_settings.censored_folder = folder_cen
+    ce._config.file_settings.uncensored_folder = folder_uncen
+    ce._config.file_settings.censored_folder = folder_cen
 
     # Start CensorEngine
     ce.start()

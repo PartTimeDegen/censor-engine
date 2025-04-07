@@ -1,9 +1,9 @@
-from censorengine.backend.models.enums import ShapeType
+from censorengine.backend.models.structures.enums import ShapeType
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from censorengine.backend.constants.typing import Mask
-    from censorengine.backend.models.detected_part import Part
+    from censorengine.backend.models.structures.detected_part import Part
 
 
 class Shape:

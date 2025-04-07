@@ -41,6 +41,8 @@ class Part:
         init=False
     )  # top left, bottom right
     merge_group: list[str] = field(default_factory=list, init=False)
+
+    shape_name: str = field(default="NOT_SET", init=False)
     shape_object: Shape = field(default_factory=Shape, init=False)
     protected_shape_object: Shape = field(default_factory=Shape, init=False)
 
@@ -94,7 +96,7 @@ class Part:
     def __str__(self) -> str:
         return f"{self.part_name}_{self.part_id}{"_merged" if self.is_merged else ""}"
 
-    def _repr__(self) -> str:
+    def __repr__(self) -> str:
         return self.part_name
 
     def _correct_relative_box_size(self) -> None:
@@ -132,12 +134,17 @@ class Part:
         self.box = ((top_left_x, top_left_y), (top_left_x + width, top_left_y + height))
 
     # Public Methods
+    # # Naming Methods
     def get_name_and_merged(self) -> str:
         return f"{self.part_name}{"_merged" if self.is_merged else ""}"
 
     def get_name(self) -> str:
         return self.part_name
 
+    def get_name_and_id(self) -> str:
+        return f"{self.part_name}_{self.part_id}"
+
+    # # Mask Equations
     def compile_base_masks(self) -> None:
         for mask in self.base_masks:
             self.add(mask)

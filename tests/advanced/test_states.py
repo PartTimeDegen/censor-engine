@@ -43,9 +43,9 @@ def test_states(state_config, root_path):
         "MALE_GENITALIA_EXPOSED",
     ]
 
-    ce.config.file_settings.uncensored_folder = folder_uncen
-    ce.config.file_settings.censored_folder = folder_cen
-    ce.config.censor_settings.enabled_parts = parts
+    ce._config.file_settings.uncensored_folder = folder_uncen
+    ce._config.file_settings.censored_folder = folder_cen
+    ce._config.censor_settings.enabled_parts = parts
     # ce.config.dev_generate_new_parts()
 
     # assert False, [

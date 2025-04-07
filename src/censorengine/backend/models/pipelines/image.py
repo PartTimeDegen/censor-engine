@@ -7,15 +7,15 @@ import cv2
 import numpy as np
 from typing import TYPE_CHECKING
 
-from censorengine.backend.models.debugger import (
+from censorengine.backend.models.tools.debugger import (
     Debugger,
     DebugLevels,
 )
-from censorengine.backend.models.enums import PartState, ShapeType
+from censorengine.backend.models.structures.enums import PartState, ShapeType
 
 if TYPE_CHECKING:
     from censorengine.backend.constants.typing import CVImage
-from censorengine.backend.models.detected_part import Part
+from censorengine.backend.models.structures.detected_part import Part
 from censorengine.libs.style_library.catalogue import style_catalogue
 from censorengine.backend.models.config import Config
 
@@ -25,12 +25,15 @@ from censorengine.libs.detector_library.catalogue import (
 )
 from censorengine.lib_models.detectors import DetectedPartSchema
 from uuid import uuid4, UUID
+from censorengine.backend.models.tools.dev_tools import DevTools
 
 
-@dataclass
+@dataclass(slots=True)
 class ImageProcessor:
     file_image: "CVImage"
     config: "Config"
+    debug_level: DebugLevels = DebugLevels.NONE
+    dev_tools: DevTools | None = field(default=None)
 
     # Internals
     force_png: bool = False
@@ -43,7 +46,9 @@ class ImageProcessor:
     empty_mask: "CVImage" = field(init=False)
     file_original_image: "CVImage" = field(init=False)
     file_uuid: UUID = field(init=False)
+
     debugger: Debugger = field(init=False)
+    duration: float = field(init=False)
 
     def __post_init__(self):
         Part.part_id = itertools.count(start=1)
@@ -53,7 +58,10 @@ class ImageProcessor:
         self.file_original_image = self.file_image
 
         # Debug
-        self.debugger = Debugger("Censor Manager", level=DebugLevels.NONE)
+        self.debugger = Debugger(
+            "Censor Manager",
+            level=self.debug_level,
+        )
         self.debugger.time_total_start()
         self.debugger.display_onnx_info()
 
@@ -82,6 +90,14 @@ class ImageProcessor:
 
         self.detected_parts = list(itertools.chain(*detected_parts))
         self.debugger.time_stop()
+
+    # Dev Tools
+    def _decompile_masks(self, subfolder: str | None = None):
+        if self.dev_tools:
+            self.dev_tools.dev_decompile_masks(
+                self.parts,
+                subfolder=subfolder,
+            )
 
     # Private
     def _create_empty_mask(self, inverse: bool = False):
@@ -184,8 +200,9 @@ class ImageProcessor:
 
             part.compile_base_masks()
 
-    def _apply_mask_shapes(self):
+    def _apply_and_generate_mask_shapes(self):
         for part in self.parts:
+            self._decompile_masks("02_advanced_base")
             # For Simple Shapes
             if not part.is_merged:
                 shape_single = Part.get_shape_class(part.shape_object.single_shape)
@@ -198,18 +215,22 @@ class ImageProcessor:
 
                 case ShapeType.JOINT:
                     part.mask = part.shape_object.generate(part, self.empty_mask.copy())
+                    self._decompile_masks("02_advanced_joint")
 
                 case ShapeType.BAR:
                     # Make Basic Shape
                     shape_single = Part.get_shape_class("ellipse")
                     part.mask = shape_single.generate(part, self.empty_mask.copy())
+                    self._decompile_masks("02_advanced_bar_01_base_ellipses")
 
                     # Make Shape Joint for Bar Basis
                     shape_joint = Part.get_shape_class("joint_ellipse")
                     part.mask = shape_joint.generate(part, self.empty_mask.copy())
+                    self._decompile_masks("02_advanced_bar_02_joint_ellipse")
 
                     # Generate Bar
                     part.mask = part.shape_object.generate(part, self.empty_mask.copy())
+                    self._decompile_masks("02_advanced_bar_03_bar")
 
     def _process_state_logic_for_masks(self):
         sorted_parts = sorted(
@@ -417,11 +438,13 @@ class ImageProcessor:
         self.debugger.time_start("Merge Parts")
         self._merge_parts_if_in_merge_groups()
         self.debugger.time_stop()
+        self._decompile_masks("stage_result_01_merged")
 
         # Handle More Advanced Parts (i.e., Bars and Joints)
         self.debugger.time_start("Handle Advanced Shapes")
-        self._apply_mask_shapes()
+        self._apply_and_generate_mask_shapes()
         self.debugger.time_stop()
+        self._decompile_masks("stage_result_02_advanced")
 
     def compile_masks(self):
         # Test Parts for Overlap
@@ -466,3 +489,6 @@ class ImageProcessor:
                 final_dict[f"{part.part_name}_{counter}"] = part
 
         return final_dict
+
+    def get_duration(self) -> float:
+        return sum([time.duration for time in self.debugger.time_logger])

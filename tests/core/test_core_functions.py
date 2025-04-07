@@ -4,7 +4,7 @@ from censorengine.backend._dev import assert_files_are_intended  # type: ignore
 from censorengine.libs.shape_library.catalogue import shape_catalogue  # type: ignore
 from censorengine.libs.style_library.catalogue import style_catalogue  # type: ignore
 import pytest
-from censorengine.backend.models.schemas import Censor
+from censorengine.backend.models.structures.schemas import Censor
 
 # Note: Commented out ones are ones I couldn't get to work
 classes = [
@@ -49,10 +49,10 @@ def test_classes(part_name, root_path):
     folder_cen = "000_tests/01_censored"
 
     # Set Config
-    ce.config.file_settings.uncensored_folder = folder_uncen
-    ce.config.file_settings.censored_folder = folder_cen
+    ce._config.file_settings.uncensored_folder = folder_uncen
+    ce._config.file_settings.censored_folder = folder_cen
 
-    ce.config.censor_settings.enabled_parts = [part_name]
+    ce._config.censor_settings.enabled_parts = [part_name]
 
     # Start CensorEngine
     ce.start()
@@ -112,8 +112,8 @@ def test_styles(style, root_path):
     folder_cen = "000_tests/01_censored"
 
     # Set Config
-    ce.config.file_settings.uncensored_folder = folder_uncen
-    ce.config.file_settings.censored_folder = folder_cen
+    ce._config.file_settings.uncensored_folder = folder_uncen
+    ce._config.file_settings.censored_folder = folder_cen
 
     colours = [
         "BLACK",
@@ -137,8 +137,8 @@ def test_styles(style, root_path):
         "DARK_PINK",
     ]
 
-    for index, part in enumerate(ce.config.censor_settings.enabled_parts):
-        ce.config.censor_settings.parts_settings[part].censors = [
+    for index, part in enumerate(ce._config.censor_settings.enabled_parts):
+        ce._config.censor_settings.parts_settings[part].censors = [
             Censor(
                 "outline",
                 {"colour": "BLACK" if style != "dev_debug" else colours[index]},
@@ -169,8 +169,8 @@ def test_reverse_censor(root_path):
     folder_cen = "000_tests/01_censored"
 
     # Set Config
-    ce.config.file_settings.uncensored_folder = folder_uncen
-    ce.config.file_settings.censored_folder = folder_cen
+    ce._config.file_settings.uncensored_folder = folder_uncen
+    ce._config.file_settings.censored_folder = folder_cen
 
     # Start CensorEngine
     ce.start()

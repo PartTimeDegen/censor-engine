@@ -1,12 +1,8 @@
 from dataclasses import dataclass, field
 from enum import IntEnum
 import itertools
-import os
 import time
-from typing import Iterable, Optional
 import onnxruntime as ort  # type: ignore
-
-import cv2
 
 
 class DebugLevels(IntEnum):
@@ -33,9 +29,10 @@ class DebugLevels(IntEnum):
 
     NONE = 0
     BASIC = 1
-    DETAILED = 2
-    ADVANCED = 3
-    FULL = 4
+    TIMED = 2
+    DETAILED = 3
+    ADVANCED = 4
+    FULL = 5
 
 
 @dataclass
@@ -96,16 +93,17 @@ class Debugger:
 
     # Timer
     time_logger: list[TimerSchema] = []
-    temp_time_holder: Optional[tuple[str, float]] = None  # Name, Time (Start)
+    temp_time_holder: tuple[str, float] | None = None  # Name, Time (Start)
     program_start: TimerSchema
 
     # # Stats
     stats_duration: float = field(init=False)
 
-    def __init__(self, name: str, level: DebugLevels):
+    def __init__(self, name: str, level: DebugLevels, show_stats: bool = False):
         self.debug_name = name.upper()
         self.debug_level = level
         self.time_logger = []
+        self.show_stats = show_stats
         self.temp_time_holder = None
 
     def time_total_start(self):
@@ -122,7 +120,7 @@ class Debugger:
         self.time_logger.append(self.program_start)
 
     def time_start(self, name: str):
-        if self.debug_level < DebugLevels.DETAILED:
+        if self.debug_level < DebugLevels.TIMED:
             return
 
         if self.temp_time_holder:
@@ -131,7 +129,7 @@ class Debugger:
         self.temp_time_holder = (name, time.time())
 
     def time_stop(self):
-        if self.debug_level < DebugLevels.DETAILED:
+        if self.debug_level < DebugLevels.TIMED:
             return
 
         if not self.temp_time_holder:

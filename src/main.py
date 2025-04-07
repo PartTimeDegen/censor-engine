@@ -7,3 +7,4 @@ if __name__ == "__main__":
     censor_engine = CensorEngine(str(file_path))
 
     censor_engine.start()
+    print()

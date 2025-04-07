@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from censorengine.backend.constants.typing import Mask
-    from censorengine.backend.models.detected_part import Part
+    from censorengine.backend.models.structures.detected_part import Part
 
 
 class JointBox(JointShape):

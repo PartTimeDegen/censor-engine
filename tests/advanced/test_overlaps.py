@@ -2,7 +2,7 @@ import os
 
 from censorengine import CensorEngine  # type: ignore
 from censorengine.backend._dev import assert_files_are_intended  # type: ignore
-from censorengine.backend.models.schemas import Censor
+from censorengine.backend.models.structures.schemas import Censor
 
 COLOURS = [
     "WHITE",
@@ -30,17 +30,17 @@ def test_basic(root_path):
     folder_cen = "000_tests/01_censored"
 
     # Set Config
-    ce.config.file_settings.uncensored_folder = folder_uncen
-    ce.config.file_settings.censored_folder = folder_cen
-    ce.config.censor_settings.enabled_parts = [
+    ce._config.file_settings.uncensored_folder = folder_uncen
+    ce._config.file_settings.censored_folder = folder_cen
+    ce._config.censor_settings.enabled_parts = [
         "FEMALE_BREAST_EXPOSED",
         "FEMALE_BREAST_COVERED",
         "FEMALE_GENITALIA_EXPOSED",
         "FEMALE_GENITALIA_COVERED",
         "BUTTOCKS_EXPOSED",
     ]
-    for part in ce.config.censor_settings.enabled_parts:
-        ce.config.censor_settings.parts_settings[part].shape = "bar"
+    for part in ce._config.censor_settings.enabled_parts:
+        ce._config.censor_settings.parts_settings[part].shape = "bar"
 
     # Start CensorEngine
     ce.start()
@@ -71,16 +71,16 @@ def test_overlapping_parts(root_path):
         "BUTTOCKS_EXPOSED",
         "MALE_GENITALIA_EXPOSED",
     ]
-    ce.config.file_settings.uncensored_folder = folder_uncen
-    ce.config.file_settings.censored_folder = folder_cen
-    ce.config.censor_settings.enabled_parts = parts
+    ce._config.file_settings.uncensored_folder = folder_uncen
+    ce._config.file_settings.censored_folder = folder_cen
+    ce._config.censor_settings.enabled_parts = parts
 
     for part, colour in zip(parts, COLOURS):
-        ce.config.censor_settings.parts_settings[part].censors = [
+        ce._config.censor_settings.parts_settings[part].censors = [
             Censor("outline", {"colour": (colour)}),
             Censor("blur", {}),
         ]
-        ce.config.censor_settings.parts_settings[part].margin = 5
+        ce._config.censor_settings.parts_settings[part].margin = 5
 
     # Start CensorEngine
     ce.start()

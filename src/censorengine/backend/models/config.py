@@ -4,9 +4,9 @@ from typing import Any, Optional
 
 import yaml
 from censorengine.backend.constants.files import CONFIGS_FOLDER
-from censorengine.backend.models.schemas import Censor
-from censorengine.backend.models.enums import PartState
-from censorengine.backend.models.debugger import DebugLevels
+from censorengine.backend.models.structures.schemas import Censor
+from censorengine.backend.models.structures.enums import PartState
+from censorengine.backend.models.tools.debugger import DebugLevels
 
 
 # Control Settings Stuff
@@ -137,7 +137,7 @@ class PartInformationConfig:
 
 
 # Config Proper
-@dataclass
+@dataclass(slots=True)
 class Config:
     # File Information
     dev_settings: DevConfig
