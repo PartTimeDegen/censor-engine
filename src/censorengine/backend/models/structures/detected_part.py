@@ -89,9 +89,9 @@ class Part:
         # Generate Masks
         self.original_mask = self.empty_mask
 
-        self.base_masks.clear()
         base_shape = Part.get_shape_class(self.shape_object.base_shape)
-        self.base_masks.append(base_shape.generate(self, self.empty_mask))
+        self.mask = base_shape.generate(self, self.empty_mask)
+        self.base_masks = [self.mask]
 
     def __str__(self) -> str:
         return f"{self.part_name}_{self.part_id}{"_merged" if self.is_merged else ""}"

@@ -43,10 +43,12 @@ class CensorEngine:
 
     # Dev Tools
     _dev_tools: DevTools | None = field(init=False, default=None)
-    _dev_tools_enabled: bool = field(default=False)
+
+    # Flags
+    _flags: dict[str, bool] = field(init=False, default_factory=dict)
 
     # Internal State Variables
-    _args: argparse.Namespace = field(init=False, default_factory=argparse.Namespace)
+    _arg_loc: str = field(init=False)
     _full_files_path: str = field(init=False)
     _config: Config = field(init=False)
 
@@ -174,11 +176,14 @@ class CensorEngine:
 
             # Print that it's Censoring
             index_text = self._get_index_text(index)
-            output_folder = file_path.replace(self.main_files_path, "", 1)[1:]
 
             # Dev Tools
-            if self._dev_tools_enabled:
-                self._dev_tools = DevTools(output_folder=output_folder)
+            if self._flags["dev_tools"]:
+                self._dev_tools = DevTools(
+                    output_folder=file_path,
+                    main_files_path=self.main_files_path,
+                    using_full_output_path=self._flags["show_full_output_path"],
+                )
 
             # Read the File
             file_image = cv2.imread(file_path)
@@ -206,11 +211,17 @@ class CensorEngine:
 
             # File Save
             cv2.imwrite(new_file_name, file_output)
-            print(f'{index_text} Censored: "./{output_folder}"')
+
+            # Print Out
+            prefix = ""
+            if not self._flags["show_full_output_path"]:
+                prefix = "./"
+                new_file_name = new_file_name.replace(self.main_files_path, "", 1)[1:]
+            print(f'{index_text} Censored: "{prefix}{new_file_name}"')
 
             # Save Duration
             self._time_durations.append(censor_manager.get_duration())
-            if self._args.p:
+            if self._flags["pad_individual_items"]:
                 print()
 
         print("Finished Censoring Images!")
@@ -301,28 +312,44 @@ class CensorEngine:
             prog="CensorEngine",
             description="Censors Images",
         )
+        arg_mapper = {
+            "uncensored_location": "loc",
+            "config_location": "config",
+            "debug_level": "debug",
+        }
+
+        flag_mapper = {
+            "show_stat_metrics": "sm",
+            "pad_individual_items": "pi",
+            "dev_tools": "dt",
+            "show_full_output_path": "fo",
+        }
 
         # Add Args
-        parser.add_argument("--loc", action="store")
+        for value in arg_mapper.values():
+            parser.add_argument(f"--{value}", action="store")
 
-        parser.add_argument("--config", action="store")
+        # Add Flags
+        for long_flag_name, short_flag_name in flag_mapper.items():
+            parser.add_argument(
+                f"-{short_flag_name}",
+                f"--{long_flag_name.replace('_', '-')}",
+                dest=long_flag_name,
+                action="store_true",
+                help=f"Enable {long_flag_name.replace('_', ' ')}",
+            )
 
-        parser.add_argument("--debug", action="store")  # Debug
-        parser.add_argument("--output", action="store")
-
-        # Flags
-        parser.add_argument("-s", action="store_true")  # Show Bulk Stats
-        parser.add_argument("-p", action="store_true")  # Pad Individual Media
-        parser.add_argument("-d", action="store_true")  # Dev Tools
-
-        self._args = parser.parse_args()
+        # Collect Args
+        args = parser.parse_args()
 
         # Handle Args
-        if self._args.config:
-            self.load_config(self._args.config)
+        if loc := args.loc:
+            self._arg_loc = loc
+        if config := args.config:
+            self.load_config(config)
             self._used_boot_config = True
 
-        if debug_word := self._args.debug:
+        if debug_word := args.debug:
             # TODO: This needs a dev handler to handle non-boolean values
             try:
                 self._debug_level = DebugLevels[debug_word.upper()]
@@ -330,16 +357,14 @@ class CensorEngine:
             except ValueError:
                 raise ValueError(f"Invalid DebugLevels value: {str(debug_word)}")
 
-        if self._args.s:
-            self._show_stats = True
-            print("**Stats Activated!**")
-
-        if self._args.d:
-            self._dev_tools_enabled = True
-            print("**Dev Mode Activated!**")
+        # Handle Handle Flags
+        self._flags = {key: getattr(args, key) for key in flag_mapper}
+        for key, value in self._flags.items():
+            if value:
+                print(f"**{key.replace('_', ' ').title()} Activated!**")
 
     def _get_post_arguments(self):
-        if loc := self._args.loc:
+        if loc := self._arg_loc:
             if loc.startswith("./"):
                 loc = self._config.file_settings.uncensored_folder + loc[1:]
             self._config.file_settings.uncensored_folder = loc

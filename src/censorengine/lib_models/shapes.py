@@ -13,6 +13,9 @@ class Shape:
 
     shape_type: ShapeType = ShapeType.BASIC
 
+    def __str__(self):
+        return self.shape_name
+
     def generate(
         self,
         part: "Part",

@@ -92,10 +92,14 @@ class ImageProcessor:
         self.debugger.time_stop()
 
     # Dev Tools
-    def _decompile_masks(self, subfolder: str | None = None):
+    def _decompile_masks(
+        self,
+        subfolder: str | None = None,
+        iter_part: Part | None = None,
+    ):
         if self.dev_tools:
             self.dev_tools.dev_decompile_masks(
-                self.parts,
+                self.parts if not iter_part else iter_part,
                 subfolder=subfolder,
             )
 
@@ -202,7 +206,6 @@ class ImageProcessor:
 
     def _apply_and_generate_mask_shapes(self):
         for part in self.parts:
-            self._decompile_masks("02_advanced_base")
             # For Simple Shapes
             if not part.is_merged:
                 shape_single = Part.get_shape_class(part.shape_object.single_shape)
@@ -211,26 +214,31 @@ class ImageProcessor:
             # For Advanced Shapes
             match part.shape_object.shape_type:
                 case ShapeType.BASIC:
-                    pass
+                    self._decompile_masks("02_advanced_basic", iter_part=part)
 
                 case ShapeType.JOINT:
                     part.mask = part.shape_object.generate(part, self.empty_mask.copy())
-                    self._decompile_masks("02_advanced_joint")
+                    self._decompile_masks("02_advanced_joint", iter_part=part)
 
                 case ShapeType.BAR:
-                    # Make Basic Shape
-                    shape_single = Part.get_shape_class("ellipse")
-                    part.mask = shape_single.generate(part, self.empty_mask.copy())
-                    self._decompile_masks("02_advanced_bar_01_base_ellipses")
+                    if not part.is_merged:
+                        # Make Basic Shape
+                        shape_single = Part.get_shape_class("ellipse")
+                        part.mask = shape_single.generate(part, self.empty_mask.copy())
+                        self._decompile_masks(
+                            "02_advanced_bar_01_base_ellipses", iter_part=part
+                        )
 
                     # Make Shape Joint for Bar Basis
                     shape_joint = Part.get_shape_class("joint_ellipse")
                     part.mask = shape_joint.generate(part, self.empty_mask.copy())
-                    self._decompile_masks("02_advanced_bar_02_joint_ellipse")
+                    self._decompile_masks(
+                        "02_advanced_bar_02_joint_ellipse", iter_part=part
+                    )
 
                     # Generate Bar
                     part.mask = part.shape_object.generate(part, self.empty_mask.copy())
-                    self._decompile_masks("02_advanced_bar_03_bar")
+                    self._decompile_masks("02_advanced_bar_03_bar", iter_part=part)
 
     def _process_state_logic_for_masks(self):
         sorted_parts = sorted(
@@ -430,21 +438,25 @@ class ImageProcessor:
 
     def generate_parts_and_shapes(self):
         # Create Parts
+        self._decompile_masks("00_stage_base_00_create_part")
         self.debugger.time_start("Create Parts")
         self._create_parts()
         self.debugger.time_stop()
+        self._decompile_masks("00_stage_result_00_create_part")
 
         # Merge Parts
+        self._decompile_masks("00_stage_base_01_merged")
         self.debugger.time_start("Merge Parts")
         self._merge_parts_if_in_merge_groups()
         self.debugger.time_stop()
-        self._decompile_masks("stage_result_01_merged")
+        self._decompile_masks("00_stage_result_01_merged")
 
         # Handle More Advanced Parts (i.e., Bars and Joints)
+        self._decompile_masks("00_stage_base_02_advanced")
         self.debugger.time_start("Handle Advanced Shapes")
         self._apply_and_generate_mask_shapes()
         self.debugger.time_stop()
-        self._decompile_masks("stage_result_02_advanced")
+        self._decompile_masks("00_stage_result_02_advanced")
 
     def compile_masks(self):
         # Test Parts for Overlap
