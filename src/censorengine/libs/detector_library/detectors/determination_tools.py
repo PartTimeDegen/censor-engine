@@ -20,7 +20,7 @@ class ImageGenreDeterminer(Determiner):
 
     The model_classifiers attribute lists the original classifiers while the
     broad_groups reduces this down to drawings and real porn, since AI can be
-    finnicky and debately (some sick degens think handholding isn't sexual,
+    finicky and debatably (some sick degens think handholding isn't sexual,
     disgusting!), so I reduced "drawings" and "hentai" to just the latter, and
     "porn", "sexy", and "neutral" to "porn".
 
@@ -50,7 +50,7 @@ class ImageGenreDeterminer(Determiner):
 
     def reduce_results_to_broad_groups(self, results: dict[str, Any]) -> str:
         """
-        This method just sums the underling classifers into broad groups, the
+        This method just sums the underling classifiers into broad groups, the
         total score determines the result. This is used to avoid where say a
         hentai drawing is shown but the AI model doesn't recognise tiddies so
         thinks it's just a good christian drawing.
