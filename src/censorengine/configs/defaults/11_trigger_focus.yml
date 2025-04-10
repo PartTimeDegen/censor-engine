@@ -19,11 +19,31 @@ censor_settings:
   - "MALE_GENITALIA_EXPOSED"
   - "MALE_BREAST_EXPOSED"
 
-  default_part_settings:
-    censors:
-    - function: "box"
-      args:
-        colour: "BLACK"
+  merge_settings:
+    merge_groups:
+    - [ "FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED" ]
 
-    minimum_score: 0.20
-    shape: "box"
+  default_part_settings:
+    shape: "bar"
+
+  FEMALE_BREAST_EXPOSED:
+    margin: 0.3
+    censors:
+    - function: "outline"
+      args:
+        colour: "PINK"
+    - function: "blur"
+      args:
+        factor: 20
+    - function: "greyscale"
+
+  FEMALE_GENITALIA_EXPOSED:
+    margin: 0.3
+    censors:
+    - function: "outline"
+      args:
+        colour: "PINK"
+    - function: "blur"
+      args:
+        factor: 20
+    - function: "greyscale"

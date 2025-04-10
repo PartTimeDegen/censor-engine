@@ -112,7 +112,7 @@ class Pixelate(BlurStyle):
         # Code Proper
         down_image = cv2.resize(
             image,
-            factors,
+            factors,  # type: ignore
             interpolation=cv2.INTER_LINEAR,
         )
         pixel_image = cv2.resize(
@@ -127,65 +127,63 @@ class Pixelate(BlurStyle):
 class HexagonPixelate(BlurStyle):
     style_name: str = "hexagon_pixelate"
 
-    def _hexagon_corners(self, center, size):
-        """Compute hexagon vertices around a center."""
-        x, y = center
-        w = math.sqrt(3) * size
-        h = 2 * size
-        return [
-            (x - w / 2, y - h / 4),
-            (x, y - h / 2),
-            (x + w / 2, y - h / 4),
-            (x + w / 2, y + h / 4),
-            (x, y + h / 2),
-            (x - w / 2, y + h / 4),
-        ]
+    def _hexagon_corners(self, center_x, center_y, size):
+        """Compute hexagon vertices around a center using NumPy arrays."""
+        w_half = math.sqrt(3) * size / 2
+        h_half = size
+        return np.array(
+            [
+                [center_x - w_half, center_y - h_half / 2],
+                [center_x, center_y - h_half],
+                [center_x + w_half, center_y - h_half / 2],
+                [center_x + w_half, center_y + h_half / 2],
+                [center_x, center_y + h_half],
+                [center_x - w_half, center_y + h_half / 2],
+            ],
+            dtype=np.int32,
+        )
 
     def _hexagonify(self, image, hexagon_size):
-        """Apply hexagonal pixelation to an image."""
-        img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        im = Image.fromarray(img)
-        draw = ImageDraw.Draw(im)
+        """Apply hexagonal pixelation using NumPy and OpenCV."""
+        img_h, img_w = image.shape[:2]
 
-        np_image = np.array(im)
-        img_h, img_w = im.size[1], im.size[0]  # (height, width)
+        # Hexagon width & height
+        w, h = math.sqrt(3) * hexagon_size, 2 * hexagon_size
+        w_half, h_half, h_three_quarter = w / 2, h / 2, h * 3 / 4
 
-        # Hexagon width and height
-        w = math.sqrt(3) * hexagon_size
-        h = 2 * hexagon_size
-
-        # Compute the number of hexagons in each direction
+        # Number of hexagons
         num_hor = math.ceil(img_w / w) + 1
-        num_ver = math.ceil(img_h / (h * 3 / 4)) + 1
+        num_ver = math.ceil(img_h / h_three_quarter) + 1
 
-        # Iterate through hexagon grid
+        # Output image (copy of original)
+        output = np.zeros_like(image)
+
         for row in range(num_ver):
             for col in range(num_hor):
-                even = row % 2  # Even rows have an offset
+                center_x = col * w + (row % 2) * w_half
+                center_y = row * h_three_quarter
 
-                center_x = col * w + even * (w / 2)
-                center_y = row * h * 3 / 4
+                # Bounding box for color sampling
+                x_min, x_max = int(center_x - w_half), int(center_x + w_half)
+                y_min, y_max = int(center_y - h_half), int(center_y + h_half)
 
-                # Compute hexagon polygon points
-                hex_corners = self._hexagon_corners((center_x, center_y), hexagon_size)
+                # Ensure indices are within bounds
+                x_min, x_max = max(0, x_min), min(img_w, x_max)
+                y_min, y_max = max(0, y_min), min(img_h, y_max)
 
-                # Define bounding box for color sampling
-                x_min, x_max = (
-                    max(0, int(center_x - w / 2)),
-                    min(img_w, int(center_x + w / 2)),
+                # Compute average color
+                slice_region = image[y_min:y_max, x_min:x_max]
+                color = (
+                    np.mean(slice_region, axis=(0, 1), dtype=np.float32)
+                    if slice_region.size
+                    else [0, 0, 0]
                 )
-                y_min, y_max = (
-                    max(0, int(center_y - h / 2)),
-                    min(img_h, int(center_y + h / 2)),
-                )
 
-                # Average color within bounding box
-                color = np.mean(np_image[y_min:y_max, x_min:x_max], axis=(0, 1)).astype(
-                    np.uint8
-                )
-                draw.polygon(hex_corners, fill=tuple(color))
+                # Fill the hexagon with the computed color
+                hex_corners = self._hexagon_corners(center_x, center_y, hexagon_size)
+                cv2.fillPoly(output, [hex_corners], color=tuple(map(int, color)))
 
-        return cv2.cvtColor(np.array(im), cv2.COLOR_RGB2BGR)
+        return output
 
     def apply_style(self, image: CVImage, contour, factor: int | float = 12) -> CVImage:
         """Apply hexagonal pixelation to the image within the given contour."""
@@ -221,8 +219,8 @@ class MotionBlur(BlurStyle):
         return self.draw_effect_on_mask([contour], noise_image, image)
 
 
-class Crystalise(BlurStyle):
-    style_name: str = "crystalise"
+class Crystallise(BlurStyle):
+    style_name: str = "crystallise"
 
     def apply_style(
         self,
@@ -240,7 +238,7 @@ class Crystalise(BlurStyle):
             ]
         ).T.astype(np.float32)
 
-        subdiv = cv2.Subdiv2D((0, 0, w, h))
+        subdiv = cv2.Subdiv2D((0, 0, w, h))  # type: ignore
         for p in points:
             subdiv.insert((p[0], p[1]))
 
@@ -253,7 +251,7 @@ class Crystalise(BlurStyle):
             mask = np.zeros((h, w), dtype=np.uint8)
             cv2.fillConvexPoly(mask, pts, 1)  # type: ignore
             mean_color = cv2.mean(image, mask=mask)[:3]
-            cv2.fillConvexPoly(result, pts, mean_color)
+            cv2.fillConvexPoly(result, pts, mean_color)  # type: ignore
 
         return self.draw_effect_on_mask([contour], result, image)
 
@@ -263,5 +261,5 @@ effects = {
     "pixelate": Pixelate,
     "hexagon_pixelate": HexagonPixelate,
     "motion_blur": MotionBlur,
-    "crystalise": Crystalise,
+    "crystallise": Crystallise,
 }

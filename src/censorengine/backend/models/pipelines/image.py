@@ -7,19 +7,17 @@ import cv2
 import numpy as np
 from typing import TYPE_CHECKING
 
-from censorengine.backend.models.debugger import (
+from censorengine.backend.models.tools.debugger import (
     Debugger,
     DebugLevels,
 )
-from censorengine.backend.models.enums import PartState, ShapeType
+from censorengine.backend.models.structures.enums import PartState, ShapeType
 
 if TYPE_CHECKING:
-    from censorengine.backend.constants.typing import (
-        CVImage,
-        Config,
-    )
-from censorengine.backend.models.detected_part import Part
+    from censorengine.backend.constants.typing import CVImage
+from censorengine.backend.models.structures.detected_part import Part
 from censorengine.libs.style_library.catalogue import style_catalogue
+from censorengine.backend.models.config import Config
 
 from censorengine.libs.detector_library.catalogue import (
     enabled_detectors,
@@ -27,57 +25,43 @@ from censorengine.libs.detector_library.catalogue import (
 )
 from censorengine.lib_models.detectors import DetectedPartSchema
 from uuid import uuid4, UUID
+from censorengine.backend.models.tools.dev_tools import DevTools
 
 
-@dataclass
-class CensorManager:
-    # Parts
-    detected_parts: list[Optional[dict[str, str]]] = field(default_factory=list)
-    parts: list[Optional[Part]] = field(default_factory=list)
+@dataclass(slots=True)
+class ImageProcessor:
+    file_image: "CVImage"
+    config: "Config"
+    debug_level: DebugLevels = DebugLevels.NONE
+    dev_tools: DevTools | None = field(default=None)
 
-    # Common Masks
-    empty_mask: "CVImage" = field(init=False)
-
-    # File Info
-    file_original_image: "CVImage" = field(init=False)
-    file_image: "CVImage" = field(init=False)
+    # Internals
     force_png: bool = False
 
-    # Manager Info
-    config: "Config" = field(init=False)
+    detected_parts: list[DetectedPartSchema] = field(init=False, default_factory=list)
+    extracted_information: dict[str, str] = field(init=False, default_factory=dict)
+
+    parts: list[Part] = field(init=False, default_factory=list)
+
+    empty_mask: "CVImage" = field(init=False)
+    file_original_image: "CVImage" = field(init=False)
     file_uuid: UUID = field(init=False)
 
-    # Image Determiners
-    extracted_information: dict[str, str] = field(default_factory=dict)
-
-    # Debugger
     debugger: Debugger = field(init=False)
+    duration: float = field(init=False)
 
-    # Stats
-    # TODO: Expand on part_type_id, make an Enum and can include part "area"
-    # (ie group exposed and covered variants)
-    # part_type_id: int
-    # part_type_counts: int
-
-    def __init__(
-        self,
-        file_image: "CVImage",
-        config: "Config",
-    ):
-        self.config = config
+    def __post_init__(self):
         Part.part_id = itertools.count(start=1)
-        self.detected_parts = []
-        self.extracted_information = {}
+        self.detected_parts.clear()
+        self.extracted_information.clear()
         self.file_uuid = uuid4()
-
-        # NOTE: This may produce
-        #       "libpng warning: iCCP: known incorrect sRGB profile" errors
-        #       I tried suppressing them but it doesn't work
-        self.file_original_image = file_image
-        self.file_image = file_image
+        self.file_original_image = self.file_image
 
         # Debug
-        self.debugger = Debugger("Censor Manager", level=DebugLevels.NONE)
+        self.debugger = Debugger(
+            "Censor Manager",
+            level=self.debug_level,
+        )
         self.debugger.time_total_start()
         self.debugger.display_onnx_info()
 
@@ -88,13 +72,36 @@ class CensorManager:
 
         # Determine Image
         self.debugger.time_start("Determine Image")
-        self._determine_image()
+        self.extracted_information = {
+            determiner.model_name: determiner.determine_image(self.file_image)
+            for determiner in enabled_determiners
+        }
         self.debugger.time_stop()
 
         # Detect Parts for Image
         self.debugger.time_start("Detect Parts")
-        self._detect_image()
+        with ThreadPoolExecutor() as executor:
+            detected_parts = list(
+                executor.map(
+                    lambda detector: detector.detect_image(self.file_image),
+                    enabled_detectors,
+                )
+            )
+
+        self.detected_parts = list(itertools.chain(*detected_parts))
         self.debugger.time_stop()
+
+    # Dev Tools
+    def _decompile_masks(
+        self,
+        subfolder: str | None = None,
+        iter_part: Part | None = None,
+    ):
+        if self.dev_tools:
+            self.dev_tools.dev_decompile_masks(
+                self.parts if not iter_part else iter_part,
+                subfolder=subfolder,
+            )
 
     # Private
     def _create_empty_mask(self, inverse: bool = False):
@@ -122,37 +129,6 @@ class CensorManager:
                 dtype=np.uint8,
             )
         )
-
-    def _determine_image(self):
-        """
-        This method is used for the enabled determiners, ie ai_models that
-        extract information from the photo (that don't provide locations).
-
-        Oirignally meant for `nsfw_detector` however my computer can't run
-        tensorflow but I will keep it here.
-
-        """
-        # Collect Detected Data
-        self.extracted_information = {
-            determiner.model_name: determiner.determine_image(self.file_image)
-            for determiner in enabled_determiners
-        }
-
-    def _detect_image(self):
-        """
-        #TODO : Write me
-
-        """
-        # Collect Detected Data
-        with ThreadPoolExecutor() as executor:
-            detected_parts = list(
-                executor.map(
-                    lambda detector: detector.detect_image(self.file_image),
-                    enabled_detectors,
-                )
-            )
-
-        self.detected_parts = list(itertools.chain(*detected_parts))
 
     def _create_parts(self):
         """
@@ -182,38 +158,42 @@ class CensorManager:
 
         """
         # Acquire Settings
-        self.parts = []
-        config_parts_enabled = self.config.parts_enabled
+        self.parts.clear()
 
         # Map and Filter Parts for Missing Information
-        def add_parts(detect_part: DetectedPartSchema):
-            if detect_part.label not in config_parts_enabled:
+        def add_parts(detect_part: DetectedPartSchema) -> Optional[Part]:
+            """
+            Generates the parts using the Part constructor. Also checks that
+            the part is in the enabled parts.
+
+            The structure could be improved but the reason I've used a map()
+            instead of list comprehensions is because it's faster.
+
+            :param DetectedPartSchema detect_part: Output from the Detector class method
+            :return Optional[Part]: A Part object (or None)
+            """
+            if detect_part.label not in self.config.censor_settings.enabled_parts:
                 return
 
             return Part(
-                detected_information=detect_part,
+                part_name=detect_part.label,
+                score=detect_part.score,
+                relative_box=detect_part.relative_box,
                 empty_mask=self._create_empty_mask(),
                 config=self.config,
                 file_uuid=self.file_uuid,
             )
 
-        self.parts = list((map(add_parts, self.detected_parts)))
-        self.parts = list(filter(lambda x: x is not None, self.parts))
+        self.parts = [
+            part for part in map(add_parts, self.detected_parts) if part is not None
+        ]
 
     def _merge_parts_if_in_merge_groups(self):
-        if not self.config.merge_enabled:
-            return
-
-        merge_groups = self.config.merge_groups
-        if not merge_groups:
-            return
-
-        full_parts = self.parts
-        for index, part in enumerate(full_parts):
+        for index, part in enumerate(self.parts):
             if not part.merge_group:
                 continue
 
-            for other_part in full_parts[index + 1 :]:
+            for other_part in self.parts[index + 1 :]:
                 if part == other_part:
                     continue
                 if other_part.part_name not in part.merge_group:
@@ -224,89 +204,112 @@ class CensorManager:
 
             part.compile_base_masks()
 
-    def _apply_mask_shapes(self):
+    def _apply_and_generate_mask_shapes(self):
         for part in self.parts:
-            # For Single Shapes
+            # For Simple Shapes
             if not part.is_merged:
-                shape_single = Part.get_shape_class(part.shape.single_shape)
-
-                if not shape_single:
-                    raise KeyError("Missing single shape")
-
+                shape_single = Part.get_shape_class(part.shape_object.single_shape)
                 part.mask = shape_single.generate(part, self.empty_mask.copy())
-                continue
 
-            # For Advanced Shaoes
-            match part.shape.shape_type:
+            # For Advanced Shapes
+            match part.shape_object.shape_type:
                 case ShapeType.BASIC:
-                    pass
+                    self._decompile_masks("02_advanced_basic", iter_part=part)
 
                 case ShapeType.JOINT:
-                    part.mask = part.shape.generate(part, self.empty_mask.copy())
+                    part.mask = part.shape_object.generate(part, self.empty_mask.copy())
+                    self._decompile_masks("02_advanced_joint", iter_part=part)
 
                 case ShapeType.BAR:
+                    if not part.is_merged:
+                        # Make Basic Shape
+                        shape_single = Part.get_shape_class("ellipse")
+                        part.mask = shape_single.generate(part, self.empty_mask.copy())
+                        self._decompile_masks(
+                            "02_advanced_bar_01_base_ellipses", iter_part=part
+                        )
+
+                    # Make Shape Joint for Bar Basis
                     shape_joint = Part.get_shape_class("joint_ellipse")
                     part.mask = shape_joint.generate(part, self.empty_mask.copy())
-                    part.mask = part.shape.generate(part, self.empty_mask.copy())
+                    self._decompile_masks(
+                        "02_advanced_bar_02_joint_ellipse", iter_part=part
+                    )
 
-    def _process_overlaps_for_masks(self):
-        full_parts = sorted(self.parts, key=lambda x: (-x.state, x.part_name))[::-1]
+                    # Generate Bar
+                    part.mask = part.shape_object.generate(part, self.empty_mask.copy())
+                    self._decompile_masks("02_advanced_bar_03_bar", iter_part=part)
 
-        for index, target_part in enumerate(full_parts):
-            if target_part not in self.parts:
+    def _process_state_logic_for_masks(self):
+        sorted_parts = sorted(
+            self.parts, key=lambda x: (-x.part_settings.state, x.part_name)[::-1]
+        )
+        removed_parts = []  # Track removed parts
+
+        for index, primary_part in enumerate(sorted_parts):
+            if primary_part in removed_parts:
                 continue
 
-            for comp_part in full_parts[index + 1 :]:
-                if target_part not in self.parts or comp_part not in self.parts:
+            primary_state = primary_part.part_settings.state
+
+            for secondary_part in sorted_parts[index + 1 :]:
+                if secondary_part in removed_parts:
                     continue
-                # NOTE: This is done in respect to Target
+
+                secondary_state = secondary_part.part_settings.state
 
                 # Quality of Life Booleans
-                compared_settings = {
-                    "censors": target_part.censors == comp_part.censors,
-                    "states": target_part.state == comp_part.state,
-                }
+                same_censors = (
+                    primary_part.part_settings.censors
+                    == secondary_part.part_settings.censors
+                )
+                same_state = primary_state == secondary_state
+                primary_has_higher_rank = primary_state > secondary_state
 
-                is_comp_higher = target_part.state <= comp_part.state
+                def subtract_masks(target: Part, source: Part):
+                    """Subtract one part’s mask from another."""
+                    target.subtract(source.mask)
 
-                # Flow Chart
-                # # MATCHING
-                if all(compared_settings.values()):
-                    # ALL MATCHING CRITERIA
-                    # Combine Parts
-                    target_part.add(comp_part.mask)
-                    self.parts.remove(comp_part)
+                def combine_parts():
+                    """Combine secondary part into primary and remove secondary."""
+                    primary_part.add(secondary_part.mask)
+                    removed_parts.append(secondary_part)
+                    self.parts.remove(secondary_part)
 
-                # # PROTECTED
+                # MATCHING: Merge if both parts have the same settings
+                if same_censors and same_state:
+                    combine_parts()
+
+                # PROTECTED: If `censors` match, combine instead of subtracting
                 elif (
-                    target_part.state == PartState.PROTECTED
-                    or comp_part.state == PartState.PROTECTED
+                    primary_state == PartState.PROTECTED
+                    or secondary_state == PartState.PROTECTED
                 ):
-                    if compared_settings["states"]:
-                        comp_part.subtract(target_part.mask)
-                    elif target_part.state == PartState.PROTECTED:
-                        comp_part.subtract(target_part.mask)
-                    elif comp_part.state == PartState.PROTECTED:
-                        target_part.subtract(comp_part.mask)
-
-                # # REVEALED
-                elif target_part.state == PartState.REVEALED:
-                    if is_comp_higher:
-                        comp_part.subtract(target_part.mask)
+                    if same_censors:
+                        combine_parts()
+                    elif same_state or primary_state == PartState.PROTECTED:
+                        subtract_masks(secondary_part, primary_part)
                     else:
-                        target_part.subtract(comp_part.mask)
+                        subtract_masks(primary_part, secondary_part)
 
-                # # UNPROTECTED
-                elif target_part.state == PartState.UNPROTECTED:
-                    if is_comp_higher and compared_settings["censors"]:
-                        comp_part.add(target_part.mask)
-                        self.parts.remove(target_part)
+                # REVEALED: Higher-ranked part subtracts from lower-ranked part
+                elif primary_state == PartState.REVEALED:
+                    subtract_masks(
+                        secondary_part if primary_has_higher_rank else primary_part,
+                        primary_part if primary_has_higher_rank else secondary_part,
+                    )
 
-                    elif is_comp_higher:
-                        target_part.subtract(comp_part.mask)
+                # UNPROTECTED: Merge if same censors, otherwise subtract
+                elif primary_state == PartState.UNPROTECTED:
+                    if primary_has_higher_rank and same_censors:
+                        secondary_part.add(primary_part.mask)
+                        removed_parts.append(primary_part)
+                        self.parts.remove(primary_part)
+                    elif primary_has_higher_rank:
+                        subtract_masks(primary_part, secondary_part)
 
     def _handle_reverse_censor(self):
-        if not self.config.reverse_censor_enabled:
+        if not self.config.reverse_censor.censors:
             return
 
         # Create Mask
@@ -321,7 +324,7 @@ class CensorManager:
             method=cv2.CHAIN_APPROX_SIMPLE,
         )
 
-        for censor in self.config.reverse_censors[::-1]:
+        for censor in self.config.reverse_censor.censors[::-1]:
             censor_object = style_catalogue[censor.function]()
             censor_object.change_linetype(enable_aa=False)
             censor_object.using_reverse_censor = True
@@ -330,8 +333,6 @@ class CensorManager:
                 self.file_image,
                 contour,
             ]
-            if censor_object.style_type == "dev":
-                arguments.append(part)
 
             self.file_image = censor_object.apply_style(
                 *arguments,
@@ -339,11 +340,11 @@ class CensorManager:
             )
 
     def _apply_censors(self):
-        parts = sorted(self.parts, key=lambda x: (x.state, x.part_name))
+        parts = sorted(self.parts, key=lambda x: (x.part_settings.state, x.part_name))
 
         working_image = self.file_image.copy()
         for part in parts:
-            if not part.censors or not part:
+            if not part.part_settings.censors or not part:
                 continue
 
             # if part.use_global_area:
@@ -360,7 +361,7 @@ class CensorManager:
             }
 
             # Reversed to represent YAML order
-            for censor in part.censors[::-1]:
+            for censor in part.part_settings.censors[::-1]:
                 # Acquire Function
                 censor_object = style_catalogue[censor.function]()
 
@@ -370,6 +371,8 @@ class CensorManager:
                 # Handle Args
                 if censor_object.style_type == "dev":
                     arguments["part"] = part
+                elif arguments.get("part"):
+                    arguments.pop("part")
 
                 # Apply Censor
                 arguments["image"] = censor_object.apply_style(
@@ -382,7 +385,7 @@ class CensorManager:
                     self.force_png = censor_object.force_png
 
             # Apply Potential Feather Fade
-            if not part.fade_percent:
+            if not part.part_settings.fade_percent:
                 working_image = arguments["image"]
                 continue
 
@@ -401,7 +404,7 @@ class CensorManager:
 
             # # Calculate Feather Effect based on Contour
             _, _, w, h = cv2.boundingRect(part_contour[0][0])
-            fade_percent = np.clip(int(part.fade_percent), 0, 100)
+            fade_percent = np.clip(int(part.part_settings.fade_percent), 0, 100)
             max_dim = max(w, h)
             feathering_amount = int((fade_percent / 100.0) * max_dim)
             kernel_size = min(51, max(3, feathering_amount // 2 * 2 + 1))
@@ -417,7 +420,7 @@ class CensorManager:
             )
 
             # # Convert the mask back to 3-channel for blending
-            feathered_mask = cv2.merge([feathered_mask] * 3)
+            feathered_mask = cv2.merge([feathered_mask] * 3)  # type: ignore
 
             # # Blend the images using the feathered mask
             feathered_mask *= 1.0
@@ -429,49 +432,36 @@ class CensorManager:
 
         self.file_image = working_image
 
-    # Lists of Parts
-    def get_list_of_parts_total(self, search: Optional[dict[str, str]] = None):
-        if not search:
-            return self.parts
-
-        list_matching_parts_attributes = [
-            part
-            for part in self.parts
-            if all(
-                part.__dict__.get(key) and (str(part.__dict__.get(key)) == str(value))
-                for key, value in search.items()
-            )
-        ]
-
-        return list_matching_parts_attributes
-
-    # Debugger
-    def flush_debugger(self):
-        return self.debugger
-
     # Public
     def return_output(self):
         return self.file_image
 
     def generate_parts_and_shapes(self):
         # Create Parts
+        self._decompile_masks("00_stage_base_00_create_part")
         self.debugger.time_start("Create Parts")
         self._create_parts()
         self.debugger.time_stop()
+        self._decompile_masks("00_stage_result_00_create_part")
 
         # Merge Parts
+        self._decompile_masks("00_stage_base_01_merged")
         self.debugger.time_start("Merge Parts")
         self._merge_parts_if_in_merge_groups()
         self.debugger.time_stop()
+        self._decompile_masks("00_stage_result_01_merged")
 
         # Handle More Advanced Parts (i.e., Bars and Joints)
+        self._decompile_masks("00_stage_base_02_advanced")
         self.debugger.time_start("Handle Advanced Shapes")
-        self._apply_mask_shapes()
+        self._apply_and_generate_mask_shapes()
         self.debugger.time_stop()
+        self._decompile_masks("00_stage_result_02_advanced")
 
+    def compile_masks(self):
         # Test Parts for Overlap
-        self.debugger.time_start("Process Overlaps")
-        self._process_overlaps_for_masks()
+        self.debugger.time_start("Process State Logic")
+        self._process_state_logic_for_masks()
         self.debugger.time_stop()
 
     def apply_censors(self):
@@ -491,6 +481,7 @@ class CensorManager:
 
     def start(self):
         self.generate_parts_and_shapes()
+        self.compile_masks()
         self.apply_censors()
 
     # Util
@@ -510,3 +501,6 @@ class CensorManager:
                 final_dict[f"{part.part_name}_{counter}"] = part
 
         return final_dict
+
+    def get_duration(self) -> float:
+        return sum([time.duration for time in self.debugger.time_logger])

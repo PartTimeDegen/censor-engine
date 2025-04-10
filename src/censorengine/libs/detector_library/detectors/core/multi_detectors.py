@@ -33,7 +33,7 @@ class NudeNetDetector(Detector):
     )
     model_object = NudeDetector()
 
-    def detect_image(self, file_path: str):
+    def detect_image(self, file_path: str) -> list[DetectedPartSchema]:
         return [
             DetectedPartSchema(
                 label=found_part["class"],

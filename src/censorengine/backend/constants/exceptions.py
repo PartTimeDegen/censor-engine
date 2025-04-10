@@ -1,2 +1,0 @@
-class MissingEssentialConfigSection(Exception):
-    pass

@@ -2,84 +2,93 @@ import argparse
 from dataclasses import dataclass, field
 from glob import glob
 import os
+import statistics
+from typing import Any
 
 import cv2
 
-import numpy as np
+from cycler import V
 import progressbar
 
 from censorengine.backend.constants.files import (
     APPROVED_FORMATS_IMAGE,
     APPROVED_FORMATS_VIDEO,
 )
-from censorengine.backend.models.censor_manager import CensorManager
+from censorengine.backend.models.pipelines.image import ImageProcessor
 from censorengine.backend.models.config import Config
 
+from censorengine.backend.models.tools.debugger import DebugLevels
+from censorengine.backend.models.tools.dev_tools import DevTools
 from censorengine.libs.detector_library.catalogue import (
     enabled_detectors,
     enabled_determiners,
 )
 from censorengine.libs.shape_library.catalogue import shape_catalogue
 from censorengine.libs.style_library.catalogue import style_catalogue
-from censorengine.backend.models.detected_part import Part
+from censorengine.backend.models.pipelines.video import VideoFrame, VideoProcessor
 
 
-@dataclass
+@dataclass(slots=True, repr=False, eq=False, order=False, match_args=False)
 class CensorEngine:
-    # Booleans
-    test_mode: bool = field(init=False)
-    config: Config = field(init=False)
-    censor_mode: str = "auto"
-    used_boot_config: bool = False
-
     # Information
-    main_files_path: str = field(init=False)
-    full_files_path: str = field(init=False)
-    files: list[str] = field(default_factory=list)
-    indexed_files: list[str] = field(default_factory=list)
+    main_files_path: str
+    test_mode: bool = False
+    censor_mode: str = "auto"
+    config_data: str | dict[str, Any] = "00_default.yml"
 
-    # Files
-    is_file: bool = False
-    force_png: bool = False
-    # Statistics
-    max_file_index: int = 1
-    max_index_chars: int = 1
+    # Debug
+    _show_stats: bool = False
+    _debug_level: DebugLevels = DebugLevels.NONE
+    _time_durations: list[float] = field(init=False, default_factory=list)
 
-    durations: list[str] = field(default_factory=list)
+    # Dev Tools
+    _dev_tools: DevTools | None = field(init=False, default=None)
+
+    # Flags
+    _flags: dict[str, bool] = field(init=False, default_factory=dict)
+
+    # Internal State Variables
+    _arg_loc: str = field(init=False)
+    _full_files_path: str = field(init=False)
+    _config: Config = field(init=False)
+
+    _used_boot_config: bool = field(default=False, init=False)
+    _is_file: bool = field(default=False, init=False)
+    _force_png: bool = field(default=False, init=False)
+
+    _max_file_index: int = field(default=1, init=False)
+    _max_index_chars: int = field(default=1, init=False)
+
+    _durations: list[str] = field(default_factory=list, init=False)
+    _files: list[str] = field(default_factory=list, init=False)
+    _indexed_files: list[tuple[int, str, str]] = field(default_factory=list, init=False)
 
     # Constants
     FRAME_DIFFERENCE_THRESHOLD: float = 0.02  # Percentage # TODO: Add to config
     FRAME_HOLD = 3
 
-    def __init__(
-        self,
-        main_file_path: str,
-        censor_mode: str = "auto",  # image, video, default=auto
-        config: str = "00_default.yml",
-        test_mode: bool = False,
-    ):
-        # Mount Init Settings
-        self.test_mode = test_mode
-        self.main_files_path = main_file_path
-        self.censor_mode = censor_mode
-
+    def __post_init__(self):
         # Get Pre-init Arguments
-        if not test_mode:
-            self._get_pre_init_arguments()
+        if not self.test_mode:
+            self._parse_pre_arguments()
 
         # Load Config
-        if not self.used_boot_config:
-            self.load_config(config)
+        if not self._used_boot_config:
+            self.load_config(self.config_data)
 
         # Get Post-init Arguments
-        if not test_mode:
-            self._get_post_init_arguments()
+        if not self.test_mode:
+            self._get_post_arguments()
 
-    def _make_progress_bar_widgets(self, total_amount: int):
+    def _make_progress_bar_widgets(
+        self, index_text: str, file_name: str, total_amount: int
+    ) -> list:
         return [
+            f"{index_text} ",
+            f'Censoring "{file_name}" > ',
             progressbar.Counter(),
             "/",
-            f"{total_amount}" " | ",
+            f"{total_amount}" " |",
             progressbar.Percentage(),
             " [",
             progressbar.Timer(),
@@ -90,84 +99,77 @@ class CensorEngine:
             progressbar.GranularBar(),
         ]
 
-    def _find_files(self):
-        # Set Mutables
-        self.files = []
-        self.indexed_files = []
+    def _find_files(self):  # FIXME Single File Mode
+        # Clear Lists
+        self._files.clear()
+        self._indexed_files.clear()
 
         # Get Full Path
-        self.full_files_path = os.path.join(
-            self.main_files_path, self.config.uncensored_folder
+        self._full_files_path = os.path.join(
+            self.main_files_path,
+            self._config.file_settings.uncensored_folder,
         )
 
         # Check and Filter for Approved File Formats Only
         approved_formats = APPROVED_FORMATS_IMAGE + APPROVED_FORMATS_VIDEO
-        if any(self.full_files_path.endswith(ext) for ext in approved_formats):
-            if not os.path.exists(self.full_files_path):
-                raise FileNotFoundError
-            self.is_file = True
-            self.files = [self.full_files_path]
-            self.indexed_files = [(1, self.full_files_path)]
+        if any(self._full_files_path.endswith(ext) for ext in approved_formats):
+            if not os.path.exists(self._full_files_path):
+                raise FileNotFoundError(f"File not found: {self._full_files_path}")
+
+            self._is_file = True
+            self._files = [self._full_files_path]
+
+            self._indexed_files = [
+                (
+                    1,
+                    self._full_files_path,
+                    "video"
+                    if self._full_files_path.endswith(tuple(APPROVED_FORMATS_VIDEO))
+                    else "image",
+                )
+            ]
             return
 
         # Scan Folders
-        files = [
-            filename
-            for filename in glob(
-                os.path.join(self.full_files_path, "**/**"),
-                recursive=True,
+        self._files = [
+            file_name
+            for file_name in glob(
+                os.path.join(self._full_files_path, "**", "*"), recursive=True
             )
-            if not (filename.endswith("/") or filename.endswith("\\"))
-            and filename[filename.rfind(".") :] in approved_formats
+            if os.path.isfile(file_name)
+            and file_name[file_name.rfind(".") :] in approved_formats
         ]
 
-        # Set Files with an Index to Keep Track
-        self.files = files
-        self.indexed_files = [
+        self._indexed_files = [
             (
-                file_index,
+                index,
                 file_name,
                 "video"
-                if ("." + file_name.split(".")[-1]) in APPROVED_FORMATS_VIDEO
+                if file_name.endswith(tuple(APPROVED_FORMATS_VIDEO))
                 else "image",
             )
-            for file_index, file_name in enumerate(files, start=1)
+            for index, file_name in enumerate(self._files, start=1)
         ]
 
         # Throw Error on Empty Folder
-        if len(files) == 0:
-            raise FileNotFoundError(f"Empty Folder: {self.full_files_path}")
+        if not self._files:
+            raise FileNotFoundError(f"Empty folder: {self._full_files_path}")
 
         # Handle Max Index
-        self.max_file_index = self.indexed_files[-1][0]
-        self.max_index_chars = len(str(self.max_file_index))
+        self._max_file_index = len(self._indexed_files)
+        self._max_index_chars = len(str(self._max_file_index))
 
     def _get_index_text(self, index: int):
-        index_percent = index / self.max_file_index
-        leading_spaces = " " * (self.max_index_chars - len(str(index)))
+        index_percent = index / self._max_file_index
+        leading_spaces = " " * (self._max_index_chars - len(str(index)))
         leading_spaces_pc = " " * (3 - len(str(int(100 * index_percent))))
 
-        return f"{leading_spaces}{index}/{self.max_file_index} ({leading_spaces_pc}{index_percent:0.1%})"
-
-    def _compare_frames(self, old_part: Part, new_part: Part):
-        def convert_to_edges(mask):
-            edges = cv2.Canny(mask, 100, 200)
-            kernel = np.ones((3, 3), np.uint8)
-            return cv2.dilate(edges, kernel, iterations=1)
-
-        old_mask = convert_to_edges(old_part.mask)
-        new_mask = convert_to_edges(new_part.mask)
-
-        original = np.count_nonzero(old_mask)
-        difference = np.count_nonzero(cv2.absdiff(old_mask, new_mask))
-
-        percentage = difference / original
-        if percentage >= self.FRAME_DIFFERENCE_THRESHOLD:
-            return True
-        return False
+        return f"{leading_spaces}{index}/{self._max_file_index} ({leading_spaces_pc}{index_percent:0.1%})"
 
     def _image_pipeline(self):
-        for index, file_path, file_type in self.indexed_files:
+        if not [f for f in self._indexed_files if f[-1] == "image"]:
+            return
+        for index, file_path, file_type in self._indexed_files:
             # Check it's an Image
             if file_type != "image":
                 continue
@@ -175,176 +177,197 @@ class CensorEngine:
             # Print that it's Censoring
             index_text = self._get_index_text(index)
 
+            # Dev Tools
+            if self._flags["dev_tools"]:
+                self._dev_tools = DevTools(
+                    output_folder=file_path,
+                    main_files_path=self.main_files_path,
+                    using_full_output_path=self._flags["show_full_output_path"],
+                )
+
             # Read the File
             file_image = cv2.imread(file_path)
 
             # Run the Censor Manager
-            censor_manager = CensorManager(
+            censor_manager = ImageProcessor(
                 file_image=file_image,
-                config=self.config,
+                config=self._config,
+                debug_level=self._debug_level,
+                dev_tools=self._dev_tools,
             )
             censor_manager.start()
 
+            # Dev Tools
+            if self._dev_tools:
+                self._dev_tools.dev_decompile_masks(
+                    censor_manager.parts,
+                    subfolder="zz_complete",
+                )
+
             # Output File Handling
             file_output = censor_manager.return_output()
-            self.force_png = censor_manager.force_png
+            self._force_png = censor_manager.force_png
             new_file_name = self._save_file(file_path)
 
             # File Save
             cv2.imwrite(new_file_name, file_output)
-            print(f'{index_text} Censored: "{file_path.split(os.sep)[-1]}"')
+
+            # Print Out
+            prefix = ""
+            if not self._flags["show_full_output_path"]:
+                prefix = "./"
+                new_file_name = new_file_name.replace(self.main_files_path, "", 1)[1:]
+            print(f'{index_text} Censored: "{prefix}{new_file_name}"')
+
+            # Save Duration
+            self._time_durations.append(censor_manager.get_duration())
+            if self._flags["pad_individual_items"]:
+                print()
 
         print("Finished Censoring Images!")
 
     def _video_pipeline(self):
-        def get_codec_from_extension(filename: str):
-            """
-            This function is used to find the correct codec used by OpenCV.
-
-            :param str filename: Name of the file, it will determine the extension
-            """
-            ext = os.path.splitext(filename)[-1].lower()
-            CODEC_MAPPING = {
-                ".mp4": "mp4v",  # MPEG-4
-                ".avi": "XVID",  # AVI format
-                ".mov": "avc1",  # QuickTime
-                ".mkv": "X264",  # Matroska
-                ".webm": "VP80",  # WebM format
-            }
-            return CODEC_MAPPING.get(ext, "mp4v")  # Default to 'mp4v' if unknown
-
-        for index, file_path, file_type in self.indexed_files:
+        for index, file_path, file_type in self._indexed_files:
             # Check it's an Image
             if file_type != "video":
                 continue
 
-            # Get Index
-            index_text = self._get_index_text(index)
-            print(f'{index_text}Censoring: "{file_path.split(os.sep)[-1]}"')
-
             # Get Video Capture
-            video_capture = cv2.VideoCapture(file_path)
-            if not video_capture.isOpened():
-                raise ValueError("Could not open video")
-
-            # Get video properties
-            width = int(video_capture.get(cv2.CAP_PROP_FRAME_WIDTH))
-            height = int(video_capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
-            fps = int(video_capture.get(cv2.CAP_PROP_FPS))
-
-            # Get Video Writer Objects
-            fourcc = cv2.VideoWriter_fourcc(*get_codec_from_extension(file_path))
-            new_file_name = self._save_file(file_path)
-            out = cv2.VideoWriter(new_file_name, fourcc, fps, (width, height))
-
-            # Progress Bar Stuff
-            total_frames = int(video_capture.get(cv2.CAP_PROP_FRAME_COUNT))
+            video_processor = VideoProcessor(
+                file_path,
+                self._save_file(file_path),
+            )
 
             # Iterate through Frames
-            last_frame = None
-            frame_lag_counter = 0
-            held_frame = None
-            for frame in progressbar.progressbar(
-                range(total_frames),
-                widgets=self._make_progress_bar_widgets(total_frames),
-            ):
+            frame_processor = VideoFrame(
+                frame_difference_threshold=self._config.video_settings.frame_difference_threshold,
+                frame_hold_amount=self._config.video_settings.part_frame_hold,
+                size_change_tolerance=self._config.video_settings.size_change_tolerance,
+            )
+            progress_bar = progressbar.progressbar(
+                range(video_processor.total_frames),
+                widgets=self._make_progress_bar_widgets(
+                    index_text=self._get_index_text(index),
+                    file_name=file_path.split(os.sep)[-1],
+                    total_amount=video_processor.total_frames,
+                ),
+            )
+            for _ in progress_bar:
                 # Check Frames
-                ret, frame = video_capture.read()
+                ret, frame = video_processor.video_capture.read()
                 if not ret:
                     break
 
                 # Run Censor Manager
-                censor_manager = CensorManager(file_image=frame, config=self.config)
-
-                # # Get the Part and Censors
+                censor_manager = ImageProcessor(file_image=frame, config=self._config)
                 censor_manager.generate_parts_and_shapes()
 
-                # # Stabilise Parts between Frames
-                if last_frame:
-                    this_frame = censor_manager.get_part_list()
-                    for part_name in last_frame.keys():
-                        # Handle Cases where Parts Disappear
-                        if not this_frame.get(part_name):
-                            continue
+                # # Apply Stability Stuff
+                """
+                NOTE:   This section is used to make videos more stable,
+                        currently the processing effects performed are:
 
-                        # Handle if the difference in Frames (Stops Part Shaking)
-                        old_part = last_frame[part_name]
-                        this_part = this_frame[part_name]
-                        is_worthwhile_difference = self._compare_frames(
-                            old_part, this_part
-                        )
+                            -   Holding frames for a certain number of frames
+                                to avoid issues where a part doesn't get
+                                detected, thus causing a flickering effect.
 
-                        # Update Parts
-                        if is_worthwhile_difference:
-                            last_frame[part_name] = this_part
+                            -   Maintaining the last frame instead of the 
+                                current if the difference is negligible, this
+                                avoids issues where the the detected areas are
+                                slightly different thus causes the censors to
+                                "spasm".
 
-                    # Finalise the Frame
-                    filtered_last_frame = {
-                        k: v for k, v in last_frame.items() if k in this_frame.keys()
-                    }  # This is to match the keys
-                    this_frame.update(filtered_last_frame)
+                """
+                frame_processor.load_parts(censor_manager.parts)
+                """
+                -   Keep parts (hold them, if -1, always hold)
+                -   check sizes for parts, flag any bad ones
+                -   replace them with the held part
+                -   if the held part is bad, update it to a better one (biggest?)
+                -   
+                """
+                frame_processor.apply_part_persistence()
+                # frame_processor.apply_part_size_correction()
+                # frame_processor.apply_frame_stability()
+                # frame_processor.save_frame()
 
-                    # Frame Lag and Hold
-                    filtered_held_frame = {
-                        k: v
-                        for k, v in held_frame.items()
-                        if k not in this_frame.keys()
-                    }
-                    if frame_lag_counter < self.FRAME_HOLD:
-                        this_frame.update(filtered_held_frame)
-                        frame_lag_counter += 1
-                    else:
-                        temp_frame_hold = this_frame.copy()
-                        this_frame.update(filtered_held_frame)
-                        held_frame = temp_frame_hold
-                        frame_lag_counter = 0
+                # Update the Parts
+                censor_manager.parts = frame_processor.retrieve_parts()
 
-                    # Update the Parts
-                    censor_manager.parts = list(this_frame.values())
-                    last_frame = this_frame
-
-                else:
-                    last_frame = {f"{part}": part for part in censor_manager.parts}
-                    held_frame = last_frame.copy()
-
+                # Apply Censors
+                censor_manager.compile_masks()
                 censor_manager.apply_censors()
 
                 # Save Output
                 file_output = censor_manager.return_output()
-                out.write(file_output)
+
+                video_processor.video_writer.write(file_output)
 
             # Spacer
             print()
 
-    def _get_pre_init_arguments(self):
+    def _parse_pre_arguments(self):
         # Parser
         parser = argparse.ArgumentParser(
             prog="CensorEngine",
             description="Censors Images",
         )
+        arg_mapper = {
+            "uncensored_location": "loc",
+            "config_location": "config",
+            "debug_level": "debug",
+        }
+
+        flag_mapper = {
+            "show_stat_metrics": "sm",
+            "pad_individual_items": "pi",
+            "dev_tools": "dt",
+            "show_full_output_path": "fo",
+        }
 
         # Add Args
-        parser.add_argument("-loc", action="store")
+        for value in arg_mapper.values():
+            parser.add_argument(f"--{value}", action="store")
 
-        parser.add_argument("-config", action="store")
+        # Add Flags
+        for long_flag_name, short_flag_name in flag_mapper.items():
+            parser.add_argument(
+                f"-{short_flag_name}",
+                f"--{long_flag_name.replace('_', '-')}",
+                dest=long_flag_name,
+                action="store_true",
+                help=f"Enable {long_flag_name.replace('_', ' ')}",
+            )
 
-        parser.add_argument("-dev", action="store")  # Debug
-        parser.add_argument("-output", action="store")  # TODO: debug, true false
-
-        self.args = parser.parse_args()
+        # Collect Args
+        args = parser.parse_args()
 
         # Handle Args
-        if self.args.config:
-            self.load_config(self.args.config)
-            self.used_boot_config = True
+        if loc := args.loc:
+            self._arg_loc = loc
+        if config := args.config:
+            self.load_config(config)
+            self._used_boot_config = True
 
-        if self.args.dev:
+        if debug_word := args.debug:
             # TODO: This needs a dev handler to handle non-boolean values
-            self.config.debug_mode(True)
+            try:
+                self._debug_level = DebugLevels[debug_word.upper()]
+                print(f"**Using Debug Mode: {self._debug_level.name}**")
+            except ValueError:
+                raise ValueError(f"Invalid DebugLevels value: {str(debug_word)}")
 
-    def _get_post_init_arguments(self):
-        if self.args.loc:
-            self.config.uncensored_folder = self.args.loc
+        # Handle Handle Flags
+        self._flags = {key: getattr(args, key) for key in flag_mapper}
+        for key, value in self._flags.items():
+            if value:
+                print(f"**{key.replace('_', ' ').title()} Activated!**")
+
+    def _get_post_arguments(self):
+        if loc := self._arg_loc:
+            if loc.startswith("./"):
+                loc = self._config.file_settings.uncensored_folder + loc[1:]
+            self._config.file_settings.uncensored_folder = loc
 
     def _save_file(self, file_name):
         # Get Name
@@ -356,9 +379,9 @@ class CensorEngine:
         fixed_file_list = [
             word
             for word in [
-                self.config.file_prefix,
+                self._config.file_settings.file_prefix,
                 list_path[-1],
-                self.config.file_suffix,
+                self._config.file_settings.file_suffix,
             ]
             if word != ""
         ]
@@ -371,7 +394,7 @@ class CensorEngine:
         base_folder = list_path[:folders_loc_base]
         new_folder = list_path[folders_loc_base:]
 
-        censored_folder = self.config.censored_folder.split(os.sep)
+        censored_folder = self._config.file_settings.censored_folder.split(os.sep)
         new_folder = censored_folder + new_folder[len(censored_folder) :]
 
         new_folder.pop()
@@ -382,14 +405,19 @@ class CensorEngine:
         os.makedirs(new_folder, exist_ok=True)
         file_path_new = os.sep.join([new_folder, new_file_name])
 
-        if self.force_png:
+        if self._force_png:
             ext = ".png"
 
         # File Proper
         return f"{file_path_new}{ext}"
 
-    def load_config(self, config_path):
-        self.config = Config(self.main_files_path, config_path)
+    def load_config(self, config_data: str | dict[str, Any]):
+        if isinstance(config_data, str):
+            self._config = Config.from_yaml(self.main_files_path, config_data)
+        elif isinstance(config_data, dict):
+            self._config = Config.from_dictionary(config_data)
+        else:
+            raise TypeError("invalid type used")
 
     def start(self):
         # Find Files
@@ -404,6 +432,10 @@ class CensorEngine:
             self._image_pipeline()
             self._video_pipeline()
 
+        # Reporting
+        if self._show_stats and len(self._time_durations) != 0:
+            self.display_bulk_stats()
+
     # Reporting
     def get_detectors(self):
         return [detector.model_name for detector in enabled_detectors]
@@ -417,38 +449,28 @@ class CensorEngine:
     def get_censor_styles(self):
         return list(style_catalogue.keys())
 
-    # Sample
-    def get_parts(self):
-        files = []
-        for index, file_path in self.indexed_files:
-            index_text = self._get_index_text(index)
+    def display_bulk_stats(self):
+        times = self._time_durations
+        mean = statistics.mean(times)
 
-            censor_manager = CensorManager(
-                file_image=file_path,
-                config=self.config,
-                index_text=index_text,
-            )
+        dict_stats = {
+            "Mean": mean,
+            "Median": statistics.median(times),
+            "Min": min(times),
+            "Max": max(times),
+            "Range": max(times) - min(times),
+        }
+        if len(times) > 1:
+            stdev = statistics.stdev(times)
+            coefficient_of_variation = stdev / mean
+            dict_stats["Stdev"] = stdev
+            dict_stats["CoV"] = coefficient_of_variation
 
-            files.append(
-                {"file_path": file_path, "parts_found": censor_manager.detected_parts}
-            )
-        return files
-
-    def get_determinations(self):
-        files = []
-        for index, file_path in self.indexed_files:
-            index_text = self._get_index_text(index)
-
-            censor_manager = CensorManager(
-                file_image=file_path,
-                config=self.config,
-                index_text=index_text,
-            )
-
-            files.append(
-                {
-                    "file_path": file_path,
-                    "determined_features": censor_manager.extracted_information,
-                }
-            )
-        return files
+        max_key_length = max(len(key) for key in dict_stats) + 4
+        print()
+        print("Run Statistics:")
+        for key, value in dict_stats.items():
+            if key != "CoV":
+                print(f"- {key:<{max_key_length}}: {value*1000:>6.3f} ms")
+            else:
+                print(f"- {key:<{max_key_length}}: {value:>2.3%}")

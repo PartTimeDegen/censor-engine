@@ -28,11 +28,11 @@ tensorflow              = "^2.18.0"
 gdown                   = "^5.2.0"
 fastai                  = "^1.0.61"
 progressbar2 = "^4.5.0"
+pyright = "^1.1.395"
 
 [tool.poetry.group.dev.dependencies]
 snakeviz        = "^2.2.2"
 ruff            = "^0"
-mypy            = "^1"
 autoflake       = "^2"
 pre-commit      = "^4"
 pyclean         = "^3"

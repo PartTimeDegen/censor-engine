@@ -162,7 +162,9 @@ cython_debug/
 # Ignore Files
 src/censorengine/000_tests/*
 src/censorengine/00_uncensored/*
+src/censorengine/uncensored/*
 src/censorengine/01_censored/*
+src/censorengine/censored/*
 src/censorengine/02_hashes/*
 
 # Specific Files
@@ -191,3 +193,6 @@ libpng.sh
 .test_stuff
 *:shield
 *:mshield
+
+.ruff_cache
+src/000_tests/*

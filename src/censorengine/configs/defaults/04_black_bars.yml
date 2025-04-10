@@ -18,4 +18,4 @@ censor_settings:
     - function: "box"
       args:
         colour: "BLACK"
-    shape: "joint_ellipse"
+    shape: "bar"

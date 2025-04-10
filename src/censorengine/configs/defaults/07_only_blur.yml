@@ -1,0 +1,42 @@
+censor_settings:
+  enabled_parts:
+  - "FEMALE_BREAST_EXPOSED"
+  - "FEMALE_BREAST_COVERED"
+  - "BUTTOCKS_EXPOSED"
+  - "BUTTOCKS_COVERED"
+  - "ANUS_EXPOSED"
+  - "ANUS_COVERED"
+  - "FEMALE_GENITALIA_EXPOSED"
+  - "FEMALE_GENITALIA_COVERED"
+
+  merge_settings:
+    merge_groups:
+    - [ "FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED" ]
+
+  default_part_settings:
+    censors: [ { "function": "outline", args: { "colour": "BLACK" } }, { "function": "blur", args: { "factor": 5 } } ]
+    shape: "joint_box"
+
+  FEMALE_BREAST_EXPOSED:
+    margin: 0.3
+    state: "protected"
+    censors:
+    - function: "outline"
+      args:
+        colour: "PINK"
+    - function: "blur"
+      args:
+        factor: 20
+    - function: "greyscale"
+
+  FEMALE_GENITALIA_EXPOSED:
+    state: "protected"
+    margin: 0.3
+    censors:
+    - function: "outline"
+      args:
+        colour: "PINK"
+    - function: "blur"
+      args:
+        factor: 20
+    - function: "greyscale"

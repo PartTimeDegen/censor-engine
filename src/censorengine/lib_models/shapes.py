@@ -1,8 +1,9 @@
-from censorengine.backend.models.enums import ShapeType
+from censorengine.backend.models.structures.enums import ShapeType
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from censorengine.backend.constants.typing import Part, Mask
+    from censorengine.backend.constants.typing import Mask
+    from censorengine.backend.models.structures.detected_part import Part
 
 
 class Shape:
@@ -11,6 +12,9 @@ class Shape:
     single_shape: str = "invalid_shape"
 
     shape_type: ShapeType = ShapeType.BASIC
+
+    def __str__(self):
+        return self.shape_name
 
     def generate(
         self,

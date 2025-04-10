@@ -2,7 +2,6 @@ import os
 import pytest
 from censorengine import CensorEngine  # type: ignore
 from censorengine.backend._dev import assert_files_are_intended  # type: ignore
-from censorengine.backend.models.detected_part import PartState  # type: ignore
 
 state_combinations = {
     "unprotected/protected": "000_tests/03_configs/advanced/states/01_unprotected_on_protected.yml",
@@ -27,7 +26,7 @@ def test_states(state_config, root_path):
     # Initiate
     ce = CensorEngine(
         root_path,
-        config=state_combinations[state_config],
+        config_data=state_combinations[state_config],
         test_mode=True,
     )
 
@@ -44,13 +43,13 @@ def test_states(state_config, root_path):
         "MALE_GENITALIA_EXPOSED",
     ]
 
-    ce.config.uncensored_folder = folder_uncen
-    ce.config.censored_folder = folder_cen
-    ce.config.parts_enabled = parts
+    ce._config.file_settings.uncensored_folder = folder_uncen
+    ce._config.file_settings.censored_folder = folder_cen
+    ce._config.censor_settings.enabled_parts = parts
     # ce.config.dev_generate_new_parts()
 
     # assert False, [
-    #     f"{part} : {ce.config.part_settings[part].state}" for part in parts
+    #     f"{part} : {ce.config.censor_settings.parts_settings[part].state}" for part in parts
     # ]
 
     # Start CensorEngine
