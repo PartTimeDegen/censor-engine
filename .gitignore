@@ -160,6 +160,7 @@ cython_debug/
 #.idea/
 
 # Ignore Files
+src/000_tests/*
 src/censorengine/000_tests/*
 src/censorengine/00_uncensored/*
 src/censorengine/uncensored/*
