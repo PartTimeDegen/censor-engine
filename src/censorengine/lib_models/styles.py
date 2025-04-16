@@ -91,6 +91,29 @@ class BlurStyle(Style):
 
         return new_factor
 
+    def apply_factor(self, image: CVImage, factor: int | float) -> tuple[int, int]:
+        # Fixing Strength
+        factor = factor * 4 + 1
+
+        factor = self.normalise_factor(image, factor)
+
+        if factor < 1:
+            factor = 1
+        elif factor % 2 == 0:
+            factor += 1
+
+        image_ratio = (max(image.shape) - min(image.shape)) / min(image.shape)
+
+        factor_ratio = factor / image_ratio
+        return (
+            int(factor_ratio * min(image.shape)),  # Min Factor
+            int(factor_ratio * max(image.shape)),  # Max Factor
+        )
+
+
+class PixelateStyle(BlurStyle):
+    style_type: str = "pixelate"
+
 
 class BoxStyle(Style):
     style_type: str = "box"
@@ -98,6 +121,10 @@ class BoxStyle(Style):
 
 class ColourStyle(Style):
     style_type: str = "colour"
+
+
+class StyliseStyle(Style):
+    style_type: str = "stylise"
 
 
 class TextStyle(Style):

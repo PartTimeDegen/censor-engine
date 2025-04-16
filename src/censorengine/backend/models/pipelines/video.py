@@ -1,9 +1,7 @@
 from dataclasses import dataclass, field
-from math import log2
 import os
 
 import cv2
-import numpy as np
 
 from censorengine.backend.models.structures.detected_part import Part
 
@@ -13,10 +11,10 @@ class VideoProcessor:
     file_path: str
     new_file_name: str
 
-    width: int = field(init=False)
-    height: int = field(init=False)
-    fps: int = field(init=False)
-    total_frames: int = field(init=False)
+    _width: int = field(init=False)
+    _height: int = field(init=False)
+    _fps: int = field(init=False)
+    _total_frames: int = field(init=False)
 
     video_capture: cv2.VideoCapture = field(init=False)
     video_writer: cv2.VideoWriter = field(init=False)
@@ -26,18 +24,18 @@ class VideoProcessor:
         if not self.video_capture.isOpened():
             raise ValueError(f"Could not open video: {self.file_path}")
 
-        self.width = int(self.video_capture.get(cv2.CAP_PROP_FRAME_WIDTH))
-        self.height = int(self.video_capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        self.fps = int(self.video_capture.get(cv2.CAP_PROP_FPS))
+        self._width = int(self.video_capture.get(cv2.CAP_PROP_FRAME_WIDTH))
+        self._height = int(self.video_capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        self._fps = int(self.video_capture.get(cv2.CAP_PROP_FPS))
         fourcc = cv2.VideoWriter_fourcc(*self._get_codec_from_extension(self.file_path))
 
         self.video_writer = cv2.VideoWriter(
             self.new_file_name,  # type: ignore
             fourcc,
-            self.fps,
-            (self.width, self.height),
+            self._fps,
+            (self._width, self._height),
         )
-        self.total_frames = int(self.video_capture.get(cv2.CAP_PROP_FRAME_COUNT))
+        self._total_frames = int(self.video_capture.get(cv2.CAP_PROP_FRAME_COUNT))
 
     def _get_codec_from_extension(self, filename: str) -> str:
         """
@@ -55,6 +53,9 @@ class VideoProcessor:
         }
         return CODEC_MAPPING.get(ext, "mp4v")  # Default to 'mp4v' if unknown
 
+    def get_fps(self):
+        return self._fps
+
 
 @dataclass
 class FramePart:
@@ -69,7 +70,7 @@ class FramePart:
 
 
 @dataclass
-class VideoFrame:
+class FrameProcessor:
     """
     This class handles the processing of the parts between frames, such to
     improve the quality of the output.
@@ -81,8 +82,7 @@ class VideoFrame:
     """
 
     frame_difference_threshold: float  # Minimum Required difference to change
-    frame_hold_amount: int
-    size_change_tolerance: float = field(default=1.00)  # Protects against Outliers
+    part_frame_hold_seconds: float
 
     frame_lag_counter: int = field(default=0, init=False)
     debug_counter: int = field(default=0, init=False)
@@ -92,52 +92,6 @@ class VideoFrame:
     held_frame: dict[str, FramePart] = field(default_factory=dict, init=False)
 
     first_frame: bool = field(default=True, init=False)
-
-    def _compare_parts_areas(
-        self,
-        current_part: FramePart,
-        held_part: FramePart,
-        for_part_persistence: bool = False,
-    ) -> bool:
-        """
-        TODO
-
-        :param Part current_part: Current part, tested to see if the area is bad
-        :param Part held_part: Replaces the current part if it's bad
-        :param bool for_part_persistence: Toggle for part persistence due to the check not being neighbouring frames
-        :return bool: True means use the current part, False means use the held part
-        """
-        # Compute individual mask areas
-        current_area = np.count_nonzero(current_part.part.mask)
-        held_area = np.count_nonzero(held_part.part.mask)
-
-        # Compute pixel difference Equations
-        diff_percentage = (current_area - held_area) / max(current_area, held_area)
-
-        # Comparisons
-        size_tolerance = self.size_change_tolerance
-        if for_part_persistence and (self.frame_hold_amount > 1):
-            # NOTE: This is done because when this function is used for the
-            #       frame persistence function, the code doesn't account for
-            #       the fact that it isn't looking at neighbouring frames, but
-            #       rather N frames apart, so a difference in area might be
-            #       reasonable.
-            #
-            frames = self.frame_hold_amount + 1
-            rate_factor = 0.1  # TODO: Make Config accessible
-            size_tolerance *= 1 + rate_factor * log2(frames)  # Adds 1 for safety margin
-
-        non_trivial_diff = abs(diff_percentage) > size_tolerance
-
-        # Output
-        if non_trivial_diff:
-            # NOTE: Due to the inverse for part persistence
-            if for_part_persistence:
-                return not diff_percentage < 0
-
-            return diff_percentage < 0
-
-        return True
 
     # def _convert_to_edges(self, mask: Mask, temp_disable: bool = False):
     #     if temp_disable:
@@ -175,20 +129,17 @@ class VideoFrame:
 
     def set_held_frame(self):
         dict_temp_held = {}
-        for key, value in self.current_frame.items():
+        for key, value in self.held_frame.items():
             if not self.held_frame.get(key):
                 dict_temp_held[key] = value
                 continue
 
-            # Check if Parts are actually Correct over Previous
-            output = self._compare_parts_areas(
-                value,
-                self.held_frame[key],
-                for_part_persistence=True,  # TODO: Allow it to be turned off
-            )
-
             # If it's an Okay Size, Current is used, else use the last held one
-            dict_temp_held[key] = value if output else self.held_frame[key]
+            dict_temp_held[key] = (
+                current_value
+                if (current_value := self.current_frame.get(key))
+                else value
+            )
 
         self.held_frame.clear()
         self.held_frame = dict_temp_held
@@ -204,21 +155,12 @@ class VideoFrame:
         If the frame has been held for enough time, it will be updated.
         """
         # Counter Logic
-        if self.frame_lag_counter >= self.frame_hold_amount:
+        if self.frame_lag_counter >= self.part_frame_hold_seconds:
             self.set_held_frame()
             self.frame_lag_counter = 0
         else:
-            # self.update_missing_parts_to_held_frame()
+            self.update_missing_parts_to_held_frame()
             self.frame_lag_counter += 1
-
-    def apply_part_size_correction(self) -> None:
-        for key, value in self.held_frame.items():
-            # Determine Part
-            output = self._compare_parts_areas(self.current_frame[key], value)
-            output_part = self.current_frame[key] if not output else value
-
-            # Update Frames
-            self.current_frame[key] = output_part
 
     # def apply_frame_stability(self) -> None:
     #     """

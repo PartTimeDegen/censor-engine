@@ -7,7 +7,6 @@ from typing import Any
 
 import cv2
 
-from cycler import V
 import progressbar
 
 from censorengine.backend.constants.files import (
@@ -19,13 +18,14 @@ from censorengine.backend.models.config import Config
 
 from censorengine.backend.models.tools.debugger import DebugLevels
 from censorengine.backend.models.tools.dev_tools import DevTools
+from censorengine.backend.models.tools.video_tools import VideoInfo
 from censorengine.libs.detector_library.catalogue import (
     enabled_detectors,
     enabled_determiners,
 )
 from censorengine.libs.shape_library.catalogue import shape_catalogue
 from censorengine.libs.style_library.catalogue import style_catalogue
-from censorengine.backend.models.pipelines.video import VideoFrame, VideoProcessor
+from censorengine.backend.models.pipelines.video import FrameProcessor, VideoProcessor
 
 
 @dataclass(slots=True, repr=False, eq=False, order=False, match_args=False)
@@ -88,7 +88,7 @@ class CensorEngine:
             f'Censoring "{file_name}" > ',
             progressbar.Counter(),
             "/",
-            f"{total_amount}" " |",
+            f"{total_amount} |",
             progressbar.Percentage(),
             " [",
             progressbar.Timer(),
@@ -233,28 +233,30 @@ class CensorEngine:
                 continue
 
             # Get Video Capture
-            video_processor = VideoProcessor(
-                file_path,
-                self._save_file(file_path),
-            )
+            video_processor = VideoProcessor(file_path, self._save_file(file_path))
 
             # Iterate through Frames
-            frame_processor = VideoFrame(
+            frame_hold = int(
+                self._config.video_settings.part_frame_hold_seconds
+                / video_processor.get_fps()
+            )
+            frame_processor = FrameProcessor(
                 frame_difference_threshold=self._config.video_settings.frame_difference_threshold,
-                frame_hold_amount=self._config.video_settings.part_frame_hold,
-                size_change_tolerance=self._config.video_settings.size_change_tolerance,
+                part_frame_hold_seconds=frame_hold,
             )
             progress_bar = progressbar.progressbar(
-                range(video_processor.total_frames),
+                range(video_processor._total_frames),
                 widgets=self._make_progress_bar_widgets(
                     index_text=self._get_index_text(index),
                     file_name=file_path.split(os.sep)[-1],
-                    total_amount=video_processor.total_frames,
+                    total_amount=video_processor._total_frames,
                 ),
             )
+            frame_counter = 0
             for _ in progress_bar:
                 # Check Frames
                 ret, frame = video_processor.video_capture.read()
+                frame_counter += 1
                 if not ret:
                     break
 
@@ -287,11 +289,10 @@ class CensorEngine:
                 -   
                 """
                 frame_processor.apply_part_persistence()
-                # frame_processor.apply_part_size_correction()
                 # frame_processor.apply_frame_stability()
-                # frame_processor.save_frame()
 
                 # Update the Parts
+                frame_processor.save_frame()
                 censor_manager.parts = frame_processor.retrieve_parts()
 
                 # Apply Censors
@@ -300,6 +301,18 @@ class CensorEngine:
 
                 # Save Output
                 file_output = censor_manager.return_output()
+
+                # # Apply Debug Effects
+                if self._debug_level > DebugLevels.NONE:
+                    video_info = VideoInfo(
+                        frame,
+                        frame_counter,
+                        censor_manager.parts,
+                        video_processor,
+                        frame_processor,
+                        self._debug_level,
+                    )
+                    file_output = video_info.get_debug_info(file_output)
 
                 video_processor.video_writer.write(file_output)
 
@@ -471,6 +484,6 @@ class CensorEngine:
         print("Run Statistics:")
         for key, value in dict_stats.items():
             if key != "CoV":
-                print(f"- {key:<{max_key_length}}: {value*1000:>6.3f} ms")
+                print(f"- {key:<{max_key_length}}: {value * 1000:>6.3f} ms")
             else:
                 print(f"- {key:<{max_key_length}}: {value:>2.3%}")

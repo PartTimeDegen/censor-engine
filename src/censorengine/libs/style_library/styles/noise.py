@@ -40,14 +40,14 @@ class ChromaticAberration(BlurStyle):
 
             channels[i] = cv2.warpAffine(  # type: ignore
                 channel,
-                M,
+                M,  # type: ignore
                 (channel.shape[1], channel.shape[0]),
                 borderMode=cv2.BORDER_REFLECT,
             )  # type: ignore
 
         # Merge the shifted channels back
         channels = tuple(channels)
-        noise_image = cv2.merge(channels)
+        noise_image = cv2.merge(channels)  # type: ignore
 
         # Apply the effect to the masked area
         return self.draw_effect_on_mask([contour], noise_image, image)
@@ -84,7 +84,16 @@ class Noise(BlurStyle):
         return self.draw_effect_on_mask([contour], noise_image, image)
 
 
+class DeNoise(BlurStyle):
+    style_name: str = "denoise"
+
+    def apply_style(self, image: CVImage, contour, strength: int = 10) -> CVImage:
+        noise_image = cv2.fastNlMeansDenoisingColored(image, h=strength)
+        return self.draw_effect_on_mask([contour], noise_image, image)
+
+
 effects = {
     "chromatic_aberration": ChromaticAberration,
     "noise": Noise,
+    "denoise": DeNoise,
 }

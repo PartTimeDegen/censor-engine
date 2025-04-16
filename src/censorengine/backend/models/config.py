@@ -39,10 +39,16 @@ class VideoConfig:
     # Video Cleaning Settings
     # # Frame Stability Config
     frame_difference_threshold: float = 0.05
-    size_change_tolerance: float = 0.80
 
     # Frame Part Persistence Config
-    part_frame_hold: int = 1
+    part_frame_hold_seconds: float = -1.0
+
+    def __post_init__(self):
+        # Type Narrow to Float
+        if isinstance(self.frame_difference_threshold, int):
+            self.frame_difference_threshold = float(self.frame_difference_threshold)
+        if isinstance(self.part_frame_hold_seconds, int):
+            self.part_frame_hold_seconds = float(self.part_frame_hold_seconds)
 
 
 @dataclass

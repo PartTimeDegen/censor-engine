@@ -1,5 +1,5 @@
 from typing import Type
-from censorengine.libs.shape_library.shapes.core import (
+from censorengine.libs.shape_library.shapes import (
     bar_shapes,
     basic_shapes,
     joint_shapes,

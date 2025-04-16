@@ -1,4 +1,4 @@
-from censorengine.libs.style_library.styles.core import (
+from censorengine.libs.style_library.styles import (
     blur,
     box,
     colour,
@@ -7,8 +7,8 @@ from censorengine.libs.style_library.styles.core import (
     text,
     edge_detection,
     noise,
+    stylisation,
 )
-
 
 style_catalogue = {
     **blur.effects,
@@ -19,4 +19,5 @@ style_catalogue = {
     # **text.effects,
     **edge_detection.effects,
     **noise.effects,
+    **stylisation.effects,
 }  # type: ignore

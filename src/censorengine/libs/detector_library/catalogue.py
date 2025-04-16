@@ -1,7 +1,7 @@
-from censorengine.libs.detector_library.detectors.core.multi_detectors import (
+from censorengine.libs.detector_library.detectors.multi_detectors import (
     NudeNetDetector,
 )
-from censorengine.libs.detector_library.detectors.core.determination_tools import (
+from censorengine.libs.detector_library.detectors.determination_tools import (
     ImageGenreDeterminer,
 )
 
