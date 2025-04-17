@@ -197,3 +197,5 @@ libpng.sh
 
 .ruff_cache
 src/000_tests/*
+
+.test_stuff/*

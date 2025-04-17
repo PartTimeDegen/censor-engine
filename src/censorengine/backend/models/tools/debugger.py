@@ -123,23 +123,23 @@ class Debugger:
         if self.debug_level < DebugLevels.TIMED:
             return
 
-        if self.temp_time_holder:
+        if Debugger.temp_time_holder:
             raise TypeError("Missing Stop for Timer")
 
         self.temp_time_holder = (name, time.time())
 
     def time_stop(self):
-        if self.debug_level < DebugLevels.TIMED:
+        if Debugger.debug_level < DebugLevels.TIMED:
             return
 
-        if not self.temp_time_holder:
+        if not Debugger.temp_time_holder:
             raise TypeError("Missing Start for Timer")
 
-        duration = time.time() - self.temp_time_holder[1]
-        self.time_logger.append(
+        duration = time.time() - Debugger.temp_time_holder[1]
+        Debugger.time_logger.append(
             TimerSchema(
-                name=self.temp_time_holder[0],
-                timestamp=self.temp_time_holder[1],
+                name=Debugger.temp_time_holder[0],
+                timestamp=Debugger.temp_time_holder[1],
                 duration=duration,
             )
         )
@@ -166,7 +166,6 @@ class Debugger:
             return
 
         print(f"[ DEBUG {self.debug_name}: FUNCTION TIMES")
-
         sorted_times = list(
             reversed(sorted(self.time_logger, key=lambda x: x.duration))
         )

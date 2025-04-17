@@ -1,3 +1,4 @@
+from censorengine.backend.constants.typing import CVImage
 from censorengine.lib_models.detectors import Detector, DetectedPartSchema
 from nudenet import NudeDetector  # type: ignore
 
@@ -33,12 +34,30 @@ class NudeNetDetector(Detector):
     )
     model_object = NudeDetector()
 
-    def detect_image(self, file_path: str) -> list[DetectedPartSchema]:
+    def detect_image(self, file_images_or_path: str) -> list[DetectedPartSchema]:
         return [
             DetectedPartSchema(
                 label=found_part["class"],
                 score=found_part["score"],
                 relative_box=found_part["box"],
             )
-            for found_part in self.model_object.detect(file_path)
+            for found_part in self.model_object.detect(file_images_or_path)
         ]
+
+    def detect_batch(
+        self, file_images_or_paths: list[str] | list[CVImage], batch_size: int
+    ) -> dict[int, list[DetectedPartSchema]]:
+        output = self.model_object.detect_batch(file_images_or_paths, batch_size)
+
+        dict_output = {}
+        for index, image in enumerate(output):
+            dict_output[index] = [
+                DetectedPartSchema(
+                    label=found_part["class"],
+                    score=found_part["score"],
+                    relative_box=found_part["box"],
+                )
+                for found_part in image
+            ]
+
+        return dict_output

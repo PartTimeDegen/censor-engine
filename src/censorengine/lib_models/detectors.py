@@ -9,6 +9,8 @@ import gdown  # type: ignore
 # import tensorflow as tf  # type: ignore # NOTE: I can't run this due to my shitty Xeon CPU
 import torch
 
+from censorengine.backend.constants.typing import CVImage
+
 
 @dataclass
 class DetectedPartSchema:
@@ -139,7 +141,13 @@ class Detector(AIModel):
     model_classifiers: tuple[str, ...]
 
     @abstractmethod
-    def detect_image(self, file_path: str) -> list[DetectedPartSchema]:
+    def detect_image(self, file_images_or_path: str) -> list[DetectedPartSchema]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def detect_batch(
+        self, file_images_or_paths: list[str] | list[CVImage], batch_size: int
+    ) -> dict[int, list[DetectedPartSchema]]:
         raise NotImplementedError
 
 

@@ -1,3 +1,4 @@
+from censorengine.lib_models.detectors import Detector
 from censorengine.libs.detector_library.detectors.multi_detectors import (
     NudeNetDetector,
 )
@@ -12,8 +13,8 @@ files (yet, maybe, might be overkill)
 """
 
 
-enabled_detectors = [
-    NudeNetDetector(),
+enabled_detectors: list[Detector] = [
+    NudeNetDetector(),  # type: ignore # FIXME at some point
 ]
 
 enabled_determiners = [

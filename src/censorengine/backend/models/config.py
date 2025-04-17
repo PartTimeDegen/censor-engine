@@ -54,6 +54,7 @@ class VideoConfig:
 @dataclass
 class RenderingConfig:
     smoothing: bool = True
+    batch_size: int = 4
 
 
 @dataclass

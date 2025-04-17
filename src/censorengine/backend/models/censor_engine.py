@@ -37,7 +37,6 @@ class CensorEngine:
     config_data: str | dict[str, Any] = "00_default.yml"
 
     # Debug
-    _show_stats: bool = False
     _debug_level: DebugLevels = DebugLevels.NONE
     _time_durations: list[float] = field(init=False, default_factory=list)
 
@@ -200,7 +199,7 @@ class CensorEngine:
             # Dev Tools
             if self._dev_tools:
                 self._dev_tools.dev_decompile_masks(
-                    censor_manager.parts,
+                    censor_manager.image_parts,
                     subfolder="zz_complete",
                 )
 
@@ -261,7 +260,12 @@ class CensorEngine:
                     break
 
                 # Run Censor Manager
-                censor_manager = ImageProcessor(file_image=frame, config=self._config)
+                censor_manager = ImageProcessor(
+                    file_image=frame,
+                    config=self._config,
+                    debug_level=self._debug_level,
+                    dev_tools=self._dev_tools,
+                )
                 censor_manager.generate_parts_and_shapes()
 
                 # # Apply Stability Stuff
@@ -280,7 +284,7 @@ class CensorEngine:
                                 "spasm".
 
                 """
-                frame_processor.load_parts(censor_manager.parts)
+                frame_processor.load_parts(censor_manager.image_parts)
                 """
                 -   Keep parts (hold them, if -1, always hold)
                 -   check sizes for parts, flag any bad ones
@@ -293,7 +297,7 @@ class CensorEngine:
 
                 # Update the Parts
                 frame_processor.save_frame()
-                censor_manager.parts = frame_processor.retrieve_parts()
+                censor_manager.image_parts = frame_processor.retrieve_parts()
 
                 # Apply Censors
                 censor_manager.compile_masks()
@@ -307,7 +311,7 @@ class CensorEngine:
                     video_info = VideoInfo(
                         frame,
                         frame_counter,
-                        censor_manager.parts,
+                        censor_manager.image_parts,
                         video_processor,
                         frame_processor,
                         self._debug_level,
@@ -315,6 +319,10 @@ class CensorEngine:
                     file_output = video_info.get_debug_info(file_output)
 
                 video_processor.video_writer.write(file_output)
+
+                # Debug Show Times
+                self._time_durations.append(censor_manager.get_duration())
+                self.display_times()
 
             # Spacer
             print()
@@ -432,6 +440,11 @@ class CensorEngine:
         else:
             raise TypeError("invalid type used")
 
+    def display_times(self):
+        # Reporting
+        if self._flags["show_stat_metrics"] and len(self._time_durations) != 0:
+            self.display_bulk_stats()
+
     def start(self):
         # Find Files
         self._find_files()
@@ -444,10 +457,7 @@ class CensorEngine:
         else:
             self._image_pipeline()
             self._video_pipeline()
-
-        # Reporting
-        if self._show_stats and len(self._time_durations) != 0:
-            self.display_bulk_stats()
+        self.display_times()
 
     # Reporting
     def get_detectors(self):
