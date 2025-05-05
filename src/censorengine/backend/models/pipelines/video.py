@@ -14,7 +14,7 @@ class VideoProcessor:
     _width: int = field(init=False)
     _height: int = field(init=False)
     _fps: int = field(init=False)
-    _total_frames: int = field(init=False)
+    total_frames: int = field(init=False)
 
     video_capture: cv2.VideoCapture = field(init=False)
     video_writer: cv2.VideoWriter = field(init=False)
@@ -35,7 +35,7 @@ class VideoProcessor:
             self._fps,
             (self._width, self._height),
         )
-        self._total_frames = int(self.video_capture.get(cv2.CAP_PROP_FRAME_COUNT))
+        self.total_frames = int(self.video_capture.get(cv2.CAP_PROP_FRAME_COUNT))
 
     def _get_codec_from_extension(self, filename: str) -> str:
         """

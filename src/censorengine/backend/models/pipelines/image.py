@@ -3,7 +3,6 @@ from dataclasses import dataclass, field
 import itertools
 
 import numpy as np
-from typing import TYPE_CHECKING
 
 from censorengine.backend.models.pipelines.image_components.compile_masks import (
     ImageComponentCompileMasks,
@@ -19,8 +18,7 @@ from censorengine.backend.models.tools.debugger import (
     DebugLevels,
 )
 
-if TYPE_CHECKING:
-    from censorengine.backend.constants.typing import CVImage
+from censorengine.backend.constants.typing import CVImage
 from censorengine.backend.models.structures.detected_part import Part
 from censorengine.backend.models.config import Config
 
@@ -127,7 +125,7 @@ class ImageProcessor(
         """
         if inverse:
             return Part.normalise_mask(
-                np.ones(self.file_image.shape, dtype=np.uint8) * 255
+                np.ones(self.file_image.shape, dtype=np.uint8) * 255  # type: ignore
             )
         return Part.normalise_mask(np.zeros(self.file_image.shape, dtype=np.uint8))
 

@@ -51,10 +51,10 @@ class Style(ABC):
         )
 
     def change_linetype(self, enable_aa: bool) -> None:
-        if not enable_aa:
-            self.default_linetype = cv2.LINE_4
-        else:
+        if enable_aa:
             self.default_linetype = cv2.LINE_AA
+        else:
+            self.default_linetype = cv2.LINE_4
 
 
 class TransparentStyle(Style):

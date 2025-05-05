@@ -97,6 +97,7 @@ class Outline(BoxStyle):
         contour,
         colour: tuple[int, int, int] | str = "WHITE",
         thickness: int = 2,
+        softness: int = 0,
     ) -> CVImage:
         colour = get_colour(colour)
         contour_shape = contour[0]
@@ -104,7 +105,9 @@ class Outline(BoxStyle):
         if self.using_reverse_censor:
             contour_shape = self._reverse_censor(image, contour)
 
-        return cv2.drawContours(
+        # Draw contours
+
+        image = cv2.drawContours(
             image,
             contour_shape,
             -1,
@@ -112,6 +115,18 @@ class Outline(BoxStyle):
             thickness,
             lineType=self.default_linetype,
         )
+
+        if softness == 0:
+            return image
+
+        # Ensure softness is at least 1
+        softness = max(1, softness)
+
+        # Calculate blur kernel size (must be odd and >1)
+        ksize = max(3, softness * 2 + 1)
+
+        # Apply Gaussian blur
+        return cv2.GaussianBlur(image, (ksize, ksize), 0)
 
 
 class Box(BoxStyle):

@@ -2,7 +2,6 @@ import math
 
 import cv2
 import numpy as np
-from PIL import Image, ImageDraw
 from censorengine.lib_models.styles import BlurStyle
 from censorengine.backend.constants.typing import CVImage
 
@@ -190,8 +189,80 @@ class Crystallise(BlurStyle):
         return self.draw_effect_on_mask([contour], result, image)
 
 
+class HexagonPixelateSoft(HexagonPixelate):
+    style_name: str = "hexagon_pixelate_soft"
+
+    def _blend_color(self, center_x, center_y, image, hexagon_size, softness):
+        """Blend the color of a hexagon with its surrounding hexagons for a smoother transition."""
+        w = math.sqrt(3) * hexagon_size
+        h = 2 * hexagon_size
+
+        w_half = w / 2 * (1.0 + softness * 0.5)
+        h_half = h / 2 * (1.0 + softness * 0.5)
+
+        # Sampling bounds
+        x_min, x_max = int(center_x - w_half), int(center_x + w_half)
+        y_min, y_max = int(center_y - h_half), int(center_y + h_half)
+        x_min, x_max = max(0, x_min), min(image.shape[1], x_max)
+        y_min, y_max = max(0, y_min), min(image.shape[0], y_max)
+
+        region = image[y_min:y_max, x_min:x_max]
+        if region.size == 0:
+            return [0, 0, 0]
+
+        return np.mean(region, axis=(0, 1), dtype=np.float32)
+
+    def _hexagonify(self, image, hexagon_size, softness=1.0):
+        """Apply soft hexagonal pixelation with controlled softness."""
+        img_h, img_w = image.shape[:2]
+
+        w, h = math.sqrt(3) * hexagon_size, 2 * hexagon_size
+        w_half, _, h_three_quarter = w / 2, h / 2, h * 3 / 4
+
+        num_hor = math.ceil(img_w / w) + 1
+        num_ver = math.ceil(img_h / h_three_quarter) + 1
+
+        output = np.zeros_like(image)
+
+        for row in range(num_ver):
+            for col in range(num_hor):
+                center_x = col * w + (row % 2) * w_half
+                center_y = row * h_three_quarter
+
+                # Get the soft blended color
+                color = self._blend_color(
+                    center_x, center_y, image, hexagon_size, softness
+                )
+
+                hex_corners = self._hexagon_corners(center_x, center_y, hexagon_size)
+                cv2.fillPoly(output, [hex_corners], color=tuple(map(int, color)))
+
+        # Optional: Gaussian blur the final output based on softness
+        if softness > 0:
+            ksize = int(3 + softness * 2) | 1  # must be odd
+            output = cv2.GaussianBlur(output, (ksize, ksize), sigmaX=softness)
+
+        return output
+
+    def apply_style(
+        self, image: CVImage, contour, factor: int | float = 12, softness: float = 2.0
+    ) -> CVImage:
+        """
+        Apply soft hexagonal pixelation to the image within the given contour.
+
+        :param image: input image
+        :param contour: contour mask
+        :param factor: hexagon size
+        :param softness: softness amount (default=1.0)
+        """
+        factor = self.normalise_factor(image, factor)
+        pixel_image = self._hexagonify(image, factor, softness)
+        return self.draw_effect_on_mask(contour, pixel_image, image)
+
+
 effects = {
     "pixelate": Pixelate,
     "hexagon_pixelate": HexagonPixelate,
+    "hexagon_pixelate_soft": HexagonPixelateSoft,
     "crystallise": Crystallise,
 }
