@@ -1,8 +1,8 @@
 import os
 
-from censorengine import CensorEngine  # type: ignore
-from censorengine.backend._dev import assert_files_are_intended  # type: ignore
-from censorengine.backend.models.structures.schemas import Censor
+from censor_engine import CensorEngine  # type: ignore
+from tests._dev import assert_files_are_intended  # type: ignore
+from censor_engine.backend.models.structures.structs import Censor
 
 COLOURS = [
     "WHITE",

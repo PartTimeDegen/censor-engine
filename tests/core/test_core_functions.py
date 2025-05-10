@@ -1,10 +1,13 @@
+
+
+
 import os
-from censorengine import CensorEngine  # type: ignore
-from censorengine.backend._dev import assert_files_are_intended  # type: ignore
-from censorengine.libs.shape_library.catalogue import shape_catalogue  # type: ignore
-from censorengine.libs.style_library.catalogue import style_catalogue  # type: ignore
+from censor_engine import CensorEngine  # type: ignore
+from tests._dev import assert_files_are_intended  # type: ignore
+from censor_engine.libs.shape_library.catalogue import shape_catalogue  # type: ignore
+from censor_engine.libs.style_library.catalogue import style_catalogue  # type: ignore
 import pytest
-from censorengine.backend.models.structures.schemas import Censor
+from censor_engine.backend.models.structures.structs import Censor
 
 # Note: Commented out ones are ones I couldn't get to work
 classes = [
