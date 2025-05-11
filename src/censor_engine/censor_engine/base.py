@@ -1,5 +1,6 @@
 import argparse
 from dataclasses import dataclass, field
+import os
 from typing import Any
 
 from .mixin_pipeline_image import MixinImagePipeline
@@ -75,6 +76,7 @@ class CensorEngine(
             "pad_individual_items": "pi",
             "dev_tools": "dt",
             "show_full_output_path": "fo",
+            "test_data": "td",
         }
 
         # Add Args
@@ -95,8 +97,11 @@ class CensorEngine(
         args = parser.parse_args()
 
         # Handle Args
+        # # File Location
         if loc := args.loc:
             self._arg_loc = loc
+
+        # # Config Location
         if config := args.config:
             self.load_config(config)
             self._used_boot_config = True
@@ -115,10 +120,20 @@ class CensorEngine(
             if value:
                 print(f"**{key.replace('_', ' ').title()} Activated!**")
 
+        # # Flag for Test Data
+        if self._flags.get("test_data"):
+            self._arg_loc = os.path.join(".test_data", self._arg_loc)
+
     def _get_post_arguments(self):
         if loc := self._arg_loc:
             if loc.startswith("./"):
                 loc = self._config.file_settings.uncensored_folder + loc[1:]
+            elif loc.startswith(".test_data/./"):
+                loc = (
+                    ".test_data/"
+                    + self._config.file_settings.uncensored_folder
+                    + loc[12:]
+                )
             self._config.file_settings.uncensored_folder = loc
 
     def load_config(self, config_data: str | dict[str, Any]):

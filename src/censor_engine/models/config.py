@@ -3,10 +3,10 @@ import os
 from typing import Any, Optional
 
 import yaml
-from censor_engine import CONFIGS_FOLDER
 from censor_engine.models.structs import Censor
 from censor_engine.models.enums import PartState
 from censor_engine.censor_engine.tools.debugger import DebugLevels
+from censor_engine.libs.configs import get_config_path
 
 
 # Control Settings Stuff
@@ -259,7 +259,7 @@ class Config:
 
         """
         # Get the Full Config Path For Internal Configs
-        full_config_path = os.path.join(CONFIGS_FOLDER, "defaults", config_path)
+        full_config_path = get_config_path(config_path)
 
         # If it doesn't Exist, Check for Local Paths
         if not os.path.exists(full_config_path):

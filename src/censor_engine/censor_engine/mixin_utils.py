@@ -1,8 +1,10 @@
 from glob import glob
 import os
 
-from censor_engine import APPROVED_FORMATS_IMAGE, APPROVED_FORMATS_VIDEO
 from censor_engine.models.config import Config
+
+APPROVED_FORMATS_IMAGE = [".jpg", ".jpeg", ".png", ".webp"]
+APPROVED_FORMATS_VIDEO = [".mp4", ".webm"]
 
 
 class MixinUtils:
