@@ -1,6 +1,4 @@
-
-
-from censor_engine.backend.constants.typing import CVImage
+from censor_engine.typing import CVImage
 from censor_engine.lib_models.detectors import Determiner
 
 from typing import TypeAlias, Any

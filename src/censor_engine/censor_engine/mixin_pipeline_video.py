@@ -1,15 +1,16 @@
 import os
 from typing import Callable
 import progressbar
-from censorengine.backend.models.config import Config
-from censorengine.backend.models.pipelines.base import ImageProcessor
-from censorengine.backend.models.pipelines.video import FrameProcessor, VideoProcessor
-from censorengine.backend.models.tools.debugger import DebugLevels
-from censorengine.backend.models.tools.dev_tools import DevTools
-from censorengine.backend.models.tools.video_tools import VideoInfo
+from censor_engine.models.config import Config
+from .mixin_pipeline_image import ImageProcessor
+from .video import FrameProcessor, VideoProcessor
+
+from .tools.debugger import DebugLevels
+from .tools.dev_tools import DevTools
+from .tools.video_tools import VideoInfo
 
 
-class ComponentVideoPipeline:
+class MixinVideoPipeline:
     def _make_progress_bar_widgets(
         self, index_text: str, file_name: str, total_amount: int
     ) -> list:

@@ -3,12 +3,12 @@ from uuid import UUID, uuid4
 import cv2
 import numpy as np
 
-from censorengine.lib_models.shapes import BarShape
-from typing import TYPE_CHECKING, Optional
+from censor_engine.models.shapes import BarShape
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from censorengine.backend.constants.typing import Mask
-    from censorengine.backend.models.structures.detected_part import Part
+    from censor_engine.typing import Mask
+    from censor_engine.detected_part import Part
 
 
 class _BarInfo:

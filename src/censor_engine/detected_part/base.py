@@ -6,14 +6,14 @@ from uuid import UUID
 import cv2
 import numpy as np
 
-from censor_engine.backend.models.config import PartSettingsConfig
-from censor_engine.lib_models.shapes import Shape
-from censor_engine.libs.shape_library.catalogue import shape_catalogue
-from censor_engine.backend.models.config import Config
+from censor_engine.models.config import PartSettingsConfig
+from censor_engine.models.shapes import Shape
+from censor_engine.libs.shapes import shape_catalogue
+from censor_engine.models.config import Config
 
 
 if TYPE_CHECKING:
-    from censor_engine.backend.constants.typing import Mask
+    from censor_engine.typing import Mask
 
 
 @dataclass
@@ -174,6 +174,3 @@ class Part:
             raise ValueError(f"Shape {shape} does not Exist!")
 
         return shape_catalogue[shape]()
-
-
-part

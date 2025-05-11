@@ -1,10 +1,6 @@
-from censor_engine.lib_models.detectors import Detector
-from censor_engine.libs.detector_library.detectors.multi_detectors import (
-    NudeNetDetector,
-)
-from censor_engine.libs.detector_library.detectors.determination_tools import (
-    ImageGenreDeterminer,
-)
+from censor_engine.models.detectors import Detector
+from .multi_detectors import NudeNetDetector
+from .determination_tools import ImageGenreDeterminer
 
 """
 This is used for enabling new models. You may notice it's different from the

@@ -4,7 +4,7 @@ import os
 import cv2
 from itertools import count
 
-from censorengine.backend.models.structures.detected_part import Part
+from censor_engine.detected_part.base import Part
 
 
 @dataclass(slots=True)

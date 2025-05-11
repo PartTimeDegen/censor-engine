@@ -3,11 +3,10 @@ import cv2
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from censorengine.backend.constants.typing import Mask
-    from censorengine.backend.models.structures.detected_part import Part
+    from censor_engine.typing import Mask
+    from censor_engine.detected_part import Part
 
-
-from censorengine.lib_models.shapes import Shape
+from censor_engine.models.shapes import Shape
 
 
 class Box(Shape):
@@ -59,7 +58,7 @@ class Ellipse(Shape):
             abs(int((box[0][1] - box[1][1]) / 2)),
         )
         mask = cv2.ellipse(
-            empty_mask,
+            empty_mask,  # type: ignore
             centre,
             radius,
             0,

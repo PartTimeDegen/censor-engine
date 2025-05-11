@@ -2,28 +2,23 @@ import argparse
 from dataclasses import dataclass, field
 from typing import Any
 
-from censorengine.backend.models.censor_engine.components.pipeline_image import (
-    ComponentImagePipeline,
-)
-from censorengine.backend.models.censor_engine.components.pipeline_video import (
-    ComponentVideoPipeline,
-)
-from censorengine.backend.models.censor_engine.components.reporting import (
-    ComponentReporting,
-)
-from censorengine.backend.models.censor_engine.components.uitls import ComponentUtils
-from censorengine.backend.models.config import Config
+from .mixin_pipeline_image import MixinImagePipeline
+from .mixin_pipeline_video import MixinVideoPipeline
+from .mixin_reporting import MixinReporting
+from .mixin_utils import MixinUtils
 
-from censorengine.backend.models.tools.debugger import DebugLevels
-from censorengine.backend.models.tools.dev_tools import DevTools
+from censor_engine.models.config import Config
+
+from .tools.debugger import DebugLevels
+from .tools.dev_tools import DevTools
 
 
 @dataclass(slots=True, repr=False, eq=False, order=False, match_args=False)
 class CensorEngine(
-    ComponentReporting,
-    ComponentUtils,
-    ComponentImagePipeline,
-    ComponentVideoPipeline,
+    MixinImagePipeline,
+    MixinVideoPipeline,
+    MixinReporting,
+    MixinUtils,
 ):
     # Information
     main_files_path: str

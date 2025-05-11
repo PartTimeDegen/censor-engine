@@ -1,8 +1,8 @@
-from censorengine.backend.models.structures.detected_part import Part
-from censorengine.backend.models.structures.enums import PartState
+from censor_engine.detected_part.base import Part
+from censor_engine.models.enums import PartState
 
 
-class ImageComponentCompileMasks:
+class MixinComponentCompile:
     def _process_state_logic_for_masks(self, parts: list[Part]):
         sorted_parts = sorted(
             parts, key=lambda x: (-x.part_settings.state, x.part_name)[::-1]

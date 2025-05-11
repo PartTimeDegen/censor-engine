@@ -1,7 +1,7 @@
 import cv2
 
-from censorengine.lib_models.styles import ColourStyle
-from censorengine.backend.constants.typing import CVImage
+from censor_engine.models.styles import ColourStyle
+from censor_engine.typing import CVImage
 
 
 # Colour Filters

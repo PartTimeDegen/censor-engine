@@ -1,5 +1,5 @@
-from censor_engine.backend.constants.typing import CVImage
-from censor_engine.lib_models.detectors import Detector, DetectedPartSchema
+from censor_engine.typing import CVImage
+from censor_engine.models.detectors import Detector, DetectedPartSchema
 from nudenet import NudeDetector  # type: ignore
 
 

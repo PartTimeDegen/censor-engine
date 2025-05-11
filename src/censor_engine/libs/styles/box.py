@@ -1,10 +1,10 @@
 import cv2
 import numpy as np
 
-from censorengine.backend.constants.colours import get_colour, rgb_to_bgr
-from censorengine.lib_models.styles import BoxStyle
+from censor_engine.colours import get_colour, rgb_to_bgr
+from censor_engine.models.styles import BoxStyle
 
-from censorengine.backend.constants.typing import CVImage
+from censor_engine.typing import CVImage, Mask
 
 
 class MissingStyle(BoxStyle):
@@ -19,11 +19,11 @@ class Overlay(BoxStyle):
 
     @staticmethod  # FIXME: Implement to Outlined Box
     def _apply_overlay(
-        self,
-        image,
-        contour,
-        colour="WHITE",
-        alpha=1.0,
+        self,  # type: ignore
+        image: CVImage,
+        contour: Mask,
+        colour: tuple[int, int, int] | str = "WHITE",
+        alpha: float = 1.0,
     ) -> CVImage:
         if isinstance(colour, str):
             colour = get_colour(colour)
@@ -72,7 +72,7 @@ class Outline(BoxStyle):
         if conditions:
             temp_mask = np.ones(image.shape, dtype=np.uint8) * 255
             temp_image = cv2.drawContours(
-                temp_mask,
+                temp_mask,  # type: ignore
                 contour[0],
                 -1,
                 (0, 0, 0),
@@ -109,7 +109,7 @@ class Outline(BoxStyle):
 
         image = cv2.drawContours(
             image,
-            contour_shape,
+            contour_shape,  # type: ignore
             -1,
             rgb_to_bgr(colour),
             thickness,

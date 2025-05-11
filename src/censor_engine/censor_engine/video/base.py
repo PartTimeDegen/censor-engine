@@ -3,7 +3,7 @@ import os
 
 import cv2
 
-from censorengine.backend.models.structures.detected_part import Part
+from censor_engine.detected_part import Part
 
 
 @dataclass(slots=True)

@@ -1,7 +1,7 @@
 import cv2
 
-from censorengine.lib_models.styles import EdgeDetectionStyle
-from censorengine.backend.constants.typing import CVImage
+from censor_engine.models.styles import EdgeDetectionStyle
+from censor_engine.typing import CVImage
 
 # Edge Detection Effects
 # https://blog.roboflow.com/edge-detection/

@@ -3,10 +3,10 @@ import os
 from typing import Any, Optional
 
 import yaml
-from censor_engine.backend.constants.files import CONFIGS_FOLDER
-from censor_engine.backend.models.structures.structs import Censor
-from censor_engine.backend.models.enums import PartState
-from censor_engine.backend.models.tools.debugger import DebugLevels
+from censor_engine import CONFIGS_FOLDER
+from censor_engine.models.structs import Censor
+from censor_engine.models.enums import PartState
+from censor_engine.censor_engine.tools.debugger import DebugLevels
 
 
 # Control Settings Stuff

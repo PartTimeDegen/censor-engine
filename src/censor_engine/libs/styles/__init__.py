@@ -1,11 +1,11 @@
-from censor_engine.libs.style_library.styles import (
+from . import (
     blur,
     box,
     colour,
     pixelate,
     transparent,
     dev,
-    text,
+    # text,
     edge_detection,
     noise,
     stylisation,

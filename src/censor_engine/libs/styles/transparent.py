@@ -1,11 +1,11 @@
 import cv2
 import numpy as np
 
-from censorengine.lib_models.styles import TransparentStyle
+from censor_engine.models.styles import TransparentStyle
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from censorengine.backend.constants.typing import CVImage
+    from censor_engine.typing import CVImage
 
 
 class Cutout(TransparentStyle):
@@ -25,10 +25,10 @@ class Cutout(TransparentStyle):
 
         mask_zeros = np.ones(image.shape, dtype=np.uint8) * 255
         mask_filter = cv2.drawContours(
-            mask_zeros,
+            mask_zeros,  # type: ignore
             contour[0],
             -1,
-            (0, 0, 0, 0),
+            (0, 0, 0, 0),  # type: ignore
             -1,
             hierarchy=contour[1],
         )

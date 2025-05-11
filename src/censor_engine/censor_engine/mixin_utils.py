@@ -1,14 +1,11 @@
 from glob import glob
 import os
 
-from censorengine.backend.constants.files import (
-    APPROVED_FORMATS_IMAGE,
-    APPROVED_FORMATS_VIDEO,
-)
-from censorengine.backend.models.config import Config
+from censor_engine import APPROVED_FORMATS_IMAGE, APPROVED_FORMATS_VIDEO
+from censor_engine.models.config import Config
 
 
-class ComponentUtils:
+class MixinUtils:
     def _get_index_text(self, index: int, max_file_index: int):
         index_percent = index / max_file_index
         leading_spaces = " " * (len(str(max_file_index)) - len(str(index)))

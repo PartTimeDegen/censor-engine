@@ -1,13 +1,13 @@
 import statistics
-from censorengine.libs.detector_library.catalogue import (
+from censor_engine.libs.detectors import (
     enabled_detectors,
     enabled_determiners,
 )
-from censorengine.libs.shape_library.catalogue import shape_catalogue
-from censorengine.libs.style_library.catalogue import style_catalogue
+from censor_engine.libs.shapes import shape_catalogue
+from censor_engine.libs.styles import style_catalogue
 
 
-class ComponentReporting:
+class MixinReporting:
     # Reporting
     def get_detectors(self) -> list[str]:
         return [detector.model_name for detector in enabled_detectors]

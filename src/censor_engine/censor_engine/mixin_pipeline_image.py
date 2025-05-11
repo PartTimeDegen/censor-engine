@@ -1,13 +1,13 @@
 import cv2
 
-from censorengine.backend.models.config import Config
-from censorengine.backend.models.pipelines.base import ImageProcessor
-from censorengine.backend.models.tools.debugger import DebugLevels
-from censorengine.backend.models.tools.dev_tools import DevTools
+from censor_engine.models.config import Config
+from .image import ImageProcessor
+from .tools.debugger import DebugLevels
+from .tools.dev_tools import DevTools
 from typing import Callable
 
 
-class ComponentImagePipeline:
+class MixinImagePipeline:
     def _image_pipeline(
         self,
         main_files_path: str,

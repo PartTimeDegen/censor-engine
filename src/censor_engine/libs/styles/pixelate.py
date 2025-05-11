@@ -2,8 +2,8 @@ import math
 
 import cv2
 import numpy as np
-from censorengine.lib_models.styles import BlurStyle
-from censorengine.backend.constants.typing import CVImage
+from censor_engine.models.styles import BlurStyle
+from censor_engine.typing import CVImage
 
 
 class Pixelate(BlurStyle):

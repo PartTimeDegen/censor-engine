@@ -1,13 +1,13 @@
 import cv2
 import numpy as np
 
-from censorengine.backend.constants.typing import CVImage
-from censorengine.backend.models.structures.detected_part import Part
-from censorengine.backend.models.structures.schemas import Censor
-from censorengine.libs.style_library.catalogue import style_catalogue
+from censor_engine.typing import CVImage
+from censor_engine.detected_part.base import Part
+from censor_engine.models.structs import Censor
+from censor_engine.libs.styles import style_catalogue
 
 
-class ImageComponentGenerateCensors:
+class MixinGenerateCensors:
     def _handle_reverse_censor(
         self,
         reverse_censors: list[Censor],

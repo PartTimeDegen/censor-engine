@@ -1,14 +1,14 @@
 import cv2
 
-from censorengine.backend.constants.colours import get_colour, rgb_to_bgr
-from censorengine.lib_models.styles import DevStyle
+from censor_engine.colours import get_colour, rgb_to_bgr
+from censor_engine.models.styles import DevStyle
 
-from censorengine.backend.constants.typing import CVImage
+from censor_engine.typing import CVImage
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from censorengine.backend.models.structures.detected_part import Part
+    from censor_engine.detected_part import Part
 
 
 class Debug(DevStyle):

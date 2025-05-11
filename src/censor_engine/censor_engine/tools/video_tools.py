@@ -1,13 +1,13 @@
 from dataclasses import dataclass, field
 import cv2
 
-from censorengine.backend.constants.typing import CVImage
-from censorengine.backend.models.pipelines.video.video import (
+from censor_engine.typing import CVImage
+from censor_engine.censor_engine.video import (
     FrameProcessor,
     VideoProcessor,
 )
-from censorengine.backend.models.structures.detected_part import Part
-from censorengine.backend.models.tools.debugger import DebugLevels
+from censor_engine.detected_part.base import Part
+from censor_engine.censor_engine.tools.debugger import DebugLevels
 
 
 class InfoGenerator:

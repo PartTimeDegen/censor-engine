@@ -1,42 +1,29 @@
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 import itertools
+from uuid import uuid4, UUID
 
 import numpy as np
 
-from censorengine.backend.models.pipelines.image_components.compile_masks import (
-    ImageComponentCompileMasks,
-)
-from censorengine.backend.models.pipelines.image_components.generate_censors import (
-    ImageComponentGenerateCensors,
-)
-from censorengine.backend.models.pipelines.image_components.generate_parts import (
-    ImageComponentGenerateParts,
-)
-from censorengine.backend.models.tools.debugger import (
+from .mixin_compile_masks import MixinComponentCompile
+from .mixin_generate_censors import MixinGenerateCensors
+from .mixin_generate_parts import MixinGenerateParts
+from censor_engine.censor_engine.tools.debugger import (
     Debugger,
     DebugLevels,
 )
+from censor_engine.censor_engine.tools.dev_tools import DevTools
 
-from censorengine.backend.constants.typing import CVImage
-from censorengine.backend.models.structures.detected_part import Part
-from censorengine.backend.models.config import Config
+from censor_engine.typing import CVImage
+from censor_engine.detected_part.base import Part
+from censor_engine.models.config import Config
 
-from censorengine.libs.detector_library.catalogue import (
-    enabled_detectors,
-    enabled_determiners,
-)
-from censorengine.lib_models.detectors import DetectedPartSchema
-from uuid import uuid4, UUID
-from censorengine.backend.models.tools.dev_tools import DevTools
+from censor_engine.libs.detectors import enabled_detectors
+from censor_engine.models.detectors import DetectedPartSchema
 
 
 @dataclass(slots=True)
-class ImageProcessor(
-    ImageComponentGenerateParts,
-    ImageComponentCompileMasks,
-    ImageComponentGenerateCensors,
-):
+class ImageProcessor(MixinComponentCompile, MixinGenerateCensors, MixinGenerateParts):
     file_image: CVImage
     config: Config
     debug_level: DebugLevels = DebugLevels.NONE

@@ -1,12 +1,12 @@
 from uuid import UUID
-from censorengine.backend.constants.typing import Mask
-from censorengine.backend.models.config import Config
-from censorengine.backend.models.structures.detected_part import Part
-from censorengine.backend.models.structures.enums import ShapeType
-from censorengine.models.detectors import DetectedPartSchema
+from censor_engine.typing import Mask
+from censor_engine.models.config import Config
+from censor_engine.detected_part.base import Part
+from censor_engine.models.enums import ShapeType
+from censor_engine.models.detectors import DetectedPartSchema
 
 
-class ImageComponentGenerateParts:
+class MixinGenerateParts:
     def _create_parts(
         self,
         config: Config,

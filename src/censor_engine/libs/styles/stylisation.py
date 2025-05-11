@@ -1,6 +1,6 @@
 import cv2
-from censorengine.lib_models.styles import StyliseStyle
-from censorengine.backend.constants.typing import CVImage
+from censor_engine.models.styles import StyliseStyle
+from censor_engine.typing import CVImage
 
 
 class Painting(StyliseStyle):

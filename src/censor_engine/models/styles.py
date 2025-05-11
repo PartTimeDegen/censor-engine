@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import cv2
 import numpy as np
 
-from censorengine.backend.constants.typing import Mask, CVImage, ProcessedImage
+from censor_engine.typing import Mask, CVImage, ProcessedImage
 
 
 class Style(ABC):

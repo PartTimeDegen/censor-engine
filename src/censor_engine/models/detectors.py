@@ -9,7 +9,7 @@ import gdown  # type: ignore
 # import tensorflow as tf  # type: ignore # NOTE: I can't run this due to my shitty Xeon CPU
 import torch
 
-from censorengine.backend.constants.typing import CVImage
+from censor_engine.typing import CVImage
 
 
 @dataclass
