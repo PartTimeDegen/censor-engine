@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from dataclasses import dataclass
-import os
+from pathlib import Path
 from typing import Any
 
 import pydload  # type: ignore
@@ -12,7 +12,7 @@ import torch
 from censor_engine.typing import CVImage
 
 
-@dataclass
+@dataclass(slots=True)
 class DetectedPartSchema:
     """
     This is the schema expected to be returned by core and customer detectors.
@@ -32,88 +32,71 @@ class DetectedPartSchema:
     label: str
     score: float
     relative_box: tuple[int, int, int, int]  # X, Y, Width, Height
+    part_id: int = 0
+
+    def set_part_id(self, number: int) -> None:
+        self.part_id = number
 
 
 class AIModel:
     """
-    It seems that the standard for AI packages for Python is to give you the
-    code via Pip but then give you the model separately (probably to alleviate
-    the payload).
-
-    This class is to give the AI using models the ability to download and mount
-    the models.
-
-    Downloading is simple enough since it's just getting the link.
-
-    Mounting requires more work especially since I'm not an AI dev (yet lol)
-
+    Handles downloading and loading AI models separately from code packages.
     """
 
     ai_model_folder_name: str = "~/.ai_models"
-    model_path: str
-    ai_model: Any
+    model_path: Path | None = None
+    model: Any = None
 
     def download_model(self, url: str):
-        # Download the Model When the Package Doesn't -.-
-        home = os.path.expanduser("~")
-        model_folder = os.path.join(home, self.ai_model_folder_name, "")
-        if not os.path.exists(model_folder):
-            os.mkdir(model_folder)
+        home = Path.home()
+        model_folder = home / self.ai_model_folder_name.lstrip("~").lstrip("/")
+        model_folder.mkdir(parents=True, exist_ok=True)
 
-        model_path = os.path.join(model_folder, os.path.basename(url))
+        model_path = model_folder / Path(url).name
 
-        if not os.path.exists(model_path):
-            print("Downloading the checkpoint to", model_path)
-            pydload.dload(url, save_to_path=model_path, max_time=None)  # type: ignore
+        if not model_path.exists():
+            print(f"Downloading the checkpoint to {model_path}")
+            pydload.dload(url, save_to_path=str(model_path), max_time=None)  # type: ignore
 
         self.model_path = model_path
 
     def download_google_drive_model(self, url: str):
-        # Download the Model When the Package Doesn't -.-
-        home = os.path.expanduser("~")
-        model_folder = os.path.join(home, self.ai_model_folder_name, "")
-        if not os.path.exists(model_folder):
-            os.mkdir(model_folder)
+        home = Path.home()
+        model_folder = home / self.ai_model_folder_name.lstrip("~").lstrip("/")
+        model_folder.mkdir(parents=True, exist_ok=True)
 
-        model_path = os.path.join(model_folder, os.path.basename(url))
+        model_path = model_folder / Path(url).name
 
-        if not os.path.exists(model_path):
-            print("Downloading the checkpoint to", model_path)
-            gdown.download(url, model_path, max_time=None)  # type: ignore
+        if not model_path.exists():
+            print(f"Downloading the checkpoint to {model_path}")
+            gdown.download(url, str(model_path), max_time=None)  # type: ignore
 
         self.model_path = model_path
 
     def load_model(self):
-        file_extension = self.model_path.split(".")[-1]
+        if self.model_path is None:
+            raise ValueError("Model path is not set. Please download a model first.")
 
-        # # TensorFlow Models
-        # if file_extension in ["h5", "savedmodel"]:
-        #     self.model = tf.keras.models.load_model(self.model_path)
+        ext = self.model_path.suffix.lower().lstrip(".")
 
-        # PyTorch
-        if file_extension == "pt":
-            self.model = torch.load(self.model_path)
+        # PyTorch model loading
+        if ext == "pt":
+            self.model = torch.load(str(self.model_path))
             self.model.eval()
-
         else:
-            raise ValueError(f"Unsupported model format: {file_extension}")
+            raise ValueError(f"Unsupported model format: {ext}")
 
     def predict(self, input_data: Any):
         if self.model is None:
-            raise ValueError("Missing AI model.")
+            raise ValueError("Missing AI model. Please load the model first.")
 
-        # # TensorFlow Model
-        # if isinstance(self.model, tf.keras.Model):
-        #     return self.model.predict(input_data)
-
-        # PyTorch
         if isinstance(self.model, torch.nn.Module):
             with torch.no_grad():
                 input_tensor = torch.tensor(input_data, dtype=torch.float32)
-                return self.model(input_tensor).numpy()
-
+                output = self.model(input_tensor)
+                return output.numpy()
         else:
-            raise ValueError("Cannot find model type")
+            raise ValueError("Cannot find supported model type")
 
     def proceed_model(self, url: str, input_data: Any):
         if "drive.google" in url:
@@ -121,7 +104,7 @@ class AIModel:
         else:
             self.download_model(url)
         self.load_model()
-        self.predict(input_data)
+        return self.predict(input_data)
 
 
 class Detector(AIModel):

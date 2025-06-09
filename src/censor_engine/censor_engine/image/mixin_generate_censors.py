@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 from censor_engine.typing import CVImage
-from censor_engine.detected_part.base import Part
+from censor_engine.detected_part import Part
 from censor_engine.models.structs import Censor
 from censor_engine.libs.styles import style_catalogue
 

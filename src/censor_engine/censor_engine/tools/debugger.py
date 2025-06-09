@@ -28,14 +28,15 @@ class DebugLevels(IntEnum):
     """
 
     NONE = 0
-    BASIC = 1
-    TIMED = 2
-    DETAILED = 3
-    ADVANCED = 4
-    FULL = 5
+    VIDEO = 1
+    BASIC = 2
+    TIMED = 3
+    DETAILED = 4
+    ADVANCED = 5
+    FULL = 6
 
 
-@dataclass
+@dataclass(slots=True)
 class TimerSchema:
     name: str
     timestamp: float

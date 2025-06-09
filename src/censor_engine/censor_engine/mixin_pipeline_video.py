@@ -1,7 +1,9 @@
 import os
+from pathlib import Path
 from typing import Callable
 import progressbar
 from censor_engine.models.config import Config
+from censor_engine.paths import PathManager
 from .mixin_pipeline_image import ImageProcessor
 from .video import FrameProcessor, VideoProcessor
 
@@ -38,9 +40,9 @@ class MixinVideoPipeline:
         debug_level: DebugLevels,
         in_place_durations: list[float],
         function_get_index: Callable[[int, int], str],
-        function_save_file: Callable[[str, str, Config, bool], str],
         function_display_times: Callable[[], None],
         flags: dict[str, bool],
+        path_manager: PathManager,
     ):
         dev_tools = None
         max_index = max(f[0] for f in indexed_files)
@@ -50,27 +52,37 @@ class MixinVideoPipeline:
                 continue
 
             # Get Video Capture
-            video_processor = VideoProcessor(
-                file_path, function_save_file(file_path, main_files_path, config, False)
+            full_file_path = path_manager.get_save_file_path(file_path)
+            video_processor = VideoProcessor(file_path, full_file_path, flags)
+
+            # Build Progress Bar
+            file_name = (
+                full_file_path
+                if path_manager.get_flag_is_using_full_path()
+                else file_path.split(os.sep)[-1]
             )
 
-            # Iterate through Frames
-            frame_hold = int(
-                config.video_settings.part_frame_hold_seconds
-                / video_processor.get_fps()
-            )
-            frame_processor = FrameProcessor(
-                frame_difference_threshold=config.video_settings.frame_difference_threshold,
-                part_frame_hold_seconds=frame_hold,
-            )
             progress_bar = progressbar.progressbar(
                 range(video_processor.total_frames),
                 widgets=self._make_progress_bar_widgets(
                     index_text=function_get_index(index, max_index),
-                    file_name=file_path.split(os.sep)[-1],
+                    file_name=file_name,
                     total_amount=video_processor.total_frames,
                 ),
             )
+
+            # Get Frame Capture
+            frame_hold = int(
+                config.video_settings.part_frame_hold_seconds
+                * video_processor.get_fps()
+            )
+
+            frame_processor = FrameProcessor(
+                frame_difference_threshold=config.video_settings.frame_difference_threshold,
+                part_frame_hold_frames=frame_hold,
+            )
+
+            # Iterate through Frames
             frame_counter = 0
             for _ in progress_bar:
                 # Check Frames
@@ -81,9 +93,9 @@ class MixinVideoPipeline:
 
                 if flags["dev_tools"]:
                     dev_tools = DevTools(
-                        output_folder=file_path,
-                        main_files_path=main_files_path,
-                        using_full_output_path=flags["show_full_output_path"],
+                        output_folder=Path(file_path),
+                        main_files_path=Path(main_files_path),
+                        using_full_output_path=path_manager.get_flag_is_using_full_path(),
                     )
 
                 # Run Censor Manager
@@ -111,7 +123,7 @@ class MixinVideoPipeline:
                                 "spasm".
 
                 """
-                frame_processor.load_parts(censor_manager.image_parts)
+                frame_processor.load_parts(censor_manager._image_parts)
                 """
                 -   Keep parts (hold them, if -1, always hold)
                 -   check sizes for parts, flag any bad ones
@@ -119,12 +131,13 @@ class MixinVideoPipeline:
                 -   if the held part is bad, update it to a better one (biggest?)
                 -   
                 """
-                frame_processor.apply_part_persistence()
-                # frame_processor.apply_frame_stability()
+
+                # Apply Quality Filters
+                frame_processor.run()
 
                 # Update the Parts
-                frame_processor.save_frame()
-                censor_manager.image_parts = frame_processor.retrieve_parts()
+                # frame_processor.save_frame()
+                censor_manager._image_parts = frame_processor.retrieve_parts()
 
                 # Apply Censors
                 censor_manager.compile_masks()
@@ -138,14 +151,18 @@ class MixinVideoPipeline:
                     video_info = VideoInfo(
                         frame,
                         frame_counter,
-                        censor_manager.image_parts,
+                        censor_manager._image_parts,
                         video_processor,
                         frame_processor,
                         debug_level,
                     )
-                    file_output = video_info.get_debug_info(file_output)
+                    file_output = video_info.get_debug_info(
+                        file_output,
+                        frame_processor,
+                    )
 
-                video_processor.video_writer.write(file_output)
+                # Write Frame
+                video_processor.write_frame(file_output)
 
                 # Debug Show Times
                 in_place_durations.append(censor_manager.get_duration())

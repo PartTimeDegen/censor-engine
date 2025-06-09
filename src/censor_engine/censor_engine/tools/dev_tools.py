@@ -1,16 +1,17 @@
 from dataclasses import dataclass, field
 import os
+from pathlib import Path
 
 import cv2
 from itertools import count
 
-from censor_engine.detected_part.base import Part
+from censor_engine.detected_part import Part
 
 
 @dataclass(slots=True)
 class DevTools:
-    output_folder: str
-    main_files_path: str
+    output_folder: Path
+    main_files_path: Path
     using_full_output_path: bool
 
     counter: int = field(default_factory=count().__next__, init=False)
@@ -24,28 +25,30 @@ class DevTools:
         parts: list[Part] | Part,
         subfolder: str | None = None,
     ):
-        # Main Folder
-        current_path = os.path.join(
-            ".dev",
-            self.output_folder.replace(self.main_files_path, "", 1)[1:],
+        # Main folder path, relative to main_files_path, prefixed with ".dev"
+        current_path = Path(".dev") / self.output_folder.relative_to(
+            self.main_files_path
         )
 
-        # Sub Folder
-        current_path = current_path.split(os.sep)
-        current_path[-1] = f"{self.counter}_" + current_path[-1]
-        current_path = os.path.join(*current_path)
+        # Modify last part of path by prepending counter + "_"
+        parts_list = list(current_path.parts)
+        parts_list[-1] = f"{self.counter}_" + parts_list[-1]
+        current_path = Path(*parts_list)
 
+        # Add subfolder if provided
         if subfolder:
-            current_path = os.path.join(current_path, subfolder)
+            current_path = current_path / subfolder
 
-        # Generate Folder
+        # Ensure parts is a list
         if isinstance(parts, Part):
             parts = [parts]
-        if not os.path.exists(current_path) and len(parts) != 0:
-            os.makedirs(current_path, exist_ok=True)
 
-        # Include Parts
+        # Create directory if it doesn't exist and there are parts
+        if not current_path.exists() and parts:
+            current_path.mkdir(parents=True, exist_ok=True)
+
+        # Save mask images for each part
         for part in parts:
-            path = os.path.join(current_path, part.get_name_and_id() + ".jpg")
-            cv2.imwrite(path, part.mask)
+            file_path = current_path / f"{part.get_name_and_id()}.jpg"
+            cv2.imwrite(str(file_path), part.mask)
             # print(f"=={subfolder}::{part.get_name_and_id()}")

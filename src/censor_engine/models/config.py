@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field, replace
-import os
+from pathlib import Path
 from typing import Any, Optional
 
 import yaml
@@ -10,31 +10,38 @@ from censor_engine.libs.configs import get_config_path
 
 
 # Control Settings Stuff
-@dataclass
+@dataclass(slots=True)
 class DevConfig:
     debug_level: DebugLevels = DebugLevels.NONE
 
 
-@dataclass
+@dataclass(slots=True)
 class FileConfig:
     file_prefix: str = ""
     file_suffix: str = ""
 
-    uncensored_folder: str = "uncensored"
-    censored_folder: str = "censored"
+    uncensored_folder: Path = Path("uncensored")
+    censored_folder: Path = Path("censored")
+
+    def __post_init__(self):
+        # Type Narrow to Float
+        if isinstance(self.uncensored_folder, str):
+            self.uncensored_folder = Path(self.uncensored_folder)
+        if isinstance(self.censored_folder, str):
+            self.censored_folder = Path(self.censored_folder)
 
 
-@dataclass
+@dataclass(slots=True)
 class ImageConfig:
     smoothing: bool = True
 
 
-@dataclass
+@dataclass(slots=True)
 class VideoConfig:
     # Core Settings
     # NOTE: The default "-1" means to use the native FPS
-    censoring_fps: int = -1
-    output_fps: int = -1
+    censoring_fps: int = -1  # TODO
+    output_fps: int = -1  # TODO
 
     # Video Cleaning Settings
     # # Frame Stability Config
@@ -51,18 +58,18 @@ class VideoConfig:
             self.part_frame_hold_seconds = float(self.part_frame_hold_seconds)
 
 
-@dataclass
+@dataclass(slots=True)
 class RenderingConfig:
     smoothing: bool = True
     batch_size: int = 4
 
 
-@dataclass
+@dataclass(slots=True)
 class AIConfig:
     ai_model_downscale_factor: int = 1  # TODO: Implement
 
 
-@dataclass
+@dataclass(slots=True)
 class MergingConfig:
     merge_range: float | int = -1.0
     merge_groups: list[list[str]] = field(default_factory=list)
@@ -74,7 +81,7 @@ class MergingConfig:
 
 
 # Parts Stuff
-@dataclass
+@dataclass(slots=True)
 class PartSettingsConfig:
     # Meta
     name: str = "MISSING_NAME"
@@ -87,6 +94,7 @@ class PartSettingsConfig:
     state: PartState = PartState.UNPROTECTED
     protected_shape: Optional[str] = None
     fade_percent: int = 0  # 0 - 100
+    video_part_search_region: float = 0.5  # bigger than 0.0
 
     # Semi Meta Settings
     use_global_area: bool = True
@@ -121,7 +129,7 @@ class PartSettingsConfig:
             raise TypeError(f"Invalid type for margin: {type(self.margin)}")
 
 
-@dataclass
+@dataclass(slots=True)
 class ReverseCensorConfig:
     censors: list[Censor] = field(default_factory=list)
 
@@ -135,7 +143,7 @@ class ReverseCensorConfig:
         ]
 
 
-@dataclass
+@dataclass(slots=True)
 class PartInformationConfig:
     enabled_parts: list[str] = field(default_factory=list)
 
@@ -262,11 +270,11 @@ class Config:
         full_config_path = get_config_path(config_path)
 
         # If it doesn't Exist, Check for Local Paths
-        if not os.path.exists(full_config_path):
-            full_config_path = os.path.join(main_file_path, config_path)
+        if not full_config_path.exists():
+            full_config_path = Path(main_file_path) / config_path
 
         # If It still doesn't Exist, It must be Wrong
-        if not os.path.exists(full_config_path):
+        if not full_config_path.exists():
             raise FileNotFoundError(
                 f"Cannot find config at {config_path} or {full_config_path}"
             )

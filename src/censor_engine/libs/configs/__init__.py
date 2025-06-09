@@ -1,8 +1,7 @@
-import os
-import yaml
+from pathlib import Path
 
 
-def get_config_path(filename: str) -> str:
-    base_dir = os.path.dirname(__file__)
-    config_path = os.path.join(base_dir, filename)
-    return os.path.abspath(config_path)
+def get_config_path(filename: str) -> Path:
+    base_dir = Path(__file__).parent
+    config_path = base_dir / filename
+    return config_path.resolve()

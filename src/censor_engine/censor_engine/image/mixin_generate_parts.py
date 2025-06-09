@@ -1,7 +1,7 @@
 from uuid import UUID
 from censor_engine.typing import Mask
 from censor_engine.models.config import Config
-from censor_engine.detected_part.base import Part
+from censor_engine.detected_part import Part
 from censor_engine.models.enums import ShapeType
 from censor_engine.models.detectors import DetectedPartSchema
 
@@ -58,11 +58,13 @@ class MixinGenerateParts:
 
             return Part(
                 part_name=detect_part.label,
+                part_id=detect_part.part_id,
                 score=detect_part.score,
                 relative_box=detect_part.relative_box,
                 empty_mask=empty_mask,
                 config=config,
                 file_uuid=file_uuid,
+                image_shape=empty_mask.shape,  # type: ignore Assume Two Dimensions
             )
 
         return [part for part in map(add_parts, detected_parts) if part is not None]

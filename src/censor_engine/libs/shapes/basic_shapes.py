@@ -15,7 +15,7 @@ class Box(Shape):
     single_shape: str = "box"
 
     def generate(self, part: "Part", empty_mask: "Mask") -> "Mask":
-        box = part.box
+        box = part.part_area.region.get_corners()
         mask = cv2.rectangle(empty_mask, box[0], box[1], (255, 255, 255), -1)  # type: ignore
         return mask
 
@@ -26,18 +26,13 @@ class Circle(Shape):
     single_shape: str = "circle"
 
     def generate(self, part: "Part", empty_mask: "Mask") -> "Mask":
-        box = part.box
-
-        centre = (
-            int((box[0][0] + box[1][0]) / 2),
-            int((box[0][1] + box[1][1]) / 2),
+        mask = cv2.circle(
+            empty_mask,
+            part.part_area.region.centre.convert_to_tuple(),
+            min(part.part_area.region.radius),
+            (255, 255, 255),
+            -1,
         )
-
-        radius = min(
-            abs(int((box[0][0] - box[1][0]) / 2)),
-            abs(int((box[0][1] - box[1][1]) / 2)),
-        )
-        mask = cv2.circle(empty_mask, centre, radius, (255, 255, 255), -1)
         return mask
 
 
@@ -47,20 +42,10 @@ class Ellipse(Shape):
     single_shape: str = "ellipse"
 
     def generate(self, part: "Part", empty_mask: "Mask") -> "Mask":
-        box = part.box
-        centre = (
-            int((box[0][0] + box[1][0]) / 2),
-            int((box[0][1] + box[1][1]) / 2),
-        )
-
-        radius = (
-            abs(int((box[0][0] - box[1][0]) / 2)),
-            abs(int((box[0][1] - box[1][1]) / 2)),
-        )
         mask = cv2.ellipse(
             empty_mask,  # type: ignore
-            centre,
-            radius,
+            part.part_area.region.centre.convert_to_tuple(),
+            part.part_area.region.radius,
             0,
             0,
             360,
@@ -76,7 +61,7 @@ class RoundedBox(Shape):
     single_shape: str = "rounded_box"
 
     def generate(self, part: "Part", empty_mask: "Mask") -> "Mask":
-        box = part.box
+        box = part.part_area.region.get_corners()
         mask = cv2.rectangle(empty_mask, box[0], box[1], (255, 255, 255), -1)  # type: ignore
 
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))

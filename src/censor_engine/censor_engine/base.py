@@ -1,7 +1,10 @@
 import argparse
 from dataclasses import dataclass, field
-import os
+from pathlib import Path
 from typing import Any
+
+from censor_engine.paths import PathManager
+from censor_engine.typing import CVImage
 
 from .mixin_pipeline_image import MixinImagePipeline
 from .mixin_pipeline_video import MixinVideoPipeline
@@ -14,7 +17,7 @@ from .tools.debugger import DebugLevels
 from .tools.dev_tools import DevTools
 
 
-@dataclass(slots=True, repr=False, eq=False, order=False, match_args=False)
+@dataclass(slots=True, repr=False, eq=False, order=False)
 class CensorEngine(
     MixinImagePipeline,
     MixinVideoPipeline,
@@ -22,7 +25,7 @@ class CensorEngine(
     MixinUtils,
 ):
     # Information
-    main_files_path: str
+    base_folder: Path | str
     test_mode: bool = False
     censor_mode: str = "auto"
     config_data: str | dict[str, Any] = "00_default.yml"
@@ -36,17 +39,17 @@ class CensorEngine(
     _flags: dict[str, bool] = field(init=False, default_factory=dict)
 
     # Internal State Variables
-    _arg_loc: str = field(init=False)
+    _arg_loc: Path | None = field(init=False, default=None)
     _full_files_path: str = field(init=False)
     _config: Config = field(init=False)
     _used_boot_config: bool = field(default=False, init=False)
     _durations: list[str] = field(default_factory=list, init=False)
-
-    # Constants
-    FRAME_DIFFERENCE_THRESHOLD: float = 0.02  # Percentage # TODO: Add to config
-    FRAME_HOLD = 3
+    _path_manager: PathManager = field(init=False)
 
     def __post_init__(self):
+        # Conversions
+        self.base_folder = Path(self.base_folder)
+
         # Get Pre-init Arguments
         if not self.test_mode:
             self._parse_pre_arguments()
@@ -59,6 +62,14 @@ class CensorEngine(
         if not self.test_mode:
             self._get_post_arguments()
 
+        # Finalise PathManager
+        self._path_manager = PathManager(
+            self.base_folder,
+            self._config,
+            self._flags,
+            self._arg_loc,
+        )
+
     def _parse_pre_arguments(self):
         # Parser
         parser = argparse.ArgumentParser(
@@ -66,9 +77,9 @@ class CensorEngine(
             description="Censors Images",
         )
         arg_mapper = {
-            "uncensored_location": "loc",
-            "config_location": "config",
-            "debug_level": "debug",
+            "uncensored_location": "uncensored-location",
+            "config_location": "config-location",
+            "debug_level": "debug-level",
         }
 
         flag_mapper = {
@@ -76,7 +87,7 @@ class CensorEngine(
             "pad_individual_items": "pi",
             "dev_tools": "dt",
             "show_full_output_path": "fo",
-            "test_data": "td",
+            "using_test_data": "td",
         }
 
         # Add Args
@@ -98,16 +109,15 @@ class CensorEngine(
 
         # Handle Args
         # # File Location
-        if loc := args.loc:
-            self._arg_loc = loc
+        if loc := args.uncensored_location:
+            self._arg_loc = Path(loc)
 
         # # Config Location
-        if config := args.config:
+        if config := args.config_location:
             self.load_config(config)
             self._used_boot_config = True
 
-        if debug_word := args.debug:
-            # TODO: This needs a dev handler to handle non-boolean values
+        if debug_word := args.debug_level:
             try:
                 self._debug_level = DebugLevels[debug_word.upper()]
                 print(f"**Using Debug Mode: {self._debug_level.name}**")
@@ -120,25 +130,13 @@ class CensorEngine(
             if value:
                 print(f"**{key.replace('_', ' ').title()} Activated!**")
 
-        # # Flag for Test Data
-        if self._flags.get("test_data"):
-            self._arg_loc = os.path.join(".test_data", self._arg_loc)
-
     def _get_post_arguments(self):
-        if loc := self._arg_loc:
-            if loc.startswith("./"):
-                loc = self._config.file_settings.uncensored_folder + loc[1:]
-            elif loc.startswith(".test_data/./"):
-                loc = (
-                    ".test_data/"
-                    + self._config.file_settings.uncensored_folder
-                    + loc[12:]
-                )
-            self._config.file_settings.uncensored_folder = loc
+        if self._arg_loc and (self._arg_loc.parts and self._arg_loc.parts[0] == "."):
+            self._flags["_using_shortcut"] = True
 
     def load_config(self, config_data: str | dict[str, Any]):
         if isinstance(config_data, str):
-            self._config = Config.from_yaml(self.main_files_path, config_data)
+            self._config = Config.from_yaml(self.base_folder, config_data)
         elif isinstance(config_data, dict):
             self._config = Config.from_dictionary(config_data)
         else:
@@ -149,17 +147,17 @@ class CensorEngine(
         if self._flags["show_stat_metrics"] and len(self._time_durations) != 0:
             self.display_bulk_stats(self._time_durations)
 
-    def start(self):
+    def start(self) -> list[CVImage] | None:
         # Find Files
         args: dict[str, Any] = {
-            "main_files_path": self.main_files_path,
-            "indexed_files": self._find_files(self.main_files_path, self._config),
+            "main_files_path": self.base_folder,
+            "indexed_files": self._find_files(self._path_manager),
             "config": self._config,
             "debug_level": self._debug_level,
             "in_place_durations": self._time_durations,
             "function_get_index": self._get_index_text,
-            "function_save_file": self._save_file,
             "flags": self._flags,
+            "path_manager": self._path_manager,
         }
         video_args = args.copy()
         video_args["function_display_times"] = self.display_times

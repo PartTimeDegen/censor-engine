@@ -1,4 +1,4 @@
-from censor_engine.detected_part.base import Part
+from censor_engine.detected_part import Part
 from censor_engine.models.enums import PartState
 
 

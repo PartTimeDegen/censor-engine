@@ -41,7 +41,9 @@ class NudeNetDetector(Detector):
                 score=found_part["score"],
                 relative_box=found_part["box"],
             )
-            for found_part in self.model_object.detect(file_images_or_path)
+            for index, found_part in enumerate(
+                self.model_object.detect(file_images_or_path)
+            )
         ]
 
     def detect_batch(
@@ -53,11 +55,12 @@ class NudeNetDetector(Detector):
         for index, image in enumerate(output):
             dict_output[index] = [
                 DetectedPartSchema(
+                    part_id=index,
                     label=found_part["class"],
                     score=found_part["score"],
                     relative_box=found_part["box"],
                 )
-                for found_part in image
+                for index, found_part in enumerate(image)
             ]
 
         return dict_output

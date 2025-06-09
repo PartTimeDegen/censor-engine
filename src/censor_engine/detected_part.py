@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
-import itertools
-from typing import Iterable, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 import cv2
@@ -10,22 +9,25 @@ from censor_engine.models.config import PartSettingsConfig
 from censor_engine.models.shapes import Shape
 from censor_engine.libs.shapes import shape_catalogue
 from censor_engine.models.config import Config
+from censor_engine.models.structs import PartArea
 
 
 if TYPE_CHECKING:
     from censor_engine.typing import Mask
 
 
-@dataclass
+@dataclass(slots=True)
 class Part:
     # Input
     part_name: str
+    part_id: int
     score: float
     relative_box: tuple[int, int, int, int]  # x, y, width, height
     config: Config
 
     empty_mask: "Mask"
     file_uuid: UUID
+    image_shape: tuple[int, int, ...]  # type: ignore
 
     # Internal
     # # Found
@@ -33,13 +35,10 @@ class Part:
 
     # # Meta
     is_merged: bool = False
-    part_id: Iterable[int] = itertools.count(start=1)
-    merge_group_id: Optional[int] = None
+    merge_group_id: int | None = None
 
     # # Generated
-    box: tuple[tuple[int, int], tuple[int, int]] = field(
-        init=False
-    )  # top left, bottom right
+    part_area: PartArea = field(init=False)
     merge_group: list[str] = field(default_factory=list, init=False)
 
     shape_name: str = field(default="NOT_SET", init=False)
@@ -62,9 +61,6 @@ class Part:
         # Derived
         # # Box
         self._correct_relative_box_size()
-
-        # # Part IDs
-        self.part_id = next(Part.part_id)  # type: ignore
 
         # # Merge Groups
         for index, group in enumerate(
@@ -126,15 +122,19 @@ class Part:
         height += margin_height
 
         # Format Box Values to Int and Make to Standard Box Format
-        top_left_x = int(top_left_x)
-        top_left_y = int(top_left_y)
-        width = int(width)
-        height = int(height)
+        new_relative_box = (int(top_left_x), int(top_left_y), int(width), int(height))
 
-        self.box = ((top_left_x, top_left_y), (top_left_x + width, top_left_y + height))
+        self.part_area = PartArea(
+            new_relative_box,
+            self.part_settings.video_part_search_region,
+            self.image_shape[:2],
+        )
 
     # Public Methods
     # # Naming Methods
+    def get_id_name_and_merged(self) -> str:
+        return f"{self.part_id}_{self.part_name}{"_merged" if self.is_merged else ""}"
+
     def get_name_and_merged(self) -> str:
         return f"{self.part_name}{"_merged" if self.is_merged else ""}"
 

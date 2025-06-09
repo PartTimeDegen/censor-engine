@@ -15,7 +15,7 @@ from censor_engine.censor_engine.tools.debugger import (
 from censor_engine.censor_engine.tools.dev_tools import DevTools
 
 from censor_engine.typing import CVImage
-from censor_engine.detected_part.base import Part
+from censor_engine.detected_part import Part
 from censor_engine.models.config import Config
 
 from censor_engine.libs.detectors import enabled_detectors
@@ -30,36 +30,35 @@ class ImageProcessor(MixinComponentCompile, MixinGenerateCensors, MixinGenerateP
     dev_tools: DevTools | None = field(default=None)
 
     # Internals
-    force_png: bool = False
+    _force_png: bool = False
 
-    detected_parts: list[DetectedPartSchema] = field(init=False, default_factory=list)
-    extracted_information: dict[str, str] = field(init=False, default_factory=dict)
+    _detected_parts: list[DetectedPartSchema] = field(init=False, default_factory=list)
+    _extracted_information: dict[str, str] = field(init=False, default_factory=dict)
 
-    image_parts: list[Part] = field(init=False, default_factory=list)
+    _image_parts: list[Part] = field(init=False, default_factory=list)
 
-    empty_mask: CVImage = field(init=False)
-    file_original_image: CVImage = field(init=False)
-    file_uuid: UUID = field(init=False)
+    _empty_mask: CVImage = field(init=False)
+    _file_original_image: CVImage = field(init=False)
+    _file_uuid: UUID = field(init=False)
 
-    debugger: Debugger = field(init=False)
-    duration: float = field(init=False)
+    _debugger: Debugger = field(init=False)
+    _duration: float = field(init=False)
 
     def __post_init__(self):
-        Part.part_id = itertools.count(start=1)
-        self.detected_parts.clear()
-        self.extracted_information.clear()
-        self.file_uuid = uuid4()
-        self.file_original_image = self.file_image.copy()
+        self._detected_parts.clear()
+        self._extracted_information.clear()
+        self._file_uuid = uuid4()
+        self._file_original_image = self.file_image.copy()
 
         # Debug
-        self.debugger = Debugger("Image Processor", level=self.debug_level)
-        self.debugger.time_total_start()
-        self.debugger.display_onnx_info()
+        self._debugger = Debugger("Image Processor", level=self.debug_level)
+        self._debugger.time_total_start()
+        self._debugger.display_onnx_info()
 
         # Empty Mask
-        self.debugger.time_start("Create Empty Mask")
-        self.empty_mask = self._create_empty_mask()
-        self.debugger.time_stop()
+        self._debugger.time_start("Create Empty Mask")
+        self._empty_mask = self._create_empty_mask()
+        self._debugger.time_stop()
 
         # Determine Image # TODO: Find Some Models I can Run
         # self.debugger.time_start("Determine Image")
@@ -70,9 +69,9 @@ class ImageProcessor(MixinComponentCompile, MixinGenerateCensors, MixinGenerateP
         # self.debugger.time_stop()
 
         # Detect Parts for Image
-        self.debugger.time_start("Detect Parts")
+        self._debugger.time_start("Detect Parts")
         self._detect_parts()
-        self.debugger.time_stop()
+        self._debugger.time_stop()
 
     # Post Init Helper Functions
     def _detect_parts(self):
@@ -84,8 +83,16 @@ class ImageProcessor(MixinComponentCompile, MixinGenerateCensors, MixinGenerateP
                 )
             )
 
-        self.detected_parts = list(itertools.chain(*detected_parts))
-        self.debugger.time_stop()
+        all_parts = list(itertools.chain(*detected_parts))
+
+        # Sort and Label ID Based on Position
+        all_parts.sort(key=lambda part: (part.relative_box[1], part.relative_box[0]))
+
+        for index, part in enumerate(all_parts, start=1):
+            part.set_part_id(index)
+
+        self._detected_parts = all_parts
+        self._debugger.time_stop()
 
     # Dev Tools
     def _decompile_masks(
@@ -95,7 +102,7 @@ class ImageProcessor(MixinComponentCompile, MixinGenerateCensors, MixinGenerateP
     ):
         if self.dev_tools:
             self.dev_tools.dev_decompile_masks(
-                self.image_parts if not iter_part else iter_part,
+                self._image_parts if not iter_part else iter_part,
                 subfolder=subfolder,
             )
 
@@ -123,63 +130,63 @@ class ImageProcessor(MixinComponentCompile, MixinGenerateCensors, MixinGenerateP
     def generate_parts_and_shapes(self):
         # Create Parts
         self._decompile_masks("00_stage_base_00_create_part")
-        self.debugger.time_start("Create Parts")
-        self.image_parts = self._create_parts(
+        self._debugger.time_start("Create Parts")
+        self._image_parts = self._create_parts(
             self.config,
             self._create_empty_mask(),
-            self.file_uuid,
-            self.detected_parts,
+            self._file_uuid,
+            self._detected_parts,
         )
 
-        self.debugger.time_stop()
+        self._debugger.time_stop()
         self._decompile_masks("00_stage_result_00_create_part")
 
         # Merge Parts
         self._decompile_masks("00_stage_base_01_merged")
-        self.debugger.time_start("Merge Parts")
-        self.image_parts = self._merge_parts_if_in_merge_groups(self.image_parts)
-        self.debugger.time_stop()
+        self._debugger.time_start("Merge Parts")
+        self._image_parts = self._merge_parts_if_in_merge_groups(self._image_parts)
+        self._debugger.time_stop()
         self._decompile_masks("00_stage_result_01_merged")
 
         # Handle More Advanced Parts (i.e., Bars and Joints)
         self._decompile_masks("00_stage_base_02_advanced")
-        self.debugger.time_start("Handle Advanced Shapes")
-        self.image_parts = self._apply_and_generate_mask_shapes(
+        self._debugger.time_start("Handle Advanced Shapes")
+        self._image_parts = self._apply_and_generate_mask_shapes(
             self._create_empty_mask(),
-            self.image_parts,
+            self._image_parts,
         )
-        self.debugger.time_stop()
+        self._debugger.time_stop()
         self._decompile_masks("00_stage_result_02_advanced")
 
     def compile_masks(self):
         # Test Parts for Overlap
-        self.debugger.time_start("Process State Logic")
-        self.image_parts = self._process_state_logic_for_masks(self.image_parts)
-        self.debugger.time_stop()
+        self._debugger.time_start("Process State Logic")
+        self._image_parts = self._process_state_logic_for_masks(self._image_parts)
+        self._debugger.time_stop()
 
     def apply_censors(self):
         # Generate and Apply Reverse Censor
-        self.debugger.time_start("Generate Reverse Censor")
+        self._debugger.time_start("Generate Reverse Censor")
         self.file_image = self._handle_reverse_censor(
             self.config.reverse_censor.censors,
             self._create_empty_mask(inverse=True),
-            self.image_parts,
+            self._image_parts,
             self.file_image,
         )
-        self.debugger.time_stop()
+        self._debugger.time_stop()
 
         # Apply Censors
-        self.debugger.time_start("Apply Censors")
+        self._debugger.time_start("Apply Censors")
         self.file_image = self._apply_censors(
-            self.image_parts,
+            self._image_parts,
             self.file_image,
-            self.force_png,
+            self._force_png,
         )
-        self.debugger.time_stop()
+        self._debugger.time_stop()
 
         # DEBUG: Times
-        self.debugger.time_total_end()
-        self.debugger.display_times()
+        self._debugger.time_total_end()
+        self._debugger.display_times()
 
     def start(self):
         self.generate_parts_and_shapes()
@@ -192,7 +199,7 @@ class ImageProcessor(MixinComponentCompile, MixinGenerateCensors, MixinGenerateP
         final_dict = {}
         last_part = ""
         sorted_parts_list = sorted(
-            self.image_parts, key=lambda part: (part.part_name, part.part_id)
+            self._image_parts, key=lambda part: (part.part_name, part.part_id)
         )
         for part in sorted_parts_list:
             if last_part == part.part_name:
@@ -205,4 +212,4 @@ class ImageProcessor(MixinComponentCompile, MixinGenerateCensors, MixinGenerateP
         return final_dict
 
     def get_duration(self) -> float:
-        return sum([time.duration for time in self.debugger.time_logger])
+        return sum([time.duration for time in self._debugger.time_logger])
