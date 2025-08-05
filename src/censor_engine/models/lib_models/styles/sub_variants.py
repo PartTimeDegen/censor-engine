@@ -1,73 +1,21 @@
-from abc import ABC, abstractmethod
 import cv2
-import numpy as np
 
-from censor_engine.typing import Mask, CVImage, ProcessedImage
-
-
-class Style(ABC):
-    # Information
-    style_name: str = "invalid_style"
-    style_type: str = "invalid_style"
-
-    # Supporting Information
-    force_png: bool = False
-    default_linetype: int = cv2.LINE_AA
-    using_reverse_censor: bool = False
-
-    # This is the ra
-    @abstractmethod
-    def apply_style(
-        self,
-        image: CVImage,
-        contour,
-        *args,
-        **kwargs,
-    ) -> ProcessedImage:
-        raise NotImplementedError
-
-    def draw_effect_on_mask(
-        self,
-        contours,
-        mask_image: Mask,
-        image: CVImage,
-    ) -> CVImage:
-        if len(contours) == 1:
-            contours = contours[0]
-
-        mask = cv2.drawContours(
-            np.zeros(image.shape, dtype=np.uint8),
-            contours[0],
-            -1,
-            (255, 255, 255),
-            -1,
-            hierarchy=contours[1],
-            lineType=self.default_linetype,
-        )
-        return np.where(
-            mask == np.array([255, 255, 255]),
-            mask_image,
-            image,
-        )
-
-    def change_linetype(self, enable_aa: bool) -> None:
-        if enable_aa:
-            self.default_linetype = cv2.LINE_AA
-        else:
-            self.default_linetype = cv2.LINE_4
+from censor_engine.models.enums import StyleType
+from censor_engine.typing import Image
+from .base import Style
 
 
 class TransparentStyle(Style):
-    style_type: str = "transparent"
+    style_type: StyleType = StyleType.TRANSPARENCY
     force_png: bool = True  # Needed for alpha channel to work
 
 
 class BlurStyle(Style):
-    style_type: str = "blur"
+    style_type: StyleType = StyleType.BLUR
 
     def normalise_factor(
         self,
-        image: CVImage,
+        image: Image,
         factor: int | float,
     ) -> int | float:
         # factor = 1, size = 1
@@ -91,7 +39,7 @@ class BlurStyle(Style):
 
         return new_factor
 
-    def apply_factor(self, image: CVImage, factor: int | float) -> tuple[int, int]:
+    def apply_factor(self, image: Image, factor: int | float) -> tuple[int, int]:
         # Fixing Strength
         factor = factor * 4 + 1
 
@@ -112,31 +60,35 @@ class BlurStyle(Style):
 
 
 class PixelateStyle(BlurStyle):
-    style_type: str = "pixelate"
+    style_type: StyleType = StyleType.PIXELATION
+
+
+class NoiseStyle(BlurStyle):
+    style_type: StyleType = StyleType.NOISE
 
 
 class BoxStyle(Style):
-    style_type: str = "box"
+    style_type: StyleType = StyleType.BOX
 
 
 class ColourStyle(Style):
-    style_type: str = "colour"
+    style_type: StyleType = StyleType.COLOUR
 
 
 class StyliseStyle(Style):
-    style_type: str = "stylise"
+    style_type: StyleType = StyleType.STYLISATION
 
 
 class TextStyle(Style):
-    style_type: str = "text"
+    style_type: StyleType = StyleType.TEXT
 
 
 class DevStyle(Style):
-    style_type: str = "dev"
+    style_type: StyleType = StyleType.DEV
 
 
 class EdgeDetectionStyle(Style):
-    style_type = "edge_detection"
+    style_type: StyleType = StyleType.EDGE_DETECTION
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (11, 11))
 
     def prepare_mask(self, mask_image):

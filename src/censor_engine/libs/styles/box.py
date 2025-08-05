@@ -1,32 +1,31 @@
 import cv2
 import numpy as np
 
-from censor_engine.colours import get_colour, rgb_to_bgr
-from censor_engine.models.styles import BoxStyle
+from censor_engine.models.structs.colours import Colour
+from censor_engine.libs.registries import StyleRegistry
+from censor_engine.models.lib_models.styles import BoxStyle
 
-from censor_engine.typing import CVImage, Mask
+from censor_engine.models.structs.contours import Contour
+from censor_engine.typing import Image
 
 
+@StyleRegistry.register()
 class MissingStyle(BoxStyle):
-    style_name = "null"
-
-    def apply_style(self, image: CVImage, contour) -> CVImage:
+    def apply_style(self, image: Image, contour) -> Image:
         return image
 
 
+@StyleRegistry.register()
 class Overlay(BoxStyle):
-    style_name = "overlay"
-
     @staticmethod  # FIXME: Implement to Outlined Box
     def _apply_overlay(
         self,  # type: ignore
-        image: CVImage,
-        contour: Mask,
-        colour: tuple[int, int, int] | str = "WHITE",
-        alpha: float = 1.0,
-    ) -> CVImage:
-        if isinstance(colour, str):
-            colour = get_colour(colour)
+        image: Image,
+        contour: Contour,
+        colour: str | tuple[int, int, int] = "WHITE",
+        alpha: float = 0.5,
+    ) -> Image:
+        colour_obj = Colour(colour)
 
         mask = np.zeros(image.shape, dtype=np.uint8)
 
@@ -36,30 +35,29 @@ class Overlay(BoxStyle):
 
         mask = cv2.drawContours(
             mask,
-            contour[0],
+            contour.points,
             -1,
-            rgb_to_bgr(colour),
+            colour_obj.value,
             -1,
-            hierarchy=contour[1],
+            hierarchy=contour.hierarchy,  # type: ignore
             lineType=self.default_linetype,
         )  # type: ignore
-        mask = np.where(mask == np.array(rgb_to_bgr(colour)), mask, image)
+        mask = np.where(mask == np.array(colour_obj.value), mask, image)
 
         return cv2.addWeighted(mask, alpha, image, 1 - alpha, 0)
 
     def apply_style(
         self,
-        image: CVImage,
-        contour,
+        image: Image,
+        contour: Contour,
         colour="WHITE",
-        alpha=1.0,
-    ) -> CVImage:
+        alpha: float = 0.5,
+    ) -> Image:
         return self._apply_overlay(self, image, contour, colour, alpha)
 
 
+@StyleRegistry.register()
 class Outline(BoxStyle):
-    style_name = "outline"
-
     def _reverse_censor(self, image, contour):
         # Size Test for Reverse Censor
         dimensions_of_contour = cv2.boundingRect(contour[0][0])
@@ -93,17 +91,17 @@ class Outline(BoxStyle):
 
     def apply_style(
         self,
-        image: CVImage,
-        contour,
+        image: Image,
+        contour: Contour,
         colour: tuple[int, int, int] | str = "WHITE",
         thickness: int = 2,
         softness: int = 0,
-    ) -> CVImage:
-        colour = get_colour(colour)
-        contour_shape = contour[0]
+    ) -> Image:
+        colour_obj = Colour(colour)
 
+        contour_shape = contour.points
         if self.using_reverse_censor:
-            contour_shape = self._reverse_censor(image, contour)
+            contour_shape = self._reverse_censor(image, contour)[0]  # type: ignore
 
         # Draw contours
 
@@ -111,7 +109,7 @@ class Outline(BoxStyle):
             image,
             contour_shape,  # type: ignore
             -1,
-            rgb_to_bgr(colour),
+            colour_obj.value,
             thickness,
             lineType=self.default_linetype,
         )
@@ -129,42 +127,33 @@ class Outline(BoxStyle):
         return cv2.GaussianBlur(image, (ksize, ksize), 0)
 
 
+@StyleRegistry.register()
 class Box(BoxStyle):
-    style_name = "box"
-
     def apply_style(
         self,
-        image: CVImage,
-        contour,
+        image: Image,
+        contour: Contour,
         colour: tuple[int, int, int] | str = "WHITE",
-    ) -> CVImage:
-        colour = get_colour(colour)
-        contour = contour[0]
-        return cv2.drawContours(
+    ) -> Image:
+        return contour.draw_contour(
             image,
-            contour,
-            -1,
-            rgb_to_bgr(colour),
-            cv2.FILLED,
-            lineType=self.default_linetype,
+            thickness=-1,
+            colour=Colour(colour),
+            linetype=self.default_linetype,
         )
 
 
+@StyleRegistry.register()
 class OutlinedBox(BoxStyle):
-    style_name = "outlined_box"
-
     def apply_style(
         self,
-        image: CVImage,
-        contour,
+        image: Image,
+        contour: Contour,
         colour_box: tuple[int, int, int] | str = "WHITE",
-        colour_outline: tuple[int, int, int] | str = "WHITE",
+        colour_outline: tuple[int, int, int] | str = "BLACK",
         thickness: int = 2,
         alpha: float = 1.0,
-    ) -> CVImage:
-        colour_box = get_colour(colour_box)
-        colour_outline = get_colour(colour_outline)
-
+    ) -> Image:
         image = Overlay._apply_overlay(  # FIXME: Isolate this
             self,
             image,
@@ -173,22 +162,12 @@ class OutlinedBox(BoxStyle):
             alpha=alpha,
         )
 
-        colour = get_colour(colour_outline)
-        contour = contour[0]
+        colour_obj = Colour(colour_outline)
         return cv2.drawContours(
             image,
-            contour,
+            contour.points,
             -1,
-            rgb_to_bgr(colour),
+            colour_obj.value,
             thickness,
             lineType=self.default_linetype,
         )
-
-
-effects = {
-    "overlay": Overlay,
-    "outline": Outline,
-    "box": Box,
-    "outlined_box": OutlinedBox,
-    "null": MissingStyle,
-}

@@ -2,14 +2,17 @@ from pathlib import Path
 import cv2
 
 from censor_engine.models.config import Config
+from censor_engine.models.lib_models.detectors import DetectedPartSchema
+from censor_engine.models.structs import Mixin
 from censor_engine.paths import PathManager
+from censor_engine.typing import Image
 from .image import ImageProcessor
 from .tools.debugger import DebugLevels
 from .tools.dev_tools import DevTools
 from typing import Callable
 
 
-class MixinImagePipeline:
+class MixinImagePipeline(Mixin):
     def _image_pipeline(
         self,
         main_files_path: Path,
@@ -20,10 +23,13 @@ class MixinImagePipeline:
         function_get_index: Callable[[int, int], str],
         flags: dict[str, bool],
         path_manager: PathManager,
-    ) -> None:
+        inline_mode: bool,
+        _test_detection_output: list[DetectedPartSchema] | None,
+    ) -> list[Image]:
         if not [f for f in indexed_files if f[-1] == "image"]:
-            return None
+            return []
 
+        in_memory_files: list[Image] = []  # Currently Only Test Mode
         for index, file_path, file_type in indexed_files:
             # Check it's an Image
             if file_type != "image":
@@ -33,14 +39,13 @@ class MixinImagePipeline:
             index_text = function_get_index(index, max([f[0] for f in indexed_files]))
 
             # Dev Tools
+            dev_tools = None
             if flags["dev_tools"]:
                 dev_tools = DevTools(
                     output_folder=Path(file_path),
                     main_files_path=Path(main_files_path),
                     using_full_output_path=flags["show_full_output_path"],
                 )
-            else:
-                dev_tools = None
 
             # Read the File
             file_image = cv2.imread(file_path)
@@ -51,6 +56,7 @@ class MixinImagePipeline:
                 config=config,
                 debug_level=debug_level,
                 dev_tools=dev_tools,
+                _test_detection_output=_test_detection_output,
             )
             image_processor.start()
 
@@ -69,6 +75,8 @@ class MixinImagePipeline:
 
             # File Save
             cv2.imwrite(new_file_name, file_output)
+            if inline_mode:
+                in_memory_files.append(file_output)
 
             # Print Out
             prefix = ""
@@ -83,3 +91,4 @@ class MixinImagePipeline:
                 print()
 
         print("Finished Censoring Images!")
+        return in_memory_files

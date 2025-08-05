@@ -3,7 +3,10 @@ from pathlib import Path
 from typing import Callable
 import progressbar
 from censor_engine.models.config import Config
+from censor_engine.models.lib_models.detectors import DetectedPartSchema
+from censor_engine.models.structs import Mixin
 from censor_engine.paths import PathManager
+from censor_engine.typing import Image
 from .mixin_pipeline_image import ImageProcessor
 from .video import FrameProcessor, VideoProcessor
 
@@ -12,7 +15,7 @@ from .tools.dev_tools import DevTools
 from .tools.video_tools import VideoInfo
 
 
-class MixinVideoPipeline:
+class MixinVideoPipeline(Mixin):
     def _make_progress_bar_widgets(
         self, index_text: str, file_name: str, total_amount: int
     ) -> list:
@@ -43,7 +46,9 @@ class MixinVideoPipeline:
         function_display_times: Callable[[], None],
         flags: dict[str, bool],
         path_manager: PathManager,
-    ):
+        inline_mode: bool,  # TODO Unused until I can figure out what to do for video
+        _test_detection_output: list[DetectedPartSchema],
+    ) -> list[Image]:
         dev_tools = None
         max_index = max(f[0] for f in indexed_files)
         for index, file_path, file_type in indexed_files:
@@ -104,6 +109,7 @@ class MixinVideoPipeline:
                     config=config,
                     debug_level=debug_level,
                     dev_tools=dev_tools,
+                    _test_detection_output=_test_detection_output,
                 )
                 censor_manager.generate_parts_and_shapes()
 
@@ -170,3 +176,4 @@ class MixinVideoPipeline:
 
             # Spacer
             print()
+        return []  # TODO Figure a way to implement me

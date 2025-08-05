@@ -3,12 +3,14 @@ from uuid import UUID, uuid4
 import cv2
 import numpy as np
 
-from censor_engine.models.shapes import BarShape
+from censor_engine.models.lib_models.shapes import BarShape
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from censor_engine.typing import Mask
     from censor_engine.detected_part import Part
+
+from censor_engine.libs.registries import ShapeRegistry
 
 
 class _BarInfo:
@@ -24,8 +26,8 @@ class _BarInfo:
     file_uuid: UUID = uuid4()
 
 
+@ShapeRegistry.register()
 class Bar(BarShape, _BarInfo):
-    shape_name: str = "bar"
     base_shape: str = "ellipse"
     single_shape: str = "bar"
 
@@ -40,6 +42,8 @@ class Bar(BarShape, _BarInfo):
         force_vertical: bool = False,
         long_direction: bool = False,
     ) -> "Mask":
+        if not part.is_merged:
+            force_horizontal = True
         # Find Contours via Joint Ellipse
         contours, _ = cv2.findContours(
             part.mask,
@@ -110,9 +114,8 @@ class Bar(BarShape, _BarInfo):
         return mask
 
 
+@ShapeRegistry.register()
 class HorizontalBar(Bar):
-    shape_name: str = "horizontal_bar"
-
     def generate(
         self,
         part: "Part",
@@ -124,9 +127,8 @@ class HorizontalBar(Bar):
         return super().generate(part, empty_mask, force_horizontal=True)
 
 
+@ShapeRegistry.register()
 class VerticalBar(Bar):
-    shape_name: str = "vertical_bar"
-
     def generate(
         self,
         part: "Part",
@@ -138,9 +140,8 @@ class VerticalBar(Bar):
         return super().generate(part, empty_mask, force_vertical=True)
 
 
+@ShapeRegistry.register()
 class LongBar(Bar):
-    shape_name: str = "long_bar"
-
     def generate(
         self,
         part: "Part",
@@ -150,11 +151,3 @@ class LongBar(Bar):
         long_direction: bool = False,
     ) -> "Mask":
         return super().generate(part, empty_mask, long_direction=True)
-
-
-shapes = {
-    "bar": Bar,
-    "horizontal_bar": HorizontalBar,
-    "vertical_bar": VerticalBar,
-    "long_bar": LongBar,
-}

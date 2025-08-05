@@ -14,20 +14,21 @@ from censor_engine.censor_engine.tools.debugger import (
 )
 from censor_engine.censor_engine.tools.dev_tools import DevTools
 
-from censor_engine.typing import CVImage
+from censor_engine.typing import Image
 from censor_engine.detected_part import Part
 from censor_engine.models.config import Config
 
 from censor_engine.libs.detectors import enabled_detectors
-from censor_engine.models.detectors import DetectedPartSchema
+from censor_engine.models.lib_models.detectors import DetectedPartSchema
 
 
 @dataclass(slots=True)
 class ImageProcessor(MixinComponentCompile, MixinGenerateCensors, MixinGenerateParts):
-    file_image: CVImage
+    file_image: Image
     config: Config
     debug_level: DebugLevels = DebugLevels.NONE
-    dev_tools: DevTools | None = field(default=None)
+    dev_tools: DevTools | None = None
+    _test_detection_output: list[DetectedPartSchema] | None = None
 
     # Internals
     _force_png: bool = False
@@ -37,8 +38,8 @@ class ImageProcessor(MixinComponentCompile, MixinGenerateCensors, MixinGenerateP
 
     _image_parts: list[Part] = field(init=False, default_factory=list)
 
-    _empty_mask: CVImage = field(init=False)
-    _file_original_image: CVImage = field(init=False)
+    _empty_mask: Image = field(init=False)
+    _file_original_image: Image = field(init=False)
     _file_uuid: UUID = field(init=False)
 
     _debugger: Debugger = field(init=False)
@@ -57,7 +58,6 @@ class ImageProcessor(MixinComponentCompile, MixinGenerateCensors, MixinGenerateP
 
         # Empty Mask
         self._debugger.time_start("Create Empty Mask")
-        self._empty_mask = self._create_empty_mask()
         self._debugger.time_stop()
 
         # Determine Image # TODO: Find Some Models I can Run
@@ -70,7 +70,11 @@ class ImageProcessor(MixinComponentCompile, MixinGenerateCensors, MixinGenerateP
 
         # Detect Parts for Image
         self._debugger.time_start("Detect Parts")
-        self._detect_parts()
+        if self._test_detection_output:
+            self._detected_parts = self._test_detection_output
+            self._debugger.time_stop()
+        else:
+            self._detect_parts()
         self._debugger.time_stop()
 
     # Post Init Helper Functions
@@ -106,23 +110,6 @@ class ImageProcessor(MixinComponentCompile, MixinGenerateCensors, MixinGenerateP
                 subfolder=subfolder,
             )
 
-    # Private
-    def _create_empty_mask(self, inverse: bool = False):
-        """
-        This function acts as a factory for empty masks, due to 1) bad copying
-        issues, and 2) because it's not a one-liner
-
-        :param bool inverse: Inverses the mask to make it white on black, not black on white, defaults to False
-
-        # TODO: Cache this if it's made
-
-        """
-        if inverse:
-            return Part.normalise_mask(
-                np.ones(self.file_image.shape, dtype=np.uint8) * 255  # type: ignore
-            )
-        return Part.normalise_mask(np.zeros(self.file_image.shape, dtype=np.uint8))
-
     # Public
     def return_output(self):
         return self.file_image
@@ -133,11 +120,10 @@ class ImageProcessor(MixinComponentCompile, MixinGenerateCensors, MixinGenerateP
         self._debugger.time_start("Create Parts")
         self._image_parts = self._create_parts(
             self.config,
-            self._create_empty_mask(),
             self._file_uuid,
             self._detected_parts,
+            self.file_image.shape,  # type: ignore
         )
-
         self._debugger.time_stop()
         self._decompile_masks("00_stage_result_00_create_part")
 
@@ -151,10 +137,7 @@ class ImageProcessor(MixinComponentCompile, MixinGenerateCensors, MixinGenerateP
         # Handle More Advanced Parts (i.e., Bars and Joints)
         self._decompile_masks("00_stage_base_02_advanced")
         self._debugger.time_start("Handle Advanced Shapes")
-        self._image_parts = self._apply_and_generate_mask_shapes(
-            self._create_empty_mask(),
-            self._image_parts,
-        )
+        self._image_parts = self._apply_and_generate_mask_shapes(self._image_parts)
         self._debugger.time_stop()
         self._decompile_masks("00_stage_result_02_advanced")
 
@@ -169,7 +152,10 @@ class ImageProcessor(MixinComponentCompile, MixinGenerateCensors, MixinGenerateP
         self._debugger.time_start("Generate Reverse Censor")
         self.file_image = self._handle_reverse_censor(
             self.config.reverse_censor.censors,
-            self._create_empty_mask(inverse=True),
+            Part.create_empty_mask(
+                self.file_image.shape,  # type: ignore
+                inverse=True,
+            ),
             self._image_parts,
             self.file_image,
         )

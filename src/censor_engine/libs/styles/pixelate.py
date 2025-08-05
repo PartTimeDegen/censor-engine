@@ -2,21 +2,21 @@ import math
 
 import cv2
 import numpy as np
-from censor_engine.models.styles import BlurStyle
-from censor_engine.typing import CVImage
+from censor_engine.libs.registries import StyleRegistry
+from censor_engine.models.lib_models.styles import PixelateStyle
+from censor_engine.models.structs.contours import Contour
+from censor_engine.typing import Image
 
 
-class Pixelate(BlurStyle):
-    style_name: str = "pixelate"
-
+@StyleRegistry.register()
+class Pixelate(PixelateStyle):
     def _get_distortion_factor(
         self,
         image,
-        contour,
+        contour: Contour,
         factor,
     ):
-        contour_array = contour[0][0]
-        bounding_rect = cv2.boundingRect(contour_array)
+        bounding_rect = contour.as_bounding_box()
         _, _, box_width, box_height = bounding_rect
 
         fixed_size = max(box_width, box_height)
@@ -59,10 +59,10 @@ class Pixelate(BlurStyle):
 
     def apply_style(
         self,
-        image: CVImage,
-        contour,
+        image: Image,
+        contour: Contour,
         factor: int | float = 12,
-    ) -> CVImage:
+    ) -> Image:
         factors = self._get_distortion_factor(
             image,
             contour,
@@ -81,12 +81,11 @@ class Pixelate(BlurStyle):
             interpolation=cv2.INTER_NEAREST,
         )
 
-        return self.draw_effect_on_mask([contour], pixel_image, image)
+        return pixel_image
 
 
-class HexagonPixelate(BlurStyle):
-    style_name: str = "hexagon_pixelate"
-
+@StyleRegistry.register()
+class HexagonPixelate(PixelateStyle):
     def _hexagon_corners(self, center_x, center_y, size):
         """Compute hexagon vertices around a center using NumPy arrays."""
         w_half = math.sqrt(3) * size / 2
@@ -140,27 +139,32 @@ class HexagonPixelate(BlurStyle):
                 )
 
                 # Fill the hexagon with the computed color
-                hex_corners = self._hexagon_corners(center_x, center_y, hexagon_size)
-                cv2.fillPoly(output, [hex_corners], color=tuple(map(int, color)))
+                hex_corners = self._hexagon_corners(
+                    center_x, center_y, hexagon_size
+                )
+                cv2.fillPoly(
+                    output, [hex_corners], color=tuple(map(int, color))
+                )
 
         return output
 
-    def apply_style(self, image: CVImage, contour, factor: int | float = 12) -> CVImage:
+    def apply_style(
+        self, image: Image, contour: Contour, factor: int | float = 12
+    ) -> Image:
         """Apply hexagonal pixelation to the image within the given contour."""
         factor = self.normalise_factor(image, factor)
         pixel_image = self._hexagonify(image, factor)
-        return self.draw_effect_on_mask(contour, pixel_image, image)
+        return pixel_image
 
 
-class Crystallise(BlurStyle):
-    style_name: str = "crystallise"
-
+@StyleRegistry.register()
+class Crystallise(PixelateStyle):
     def apply_style(
         self,
-        image: CVImage,
-        contour,
+        image: Image,
+        contour: Contour,
         point_density: int = 50,
-    ) -> CVImage:
+    ) -> Image:
         blur_image = image.copy()
         h, w, c = image.shape
 
@@ -186,9 +190,10 @@ class Crystallise(BlurStyle):
             mean_color = cv2.mean(image, mask=mask)[:3]
             cv2.fillConvexPoly(result, pts, mean_color)  # type: ignore
 
-        return self.draw_effect_on_mask([contour], result, image)
+        return result
 
 
+@StyleRegistry.register()
 class HexagonPixelateSoft(HexagonPixelate):
     style_name: str = "hexagon_pixelate_soft"
 
@@ -234,8 +239,12 @@ class HexagonPixelateSoft(HexagonPixelate):
                     center_x, center_y, image, hexagon_size, softness
                 )
 
-                hex_corners = self._hexagon_corners(center_x, center_y, hexagon_size)
-                cv2.fillPoly(output, [hex_corners], color=tuple(map(int, color)))
+                hex_corners = self._hexagon_corners(
+                    center_x, center_y, hexagon_size
+                )
+                cv2.fillPoly(
+                    output, [hex_corners], color=tuple(map(int, color))
+                )
 
         # Optional: Gaussian blur the final output based on softness
         if softness > 0:
@@ -245,8 +254,12 @@ class HexagonPixelateSoft(HexagonPixelate):
         return output
 
     def apply_style(
-        self, image: CVImage, contour, factor: int | float = 12, softness: float = 2.0
-    ) -> CVImage:
+        self,
+        image: Image,
+        contour: Contour,
+        factor: int | float = 12,
+        softness: float = 2.0,
+    ) -> Image:
         """
         Apply soft hexagonal pixelation to the image within the given contour.
 
@@ -257,12 +270,4 @@ class HexagonPixelateSoft(HexagonPixelate):
         """
         factor = self.normalise_factor(image, factor)
         pixel_image = self._hexagonify(image, factor, softness)
-        return self.draw_effect_on_mask(contour, pixel_image, image)
-
-
-effects = {
-    "pixelate": Pixelate,
-    "hexagon_pixelate": HexagonPixelate,
-    "hexagon_pixelate_soft": HexagonPixelateSoft,
-    "crystallise": Crystallise,
-}
+        return pixel_image

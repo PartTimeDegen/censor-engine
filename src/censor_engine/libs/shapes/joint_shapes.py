@@ -1,7 +1,8 @@
 import cv2
 import numpy as np
 
-from censor_engine.models.shapes import JointShape
+from censor_engine.libs.registries import ShapeRegistry
+from censor_engine.models.lib_models.shapes import JointShape
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -9,8 +10,8 @@ if TYPE_CHECKING:
     from censor_engine.detected_part import Part
 
 
+@ShapeRegistry.register()
 class JointBox(JointShape):
-    shape_name: str = "joint_box"
     base_shape: str = "ellipse"
     single_shape: str = "box"
 
@@ -40,8 +41,8 @@ class JointBox(JointShape):
         return mask
 
 
+@ShapeRegistry.register()
 class JointEllipse(JointShape):
-    shape_name: str = "joint_ellipse"
     base_shape: str = "ellipse"
     single_shape: str = "ellipse"
 
@@ -59,8 +60,8 @@ class JointEllipse(JointShape):
         return mask
 
 
+@ShapeRegistry.register()
 class RoundedJointBox(JointShape):
-    shape_name: str = "rounded_joint_box"
     base_shape: str = "ellipse"
     single_shape: str = "rounded_box"
 
@@ -68,27 +69,16 @@ class RoundedJointBox(JointShape):
         cont_rect = cv2.findContours(
             image=part.mask, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_SIMPLE
         )
+        cv2.imwrite("blah.jpg", part.mask)
 
-        # Acquired from:
-        # https://stackoverflow.com/questions/18207181/opencv-python-draw-minarearect-rotatedrect-not-implemented
-        rect = cv2.minAreaRect(cont_rect[0][0])
-        box = cv2.boxPoints(rect)
-        box = np.int0(box)  # type: ignore
-
-        mask = cv2.drawContours(
-            image=empty_mask,
-            contours=[box],
-            contourIdx=-1,
-            color=(255, 255, 255),
-            thickness=-1,
-            lineType=cv2.LINE_AA,
-        )
+        mask = JointBox().generate(part, empty_mask)
 
         if len(mask.shape) > 2:
             mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
 
+        # Rounding Part
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (41, 41))
-        iterations = 0
+        iterations = 1
         mask_changed = cv2.erode(
             mask,
             kernel,
@@ -97,14 +87,7 @@ class RoundedJointBox(JointShape):
         mask_changed = cv2.dilate(
             mask_changed,
             kernel,
-            iterations=iterations,
+            iterations=iterations >> 1,
         )
 
         return mask_changed
-
-
-shapes = {
-    "joint_box": JointBox,
-    "joint_ellipse": JointEllipse,
-    "rounded_joint_box": RoundedJointBox,
-}

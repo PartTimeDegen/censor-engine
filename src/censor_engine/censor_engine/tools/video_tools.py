@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 import cv2
 
-from censor_engine.typing import CVImage
+from censor_engine.typing import Image
 from censor_engine.censor_engine.video import (
     FrameProcessor,
     VideoProcessor,
@@ -24,11 +24,11 @@ class InfoGenerator:
 
     def generate_info(
         self,
-        frame: CVImage,
+        frame: Image,
         colour: tuple[int, int, int],
         info: list[str],
         group_title: str,
-    ) -> CVImage:
+    ) -> Image:
         spacer = 0
         info = [group_title] + info
         for row in info:
@@ -89,7 +89,7 @@ class InfoGenerator:
 
 @dataclass(slots=True)
 class VideoInfo:
-    initial_frame: CVImage
+    initial_frame: Image
     frame_count: int
     raw_parts: list[Part]
     video_processor: VideoProcessor
@@ -112,7 +112,7 @@ class VideoInfo:
 
         return f"{fixed_value}/{max_value_str}"
 
-    def _get_frame_info(self, output_image, frame_processor: FrameProcessor) -> CVImage:
+    def _get_frame_info(self, output_image, frame_processor: FrameProcessor) -> Image:
         info = [
             f"Frame: {self._get_counter(self.frame_count, int(self.video_processor.video_capture.get(cv2.CAP_PROP_FRAME_COUNT)))}",
             f"FPS: {self.video_processor.get_fps()}",
@@ -127,7 +127,7 @@ class VideoInfo:
 
     def _get_part_dictionary(
         self, output_image, frame_processor: FrameProcessor
-    ) -> CVImage:
+    ) -> Image:
         return InfoGenerator().generate_info(
             output_image,
             (0, 0, 255),
@@ -138,7 +138,7 @@ class VideoInfo:
             group_title="Part Dictionary",
         )
 
-    def _get_shown_part_info(self, output_image, frame_processor) -> CVImage:
+    def _get_shown_part_info(self, output_image, frame_processor) -> Image:
         return InfoGenerator().generate_info(
             output_image,
             (255, 0, 0),
@@ -151,7 +151,7 @@ class VideoInfo:
 
     def _get_initial_part_info(
         self, output_image, frame_processor: FrameProcessor
-    ) -> CVImage:
+    ) -> Image:
         return InfoGenerator().generate_info(
             output_image,
             (255, 0, 255),
@@ -159,7 +159,7 @@ class VideoInfo:
             group_title="Initially Found Parts",
         )
 
-    def get_debug_info(self, output_image: CVImage, frame_processor: FrameProcessor):
+    def get_debug_info(self, output_image: Image, frame_processor: FrameProcessor):
         # Frame Information
         output_image = self._get_frame_info(output_image, frame_processor)
 

@@ -1,18 +1,21 @@
 import cv2
 import numpy as np
-from censor_engine.models.styles import BlurStyle
-from censor_engine.typing import CVImage
+from censor_engine.libs.registries import StyleRegistry
+from censor_engine.models.lib_models.styles import BlurStyle
+from censor_engine.models.structs.contours import Contour
+from censor_engine.typing import Image
 
 
+@StyleRegistry.register()
 class Blur(BlurStyle):
     """
     This is a Average Blur
 
     """
 
-    style_name: str = "blur"
-
-    def apply_style(self, image: CVImage, contour, factor: int | float = 5) -> CVImage:
+    def apply_style(
+        self, image: Image, contour: Contour, factor: int | float = 5
+    ) -> Image:
         factors = self.apply_factor(image, factor)
 
         try:
@@ -20,32 +23,38 @@ class Blur(BlurStyle):
         except Exception:
             blurred_image = cv2.blur(image, (factors[0], factors[0]))
 
-        return self.draw_effect_on_mask([contour], blurred_image, image)
+        return blurred_image
 
 
+@StyleRegistry.register()
 class GaussianBlur(BlurStyle):
     """
     This is a Gaussian Blur
 
     """
 
-    style_name: str = "gaussian_blur"
-
-    def apply_style(self, image: CVImage, contour, factor: int | float = 5) -> CVImage:
+    def apply_style(
+        self, image: Image, contour: Contour, factor: int | float = 5
+    ) -> Image:
         factors = self.apply_factor(image, factor)
 
         try:
-            blurred_image = cv2.GaussianBlur(image, (factors[1], factors[1]), 0)
+            blurred_image = cv2.GaussianBlur(
+                image, (factors[1], factors[1]), 0
+            )
         except Exception:
-            blurred_image = cv2.GaussianBlur(image, (factors[0], factors[0]), 0)
+            blurred_image = cv2.GaussianBlur(
+                image, (factors[0], factors[0]), 0
+            )
 
-        return self.draw_effect_on_mask([contour], blurred_image, image)
+        return blurred_image
 
 
+@StyleRegistry.register()
 class MedianBlur(BlurStyle):
-    style_name: str = "median_blur"
-
-    def apply_style(self, image: CVImage, contour, factor: int | float = 5) -> CVImage:
+    def apply_style(
+        self, image: Image, contour: Contour, factor: int | float = 5
+    ) -> Image:
         factors = self.apply_factor(image, factor)
 
         try:
@@ -53,20 +62,19 @@ class MedianBlur(BlurStyle):
         except Exception:
             blurred_image = cv2.medianBlur(image, factors[0])
 
-        return self.draw_effect_on_mask([contour], blurred_image, image)
+        return blurred_image
 
 
+@StyleRegistry.register()
 class BilateralBlur(BlurStyle):
-    style_name: str = "bilateral_blur"
-
     def apply_style(
         self,
-        image: CVImage,
-        contour,
-        distance: int | float = 5,
+        image: Image,
+        contour: Contour,
+        distance: int | float = 20,
         sigma_colour: int = 150,
         sigma_space: int = 150,
-    ) -> CVImage:
+    ) -> Image:
         factors = self.apply_factor(image, distance)
 
         try:
@@ -78,12 +86,11 @@ class BilateralBlur(BlurStyle):
                 image, factors[0], sigma_colour, sigma_space
             )
 
-        return self.draw_effect_on_mask([contour], blurred_image, image)
+        return blurred_image
 
 
+@StyleRegistry.register()
 class MotionBlur(BlurStyle):
-    style_name: str = "motion_blur"
-
     current_angle: int = -45
 
     def _rotate(self, rotation: int):
@@ -99,12 +106,12 @@ class MotionBlur(BlurStyle):
 
     def apply_style(
         self,
-        image: CVImage,
-        contour,
+        image: Image,
+        contour: Contour,
         offset: int = 10,
         angle: int = current_angle,
         video_rotate: int = 0,  # Neg, neutral, positive
-    ) -> CVImage:
+    ) -> Image:
         blur_image = image.copy()
 
         if video_rotate != 0:
@@ -113,7 +120,7 @@ class MotionBlur(BlurStyle):
 
         factors = self.apply_factor(image, offset)
 
-        def apply_factor_to_kernel(factor: int) -> CVImage:
+        def apply_factor_to_kernel(factor: int) -> Image:
             kernel = np.zeros((factor, factor))
             kernel[int((factor - 1) / 2), :] = np.ones(factor)
             kernel = kernel / factor
@@ -131,13 +138,4 @@ class MotionBlur(BlurStyle):
         # Step 3: Apply the kernel to the image
         noise_image = cv2.filter2D(blur_image, -1, rotated_kernel)
 
-        return self.draw_effect_on_mask([contour], noise_image, image)
-
-
-effects = {
-    "blur": Blur,
-    "gaussian_blur": GaussianBlur,
-    "median_blur": MedianBlur,
-    "bilateral_blur": BilateralBlur,
-    "motion_blur": MotionBlur,
-}
+        return noise_image

@@ -1,8 +1,9 @@
+from censor_engine.models.structs import Mixin
 from .utils import FrameProcessorUtils
 from .structs import FramePart
 
 
-class MixinPartStability(FrameProcessorUtils):
+class MixinPartStability(FrameProcessorUtils, Mixin):
     ...
     # def apply_frame_stability(self) -> None:
     #     """

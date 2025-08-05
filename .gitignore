@@ -193,3 +193,5 @@ libpng.sh
 *:mshield
 
 .ruff_cache
+src/.test_data
+.checkme

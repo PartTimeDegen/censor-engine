@@ -1,9 +1,11 @@
 import cv2
 
-from censor_engine.colours import get_colour, rgb_to_bgr
-from censor_engine.models.styles import DevStyle
+from censor_engine.models.structs.colours import Colour
+from censor_engine.libs.registries import StyleRegistry
+from censor_engine.models.lib_models.styles import DevStyle
 
-from censor_engine.typing import CVImage
+from censor_engine.models.structs.contours import Contour
+from censor_engine.typing import Image
 
 from typing import TYPE_CHECKING
 
@@ -11,6 +13,7 @@ if TYPE_CHECKING:
     from censor_engine.detected_part import Part
 
 
+@StyleRegistry.register()
 class Debug(DevStyle):
     style_name = "dev_debug"
 
@@ -40,9 +43,9 @@ class Debug(DevStyle):
         )
         coords_box = (
             coords_text[0]
-            + cv2.getTextSize(max(list_text, key=len), font, fontscale, text_thickness)[
-                0
-            ][0]
+            + cv2.getTextSize(
+                max(list_text, key=len), font, fontscale, text_thickness
+            )[0][0]
             + margin * 2,
             coords_text[1]
             + int(
@@ -80,7 +83,9 @@ class Debug(DevStyle):
                     coords_text[0],
                     int(
                         coords_text[1]
-                        + cv2.getTextSize(text, font, fontscale, text_thickness)[0][1]
+                        + cv2.getTextSize(
+                            text, font, fontscale, text_thickness
+                        )[0][1]
                         * index
                         * vertical_spacing
                         + margin
@@ -95,12 +100,12 @@ class Debug(DevStyle):
 
     def apply_style(
         self,
-        image: CVImage,
-        contour,
+        image: Image,
+        contour: Contour,
         part: "Part",
         colour: tuple[int, int, int] | str = "WHITE",
-    ) -> CVImage:
-        colour = get_colour(colour)
+    ) -> Image:
+        colour_obj = Colour(colour)
         # Avoiding it for testing
         # if not part:
         #     return
@@ -113,12 +118,12 @@ class Debug(DevStyle):
         )
 
         # Actions
-        colour = rgb_to_bgr(colour)
+        colour_obj = Colour(colour)
         image_box = cv2.drawContours(
             image,
-            contour[0],
+            contour.points,
             -1,
-            color=colour,
+            color=colour_obj.value,
             thickness=2,
             lineType=self.default_linetype,
         )  # type: ignore
@@ -134,8 +139,3 @@ class Debug(DevStyle):
         )
 
         return image_box
-
-
-effects = {
-    "dev_debug": Debug,
-}

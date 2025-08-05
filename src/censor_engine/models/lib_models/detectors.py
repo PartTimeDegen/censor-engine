@@ -9,7 +9,7 @@ import gdown  # type: ignore
 # import tensorflow as tf  # type: ignore # NOTE: I can't run this due to my shitty Xeon CPU
 import torch
 
-from censor_engine.typing import CVImage
+from censor_engine.typing import Image
 
 
 @dataclass(slots=True)
@@ -129,7 +129,7 @@ class Detector(AIModel):
 
     @abstractmethod
     def detect_batch(
-        self, file_images_or_paths: list[str] | list[CVImage], batch_size: int
+        self, file_images_or_paths: list[str] | list[Image], batch_size: int
     ) -> dict[int, list[DetectedPartSchema]]:
         raise NotImplementedError
 

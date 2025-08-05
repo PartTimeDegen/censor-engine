@@ -14,6 +14,7 @@ class PathManager:
     config: Config
     flags: dict[str, bool]
     args_loc: Path | None
+    test_mode: bool
 
     # Internal
     _is_using_test_data: bool = field(init=False, default=False)
@@ -56,6 +57,9 @@ class PathManager:
         self._uncensored_folder = uncensored_folder
         self._censored_folder = censored_folder
 
+        if self.test_mode:
+            self._censored_folder = self.base_directory
+
     def get_uncensored_folder(self) -> Path:
         if folder := self._cache_uncensored_folder:
             return folder
@@ -68,11 +72,7 @@ class PathManager:
             return folder
 
         base_dir = self.base_directory
-        print()
-        print(base_dir)
-        print(self._censored_folder)
-        print()
-        base_dir = self.base_directory / self._censored_folder
+        base_dir = base_dir / self._censored_folder
 
         self._cache_censored_folder = base_dir / base_dir.resolve().relative_to(
             self._censored_folder.resolve()

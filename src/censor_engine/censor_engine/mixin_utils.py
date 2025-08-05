@@ -1,10 +1,11 @@
+from censor_engine.models.structs import Mixin
 from censor_engine.paths import PathManager
 
 APPROVED_FORMATS_IMAGE = [".jpg", ".jpeg", ".png", ".webp"]
 APPROVED_FORMATS_VIDEO = [".mp4", ".webm"]
 
 
-class MixinUtils:
+class MixinUtils(Mixin):
     def _get_index_text(self, index: int, max_file_index: int):
         index_percent = index / max_file_index
         leading_spaces = " " * (len(str(max_file_index)) - len(str(index)))

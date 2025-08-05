@@ -1,4 +1,4 @@
-from censor_engine.models.detectors import Detector
+from censor_engine.models.lib_models.detectors import Detector
 from .multi_detectors import NudeNetDetector
 from .determination_tools import ImageGenreDeterminer
 

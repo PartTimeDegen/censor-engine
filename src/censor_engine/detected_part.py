@@ -5,11 +5,11 @@ from uuid import UUID
 import cv2
 import numpy as np
 
+from censor_engine.libs.registries import ShapeRegistry
 from censor_engine.models.config import PartSettingsConfig
-from censor_engine.models.shapes import Shape
-from censor_engine.libs.shapes import shape_catalogue
+from censor_engine.models.lib_models.shapes import Shape
 from censor_engine.models.config import Config
-from censor_engine.models.structs import PartArea
+from censor_engine.models.structs.part_areas import PartArea
 
 
 if TYPE_CHECKING:
@@ -25,7 +25,6 @@ class Part:
     relative_box: tuple[int, int, int, int]  # x, y, width, height
     config: Config
 
-    empty_mask: "Mask"
     file_uuid: UUID
     image_shape: tuple[int, int, ...]  # type: ignore
 
@@ -36,10 +35,12 @@ class Part:
     # # Meta
     is_merged: bool = False
     merge_group_id: int | None = None
+    persistence_group_id: int | None = None
 
     # # Generated
     part_area: PartArea = field(init=False)
     merge_group: list[str] = field(default_factory=list, init=False)
+    persistence_group: list[str] = field(default_factory=list, init=False)
 
     shape_name: str = field(default="NOT_SET", init=False)
     shape_object: Shape = field(default_factory=Shape, init=False)
@@ -51,10 +52,6 @@ class Part:
     base_masks: list["Mask"] = field(default_factory=list, init=False)
 
     def __post_init__(self):
-        # Basic
-        self.mask = self.empty_mask.copy()
-        self.original_mask = self.empty_mask.copy()
-
         # Connect Settings
         self.part_settings = self.config.censor_settings.parts_settings[self.part_name]
 
@@ -64,11 +61,18 @@ class Part:
 
         # # Merge Groups
         for index, group in enumerate(
-            self.config.censor_settings.merge_settings.merge_groups
+            self.config.censor_settings.merge_settings.merge_groups, start=1
         ):
             if self.part_name in group:
                 self.merge_group = group
                 self.merge_group_id = index
+
+        for index, group in enumerate(
+            self.config.video_settings.persistence_groups, start=1
+        ):
+            if self.part_name in group:
+                self.persistence_group = group
+                self.persistence_group_id = index
 
         # Determine Shape
         self.shape_object = Part.get_shape_class(self.part_settings.shape)
@@ -83,10 +87,10 @@ class Part:
         self.protected_shape_object = protected_shape
 
         # Generate Masks
-        self.original_mask = self.empty_mask
+        self.original_mask = Part.create_empty_mask(self.image_shape)
 
         base_shape = Part.get_shape_class(self.shape_object.base_shape)
-        self.mask = base_shape.generate(self, self.empty_mask)
+        self.mask = base_shape.generate(self, Part.create_empty_mask(self.image_shape))
         self.base_masks = [self.mask]
 
     def __str__(self) -> str:
@@ -170,7 +174,28 @@ class Part:
 
     @staticmethod
     def get_shape_class(shape: str) -> Shape:
-        if shape not in shape_catalogue.keys():
-            raise ValueError(f"Shape {shape} does not Exist!")
+        shapes = ShapeRegistry.get_all()
+        if shape not in shapes:
+            raise ValueError(f"Shape {shape} does not Exist! {[shapes.keys()]}")
 
-        return shape_catalogue[shape]()
+        return shapes[shape]()
+
+    @staticmethod
+    def create_empty_mask(
+        image_shape: tuple[int, int, int],
+        inverse: bool = False,
+    ):
+        """
+        This function acts as a factory for empty masks, due to 1) bad copying
+        issues, and 2) because it's not a one-liner
+
+        :param bool inverse: Inverses the mask to make it white on black, not black on white, defaults to False
+
+        # TODO: Cache this if it's made
+
+        """
+        if inverse:
+            return Part.normalise_mask(
+                np.ones(image_shape, dtype=np.uint8) * 255  # type: ignore
+            )
+        return Part.normalise_mask(np.zeros(image_shape, dtype=np.uint8))

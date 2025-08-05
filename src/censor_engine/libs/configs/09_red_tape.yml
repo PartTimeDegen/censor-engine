@@ -1,3 +1,9 @@
+video_settings:
+  frame_difference_threshold: 0.02
+  part_frame_hold_seconds: 0.5
+  persistence_groups:
+  - [ "FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED" ]
+
 censor_settings:
   enabled_parts:
   - "FACE_FEMALE"

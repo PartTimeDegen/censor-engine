@@ -1,5 +1,5 @@
-from censor_engine.typing import CVImage
-from censor_engine.models.detectors import Detector, DetectedPartSchema
+from censor_engine.typing import Image
+from censor_engine.models.lib_models.detectors import Detector, DetectedPartSchema
 from nudenet import NudeDetector  # type: ignore
 
 
@@ -47,7 +47,7 @@ class NudeNetDetector(Detector):
         ]
 
     def detect_batch(
-        self, file_images_or_paths: list[str] | list[CVImage], batch_size: int
+        self, file_images_or_paths: list[str] | list[Image], batch_size: int
     ) -> dict[int, list[DetectedPartSchema]]:
         output = self.model_object.detect_batch(file_images_or_paths, batch_size)
 

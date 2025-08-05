@@ -6,11 +6,12 @@ if TYPE_CHECKING:
     from censor_engine.typing import Mask
     from censor_engine.detected_part import Part
 
-from censor_engine.models.shapes import Shape
+from censor_engine.libs.registries import ShapeRegistry
+from censor_engine.models.lib_models.shapes import Shape
 
 
+@ShapeRegistry.register()
 class Box(Shape):
-    shape_name: str = "box"
     base_shape: str = "box"
     single_shape: str = "box"
 
@@ -20,8 +21,8 @@ class Box(Shape):
         return mask
 
 
+@ShapeRegistry.register()
 class Circle(Shape):
-    shape_name: str = "circle"
     base_shape: str = "circle"
     single_shape: str = "circle"
 
@@ -36,8 +37,8 @@ class Circle(Shape):
         return mask
 
 
+@ShapeRegistry.register()
 class Ellipse(Shape):
-    shape_name: str = "ellipse"
     base_shape: str = "ellipse"
     single_shape: str = "ellipse"
 
@@ -55,8 +56,8 @@ class Ellipse(Shape):
         return mask
 
 
+@ShapeRegistry.register()
 class RoundedBox(Shape):
-    shape_name: str = "rounded_box"
     base_shape: str = "rounded_box"
     single_shape: str = "rounded_box"
 
@@ -79,11 +80,3 @@ class RoundedBox(Shape):
         )
 
         return mask_changed
-
-
-shapes = {
-    "box": Box,
-    "ellipse": Ellipse,
-    "circle": Circle,
-    "rounded_box": RoundedBox,
-}

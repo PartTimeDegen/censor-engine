@@ -1,46 +1,38 @@
 import cv2
-from censor_engine.models.styles import StyliseStyle
-from censor_engine.typing import CVImage
+from censor_engine.libs.registries import StyleRegistry
+from censor_engine.models.lib_models.styles import StyliseStyle
+from censor_engine.models.structs.contours import Contour
+from censor_engine.typing import Image
 
 
+@StyleRegistry.register()
 class Painting(StyliseStyle):
-    style_name: str = "painting"
-
     def apply_style(
         self,
-        image: CVImage,
-        contour,
+        image: Image,
+        contour: Contour,
         sigma_s: int = 60,
         sigma_r: float = 0.45,
-    ) -> CVImage:
-        new_image = cv2.stylization(image, sigma_s, sigma_r)  # type: ignore
-        # Apply the effect to the masked area
-        return self.draw_effect_on_mask([contour], new_image, image)
+    ) -> Image:
+        return cv2.stylization(image, sigma_s, sigma_r)  # type: ignore
 
 
+@StyleRegistry.register()
 class Pencil(StyliseStyle):
-    style_name: str = "pencil"
-
     def apply_style(
         self,
-        image: CVImage,
-        contour,
+        image: Image,
+        contour: Contour,
         coloured=False,
         sigma_s: int = 60,
         sigma_r: float = 0.45,
         shade_factor: float = 0.2,
-    ) -> CVImage:
+    ) -> Image:
         grey, colour = cv2.pencilSketch(
-            image, sigma_s=sigma_s, sigma_r=sigma_r, shade_factor=shade_factor
+            image,
+            sigma_s=sigma_s,
+            sigma_r=sigma_r,
+            shade_factor=shade_factor,
         )  # type: ignore
 
-        new_image = colour if coloured else cv2.cvtColor(grey, cv2.COLOR_GRAY2BGR)
-
-        # Apply the effect to the masked area
-        return self.draw_effect_on_mask([contour], new_image, image)
-
-
-effects = {
-    "painting": Painting,
-    "pencil": Pencil,
-}
+        return colour if coloured else cv2.cvtColor(grey, cv2.COLOR_GRAY2BGR)

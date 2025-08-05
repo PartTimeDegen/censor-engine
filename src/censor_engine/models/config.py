@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 import yaml
-from censor_engine.models.structs import Censor
+from censor_engine.models.structs.censors import Censor
 from censor_engine.models.enums import PartState
 from censor_engine.censor_engine.tools.debugger import DebugLevels
 from censor_engine.libs.configs import get_config_path
@@ -49,6 +49,7 @@ class VideoConfig:
 
     # Frame Part Persistence Config
     part_frame_hold_seconds: float = -1.0
+    persistence_groups: list[list[str]] = field(default_factory=list)
 
     def __post_init__(self):
         # Type Narrow to Float
@@ -94,7 +95,7 @@ class PartSettingsConfig:
     state: PartState = PartState.UNPROTECTED
     protected_shape: Optional[str] = None
     fade_percent: int = 0  # 0 - 100
-    video_part_search_region: float = 0.5  # bigger than 0.0
+    video_part_search_region: float = 0.2  # bigger than 0.0
 
     # Semi Meta Settings
     use_global_area: bool = True
@@ -288,3 +289,9 @@ class Config:
     @classmethod
     def from_dictionary(cls, dict_config: dict[str, Any]) -> "Config":
         return cls(**Config._process_dict_data(dict_config))
+
+    def _test_recalculate_missing_part_settings(self):
+        existing_parts = self.censor_settings.parts_settings
+        for part_name in self.censor_settings.enabled_parts:
+            if not existing_parts.get(part_name):
+                existing_parts[part_name] = self.default_censor_settings

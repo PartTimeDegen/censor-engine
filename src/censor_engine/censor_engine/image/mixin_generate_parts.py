@@ -1,18 +1,20 @@
 from uuid import UUID
+
+from censor_engine.models.structs import Mixin
 from censor_engine.typing import Mask
 from censor_engine.models.config import Config
 from censor_engine.detected_part import Part
 from censor_engine.models.enums import ShapeType
-from censor_engine.models.detectors import DetectedPartSchema
+from censor_engine.models.lib_models.detectors import DetectedPartSchema
 
 
-class MixinGenerateParts:
+class MixinGenerateParts(Mixin):
     def _create_parts(
         self,
         config: Config,
-        empty_mask: Mask,
         file_uuid: UUID,
         detected_parts: list[DetectedPartSchema],
+        shape: tuple[int, int, int],
     ) -> list[Part]:
         """
         This function creates the list of Parts for CensorEngine to keep track
@@ -61,63 +63,82 @@ class MixinGenerateParts:
                 part_id=detect_part.part_id,
                 score=detect_part.score,
                 relative_box=detect_part.relative_box,
-                empty_mask=empty_mask,
                 config=config,
                 file_uuid=file_uuid,
-                image_shape=empty_mask.shape,  # type: ignore Assume Two Dimensions
+                image_shape=shape,  # type: ignore Assume Two Dimensions
             )
 
         return [part for part in map(add_parts, detected_parts) if part is not None]
 
     def _merge_parts_if_in_merge_groups(self, parts: list[Part]) -> list[Part]:
+        def merge_fellow_parts(
+            part: Part,
+            start_index: int,
+            parts: list[Part],
+            merged_indices: set[int],
+        ) -> Part:
+            for index in range(start_index + 1, len(parts)):
+                other_part = parts[index]
+                if index in merged_indices:
+                    continue
+                if other_part.get_name() not in part.merge_group:
+                    continue
+
+                part.base_masks.extend(other_part.base_masks)
+                merged_indices.add(index)
+
+            return part
+
+        # Prep Stuff
         new_parts = []
+        merged_indices = set()
         for index, part in enumerate(parts):
-            if not part.merge_group:
+            if index in merged_indices:
                 continue
 
-            for other_part in parts[index + 1 :]:
-                if part == other_part:
-                    continue
-                if other_part.part_name not in part.merge_group:
-                    continue
+            if part.merge_group:
+                part = merge_fellow_parts(part, index, parts, merged_indices)
 
-                part.base_masks.append(other_part.base_masks[0])
-                parts.remove(other_part)
+                part.compile_base_masks()
 
-            part.compile_base_masks()
             new_parts.append(part)
 
         return new_parts
 
     def _apply_and_generate_mask_shapes(
-        self, empty_mask: Mask, parts: list[Part]
+        self,
+        parts: list[Part],
     ) -> list[Part]:
         new_parts = []
         for part in parts:
+            empty_mask = Part.create_empty_mask(part.image_shape)
             # For Simple Shapes
             if not part.is_merged:
                 shape_single = Part.get_shape_class(part.shape_object.single_shape)
-                part.mask = shape_single.generate(part, empty_mask.copy())
+                part.mask = shape_single.generate(part, empty_mask)
+                new_parts.append(part)
+                continue
 
             # For Advanced Shapes
             match part.shape_object.shape_type:
                 case ShapeType.BASIC:
                     pass
                 case ShapeType.JOINT:
-                    part.mask = part.shape_object.generate(part, empty_mask.copy())
+                    part.mask = part.shape_object.generate(part, empty_mask)
+                    pass
 
                 case ShapeType.BAR:
                     if not part.is_merged:
                         # Make Basic Shape
                         shape_single = Part.get_shape_class("ellipse")
-                        part.mask = shape_single.generate(part, empty_mask.copy())
+                        part.mask = shape_single.generate(part, empty_mask)
 
                     # Make Shape Joint for Bar Basis
                     shape_joint = Part.get_shape_class("joint_ellipse")
-                    part.mask = shape_joint.generate(part, empty_mask.copy())
+                    part.mask = shape_joint.generate(part, empty_mask)
 
                     # Generate Bar
-                    part.mask = part.shape_object.generate(part, empty_mask.copy())
+                    part.mask = part.shape_object.generate(part, empty_mask)
 
             new_parts.append(part)
 
