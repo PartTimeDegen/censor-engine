@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 
 from censor_engine.detected_part import Part
 from censor_engine.libs.registries import StyleRegistry
@@ -66,12 +67,16 @@ class EdgeDetectionScharr(EdgeDetectionStyle):
         contours: list[Contour],
         part: Part,
         alpha=1,
+        kernel_size: int = 5,
     ) -> Image:
         # Prepare Image to get better Results
         mask_image = self.prepare_mask(image)
 
         # Get Mask
-        mask_image = cv2.Sobel(mask_image, cv2.CV_64F, 1, 1, ksize=-1)
+        sobelx = cv2.Sobel(mask_image, cv2.CV_64F, 1, 0, ksize=kernel_size)
+        sobely = cv2.Sobel(mask_image, cv2.CV_64F, 0, 1, ksize=kernel_size)
+        mask_image = cv2.magnitude(sobelx, sobely)
+        mask_image = np.uint8(np.clip(mask_image, 0, 255))  # if needed
 
         # Clean Image
         mask_image = self.clean_image(mask_image)

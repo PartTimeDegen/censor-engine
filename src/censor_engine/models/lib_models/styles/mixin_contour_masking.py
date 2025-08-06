@@ -14,7 +14,7 @@ class MixinContourMasking(Mixin):
         linetype: int,
     ) -> Mask:
         blank: Mask = np.zeros(image_shape, dtype=np.uint8)  # type: ignore
-        return contour.draw_contour(blank, thickness, linetype)
+        return contours[0].draw_contour(blank, thickness, linetype)
 
     def apply_glow(self, mask: Mask, radius: int) -> Mask:
         blurred = cv2.GaussianBlur(mask, (0, 0), radius)

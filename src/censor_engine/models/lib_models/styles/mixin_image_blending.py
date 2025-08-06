@@ -14,6 +14,7 @@ class MixinImageBlending(Mixin):
         mask: Mask,
         fade_width: int,
         gradient_mode: Literal["linear", "gaussian"] = "linear",
+        mask_thickness: int = -1,
     ) -> Image:
         if gradient_mode == "gaussian":
             dist_transform = cv2.GaussianBlur(

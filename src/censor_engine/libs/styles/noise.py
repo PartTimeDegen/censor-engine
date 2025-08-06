@@ -78,7 +78,7 @@ class CentricChromaticAberration(NoiseStyle):
 
         # Step 1: Get center of contour or fallback to image center
         if contour is not None and len(contour.points) > 0:
-            M = cv2.moments(contour)
+            M = cv2.moments(contour.points)
             if M["m00"] != 0:
                 cx = int(M["m10"] / M["m00"])
                 cy = int(M["m01"] / M["m00"])

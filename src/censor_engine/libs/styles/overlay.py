@@ -71,7 +71,7 @@ class Outline(OverlayStyle):
 
 
 @StyleRegistry.register()
-class OutlinedBox(OverlayStyle):
+class OutlinedOverlay(OverlayStyle):
     def apply_style(
         self,
         image: Image,

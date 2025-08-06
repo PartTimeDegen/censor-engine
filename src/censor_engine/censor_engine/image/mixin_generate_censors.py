@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 
+from censor_engine.models.enums import StyleType
+from censor_engine.models.lib_models.styles.base import Style
 from censor_engine.models.structs.contours import Contour
 from censor_engine.typing import Image, Mask
 from censor_engine.detected_part import Part
@@ -80,21 +82,30 @@ class MixinGenerateCensors(Mixin):
                 continue
 
             part_contours = get_contours_from_mask(part.mask)
-            mask = contours_to_mask(part_contours, working_image.shape[:2])
+            mask = contours_to_mask(part_contours, working_image.shape[:2])  # type: ignore
             mask_norm = cv2.merge([mask] * 3)  # type: ignore
 
             # Gather default args
             # We'll apply style per contour, so no need to pass list
             for censor in part.part_settings.censors[::-1]:
-                censor_object = styles[censor.function]()
+                censor_object: Style = styles[censor.function]()
                 censor_object.change_linetype(enable_aa=True)
+
+                additional_args = {
+                    **censor.args,
+                    **(
+                        {"part_list": parts}
+                        if censor_object.style_type == StyleType.DEV
+                        else {}
+                    ),
+                }
 
                 working_image = censor_object.internal_run_style(
                     image=working_image.copy(),
                     contours=part_contours,
                     mask=mask_norm.copy(),
                     part=part,
-                    **censor.args,
+                    **additional_args,
                 )
 
                 if censor_object.force_png:
