@@ -1,14 +1,12 @@
 import cv2
 import numpy as np
 
+from censor_engine.detected_part import Part
 from censor_engine.libs.registries import StyleRegistry
 from censor_engine.models.lib_models.styles import TransparentStyle
-from typing import TYPE_CHECKING
 
 from censor_engine.models.structs.contours import Contour
-
-if TYPE_CHECKING:
-    from censor_engine.typing import Image
+from censor_engine.typing import Image, Mask
 
 
 @StyleRegistry.register()
@@ -17,33 +15,46 @@ class Cutout(TransparentStyle):
 
     def apply_style(
         self,
-        image: "Image",
-        contour: Contour,
-    ) -> "Image":
-        # Add Alpha Channel
-        if len(image.shape) == 2:
+        image: Image,
+        mask: Mask,
+        contours: list[Contour],
+        part: Part,
+        alpha: float = 0.5,
+    ) -> Image:
+        # Normalize alpha float and clamp
+        alpha = float(alpha)
+        alpha = max(0.0, min(1.0, alpha))
+        alpha_value = int(alpha * 255)
+
+        if image.ndim == 2:
             image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGBA)
         elif image.shape[2] == 3:
             image = cv2.cvtColor(image, cv2.COLOR_RGB2RGBA)
+        elif image.shape[2] == 4:
+            pass
+        else:
+            raise ValueError(
+                f"Unsupported number of channels: {image.shape[2]}"
+            )
 
-        mask_zeros = np.ones(image.shape, dtype=np.uint8) * 255
-        mask_filter = cv2.drawContours(
-            mask_zeros,  # type: ignore
-            contour.points,
-            -1,
-            (0, 0, 0, 0),  # type: ignore
-            -1,
-            hierarchy=contour.hierarchy,  # type:ignore
-        )
+        # Build new alpha channel: 0 where mask is white, else alpha_value
+        black_pixels = np.all(mask == 000, axis=2)
+        new_alpha = np.full(image.shape[:2], alpha_value, dtype=np.uint8)
+        new_alpha[black_pixels] = 0
 
-        return np.where(
-            mask_filter == (0, 0, 0, 0),
-            mask_filter,
-            image,
-        )
+        # Replace alpha channel in the image
+        image[:, :, 3] = new_alpha
+
+        return image
 
 
 @StyleRegistry.register()
 class NoCensor(TransparentStyle):
-    def apply_style(self, image, contour):
+    def apply_style(
+        self,
+        image: Image,
+        mask: Mask,
+        contours: list[Contour],
+        part: Part,
+    ):
         return image

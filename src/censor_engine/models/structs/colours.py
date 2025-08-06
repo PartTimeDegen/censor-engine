@@ -22,7 +22,7 @@ class Colour:
             self.value = self._flip_colour(colour_name_or_rgb_value)
 
         elif isinstance((colour_name_or_rgb_value), str):
-            self.value = _colours[colour_name_or_rgb_value]
+            self.value = self._flip_colour(_colours[colour_name_or_rgb_value])
 
         else:
             raise ValueError("Bad Colour:", colour_name_or_rgb_value)

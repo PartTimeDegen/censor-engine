@@ -24,7 +24,7 @@ class JointBox(JointShape):
         # https://stackoverflow.com/questions/18207181/opencv-python-draw-minarearect-rotatedrect-not-implemented
         rect = cv2.minAreaRect(np.vstack(cont_rect[0]).squeeze())
         box = cv2.boxPoints(rect)
-        box = np.int0(box)  # type: ignore
+        box = box.astype(np.int32)
 
         mask = cv2.drawContours(
             image=empty_mask,

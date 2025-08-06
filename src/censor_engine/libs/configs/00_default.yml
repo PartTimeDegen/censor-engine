@@ -12,29 +12,28 @@ render_settings:
 # Information
 censor_settings:
   enabled_parts:
-  # Female
-  # - "FACE_FEMALE"
+    # Female
+    # - "FACE_FEMALE"
 
-  # - "ARMPITS_EXPOSED"
-  # - "ARMPITS_COVERED"
+    # - "ARMPITS_EXPOSED"
+    # - "ARMPITS_COVERED"
 
-  - "FEMALE_BREAST_EXPOSED"
-  - "FEMALE_BREAST_COVERED"
+    - "FEMALE_BREAST_EXPOSED"
+    - "FEMALE_BREAST_COVERED"
 
-  # - "BELLY_EXPOSED"
-  # - "BELLY_COVERED"
+    # - "BELLY_EXPOSED"
+    # - "BELLY_COVERED"
 
-  - "BUTTOCKS_EXPOSED"
-  - "BUTTOCKS_COVERED"
+    - "BUTTOCKS_EXPOSED"
+    - "BUTTOCKS_COVERED"
 
-  - "ANUS_EXPOSED"
-  - "ANUS_COVERED"
+    - "ANUS_EXPOSED"
+    - "ANUS_COVERED"
 
-  - "FEMALE_GENITALIA_EXPOSED"
-  - "FEMALE_GENITALIA_COVERED"
+    - "FEMALE_GENITALIA_EXPOSED"
+    - "FEMALE_GENITALIA_COVERED"
   # - "FEET_EXPOSED"
   # - "FEET_COVERED"
-
 
   # Male
   # - "FACE_MALE"
@@ -43,14 +42,14 @@ censor_settings:
 
   merge_settings:
     merge_groups:
-    - [ "FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED" ]
+      - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
 
   # Fall Back Options as "General" Settings
   default_part_settings:
     censors:
-    - function: "box"
-      args:
-        colour: "BLACK"
+      - function: "overlay"
+        args:
+          colour: "BLACK"
 
     minimum_score: 0.20
     shape: "box"

@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Literal
 import cv2
 
+from censor_engine.detected_part import Part
 from censor_engine.models.enums import StyleType
 from .mixin_contour_masking import MixinContourMasking
 from .mixin_image_blending import MixinImageBlending
@@ -45,6 +46,7 @@ class Style(ABC, MixinContourMasking, MixinImageBlending):
         image: Image,
         contours: list[Contour],
         mask: Mask,
+        part: Part | None,  # None is for Reverse Censor
         mask_thickness: int = -1,
         fade_width: int = 0,
         gradient_mode: Literal["linear", "gaussian"] = "linear",
@@ -52,7 +54,9 @@ class Style(ABC, MixinContourMasking, MixinImageBlending):
     ) -> ProcessedImage:
         processed_image = self.apply_style(
             image,
+            mask,
             contours,
+            part,
             **kwargs,
         )
 
@@ -71,7 +75,9 @@ class Style(ABC, MixinContourMasking, MixinImageBlending):
     def apply_style(
         self,
         image: Image,
+        mask: Mask,
         contours: list[Contour],
+        part: Part | None,
         thickness: int = -1,
         *args,
         **kwargs,

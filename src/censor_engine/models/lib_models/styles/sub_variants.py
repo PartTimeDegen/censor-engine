@@ -1,7 +1,9 @@
 import cv2
+import numpy as np
 
 from censor_engine.models.enums import StyleType
-from censor_engine.typing import Image
+from censor_engine.models.structs.colours import Colour
+from censor_engine.typing import Image, Mask
 from .base import Style
 
 
@@ -39,7 +41,9 @@ class BlurStyle(Style):
 
         return new_factor
 
-    def apply_factor(self, image: Image, factor: int | float) -> tuple[int, int]:
+    def apply_factor(
+        self, image: Image, factor: int | float
+    ) -> tuple[int, int]:
         # Fixing Strength
         factor = factor * 4 + 1
 
@@ -67,8 +71,38 @@ class NoiseStyle(BlurStyle):
     style_type: StyleType = StyleType.NOISE
 
 
-class BoxStyle(Style):
-    style_type: StyleType = StyleType.BOX
+class OverlayStyle(Style):
+    style_type: StyleType = StyleType.OVERLAY
+
+    def _apply_mask_as_overlay(
+        self,
+        image: Image,
+        mask: Mask,
+        colour: Colour,
+        alpha: float,
+    ) -> Image:
+        overlay = image.copy()
+
+        # Create a single-channel boolean mask from any RGB mask channel
+        mask_bool = mask[:, :, 0] > 0
+
+        if not np.any(mask_bool):
+            return overlay  # Nothing to do if mask is empty
+
+        # Create an array of shape (H, W, 3) with the target color
+        color_array = np.full_like(image, colour.value, dtype=image.dtype)
+
+        # Alpha blending only on masked region
+        if alpha < 1.0:
+            # Blend only in masked region
+            overlay[mask_bool] = (
+                (1 - alpha) * image[mask_bool] + alpha * color_array[mask_bool]
+            ).astype(image.dtype)
+        else:
+            # Hard color replace in masked region
+            overlay[mask_bool] = color_array[mask_bool]
+
+        return overlay
 
 
 class ColourStyle(Style):

@@ -16,7 +16,7 @@ class ShapeType(IntEnum):
 class StyleType(IntEnum):
     INVALID = 0
     BLUR = 1
-    BOX = 2
+    OVERLAY = 2
     COLOUR = 3
     DEV = 4
     EDGE_DETECTION = 5

@@ -14,7 +14,6 @@ class MixinImageBlending(Mixin):
         mask: Mask,
         fade_width: int,
         gradient_mode: Literal["linear", "gaussian"] = "linear",
-        mask_thickness: int = -1,
     ) -> Image:
         if gradient_mode == "gaussian":
             dist_transform = cv2.GaussianBlur(
@@ -48,4 +47,23 @@ class MixinImageBlending(Mixin):
         image_with_effect: Image,
         mask: Mask,
     ) -> Image:
-        return np.where(mask == 255, image_with_effect, image)
+        # Ensure both images have the same number of channels
+        if image.shape[2] == 3 and image_with_effect.shape[2] == 4:
+            # Upgrade base image to 4 channels by adding opaque alpha
+            alpha = np.full(image.shape[:2], 255, dtype=np.uint8)
+            image = np.dstack((image, alpha))
+
+        elif image.shape[2] == 4 and image_with_effect.shape[2] == 3:
+            # Upgrade effect image to 4 channels by adding opaque alpha
+            alpha = np.full(image_with_effect.shape[:2], 255, dtype=np.uint8)
+            image_with_effect = np.dstack((image_with_effect, alpha))
+
+        # Create a single-channel boolean mask where all 3 channels are 255 (white)
+        single_channel_mask = (
+            np.all(mask == 255, axis=2) if mask.ndim == 3 else mask == 255
+        )
+
+        # Broadcast to shape (H, W, channels)
+        mask_expanded = single_channel_mask[..., None]  # shape (H, W, 1)
+
+        return np.where(mask_expanded, image_with_effect, image)

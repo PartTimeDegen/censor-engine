@@ -8,7 +8,7 @@ from censor_engine.typing import Mask
 class MixinContourMasking(Mixin):
     def draw_mask(
         self,
-        contour: Contour,
+        contours: list[Contour],
         image_shape: tuple[int, int],
         thickness: int,
         linetype: int,

@@ -1,9 +1,10 @@
 import cv2
 import numpy as np
+from censor_engine.detected_part import Part
 from censor_engine.libs.registries import StyleRegistry
 from censor_engine.models.lib_models.styles import BlurStyle
 from censor_engine.models.structs.contours import Contour
-from censor_engine.typing import Image
+from censor_engine.typing import Image, Mask
 
 
 @StyleRegistry.register()
@@ -14,7 +15,12 @@ class Blur(BlurStyle):
     """
 
     def apply_style(
-        self, image: Image, contour: Contour, factor: int | float = 5
+        self,
+        image: Image,
+        mask: Mask,
+        contours: list[Contour],
+        part: Part,
+        factor: int | float = 5,
     ) -> Image:
         factors = self.apply_factor(image, factor)
 
@@ -34,7 +40,12 @@ class GaussianBlur(BlurStyle):
     """
 
     def apply_style(
-        self, image: Image, contour: Contour, factor: int | float = 5
+        self,
+        image: Image,
+        mask: Mask,
+        contours: list[Contour],
+        part: Part,
+        factor: int | float = 5,
     ) -> Image:
         factors = self.apply_factor(image, factor)
 
@@ -53,7 +64,12 @@ class GaussianBlur(BlurStyle):
 @StyleRegistry.register()
 class MedianBlur(BlurStyle):
     def apply_style(
-        self, image: Image, contour: Contour, factor: int | float = 5
+        self,
+        image: Image,
+        mask: Mask,
+        contours: list[Contour],
+        part: Part,
+        factor: int | float = 5,
     ) -> Image:
         factors = self.apply_factor(image, factor)
 
@@ -70,7 +86,9 @@ class BilateralBlur(BlurStyle):
     def apply_style(
         self,
         image: Image,
-        contour: Contour,
+        mask: Mask,
+        contours: list[Contour],
+        part: Part,
         distance: int | float = 20,
         sigma_colour: int = 150,
         sigma_space: int = 150,
@@ -107,7 +125,9 @@ class MotionBlur(BlurStyle):
     def apply_style(
         self,
         image: Image,
-        contour: Contour,
+        mask: Mask,
+        contours: list[Contour],
+        part: Part,
         offset: int = 10,
         angle: int = current_angle,
         video_rotate: int = 0,  # Neg, neutral, positive

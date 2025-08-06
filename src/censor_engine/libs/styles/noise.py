@@ -1,10 +1,11 @@
 import math
 import cv2
 import numpy as np
+from censor_engine.detected_part import Part
 from censor_engine.libs.registries import StyleRegistry
 from censor_engine.models.lib_models.styles import NoiseStyle
 from censor_engine.models.structs.contours import Contour
-from censor_engine.typing import Image
+from censor_engine.typing import Image, Mask
 
 
 @StyleRegistry.register()
@@ -14,7 +15,9 @@ class ChromaticAberration(NoiseStyle):
     def apply_style(
         self,
         image: Image,
-        contour: Contour,
+        mask: Mask,
+        contours: list[Contour],
+        part: Part,
         offset: int = 20,
         angle: int = -45,
     ) -> Image:
@@ -63,12 +66,15 @@ class CentricChromaticAberration(NoiseStyle):
     def apply_style(
         self,
         image: Image,
-        contour: Contour,
+        mask: Mask,
+        contours: list[Contour],
+        part: Part,
         offset: int = 20,
         blur: int = 0,
     ) -> Image:
         noise_image = image.copy()
         offset = -offset
+        contour = contours[0]  # Get Biggest
 
         # Step 1: Get center of contour or fallback to image center
         if contour is not None and len(contour.points) > 0:
@@ -118,7 +124,9 @@ class Noise(NoiseStyle):
     def apply_style(
         self,
         image: Image,
-        contour: Contour,
+        mask: Mask,
+        contours: list[Contour],
+        part: Part,
         alpha: int | float = 1,
         coloured: bool = True,
         intensity: float = 1,
@@ -148,7 +156,12 @@ class Noise(NoiseStyle):
 @StyleRegistry.register()
 class DeNoise(NoiseStyle):
     def apply_style(
-        self, image: Image, contour: Contour, strength: int = 10
+        self,
+        image: Image,
+        mask: Mask,
+        contours: list[Contour],
+        part: Part,
+        strength: int = 10,
     ) -> Image:
         noise_image = cv2.fastNlMeansDenoisingColored(image, h=strength)
         return noise_image

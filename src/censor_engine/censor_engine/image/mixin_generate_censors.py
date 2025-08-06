@@ -38,7 +38,7 @@ class MixinGenerateCensors(Mixin):
     def _handle_reverse_censor(
         self,
         reverse_censors: list[Censor],
-        inverse_empty_mask: Image,
+        inverse_empty_mask: Mask,
         parts: list[Part],
         file_image: Image,
     ) -> Image:
@@ -58,10 +58,11 @@ class MixinGenerateCensors(Mixin):
             censor_object.change_linetype(enable_aa=False)
             censor_object.using_reverse_censor = True
 
-            arguments = [file_image, contours]
-
             file_image = censor_object.internal_run_style(
-                *arguments,
+                image=file_image.copy(),
+                contours=contours,
+                mask=base_mask_reverse.copy(),
+                part=None,
                 **censor.args,
             )
         return file_image
@@ -91,12 +92,15 @@ class MixinGenerateCensors(Mixin):
                 working_image = censor_object.internal_run_style(
                     image=working_image.copy(),
                     contours=part_contours,
-                    mask=mask_norm,
+                    mask=mask_norm.copy(),
+                    part=part,
                     **censor.args,
                 )
 
                 if censor_object.force_png:
                     self.force_png = censor_object.force_png
+
+            # === Feather Stuff === #
 
             # Apply Potential Feather Fade
             if not part.part_settings.fade_percent:
@@ -113,7 +117,7 @@ class MixinGenerateCensors(Mixin):
             kernel_size = min(51, max(3, feathering_amount // 2 * 2 + 1))
 
             mask_norm = cv2.erode(
-                mask_norm,
+                mask_norm,  # type: ignore
                 np.ones((kernel_size, kernel_size), np.uint8),
                 iterations=1,
             ).astype(float)

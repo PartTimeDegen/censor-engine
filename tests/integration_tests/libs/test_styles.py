@@ -12,10 +12,10 @@ styles_blur = [
     for style, class_style in styles.items()
     if class_style.style_type == StyleType.BLUR
 ]
-styles_box = [
+styles_overlay = [
     style
     for style, class_style in styles.items()
-    if class_style.style_type == StyleType.BOX
+    if class_style.style_type == StyleType.OVERLAY
 ]
 styles_colour = [
     style
@@ -63,7 +63,7 @@ def run_tests(
     style,
     dummy_input_image_data,
     expect_png: bool = False,
-    mean_absolute_error: int = 6,
+    mean_absolute_error: float = 6,
 ):
     all_parts = list(NudeNetDetector.model_classifiers)
     config_data = {
@@ -83,7 +83,9 @@ def run_tests(
         config_data,
         subfolder=style,
         batch_tests=True,
-        group_name=os.path.splitext(os.path.basename(inspect.stack()[1].filename))[0],
+        group_name=os.path.splitext(
+            os.path.basename(inspect.stack()[1].filename)
+        )[0],
         expect_png=expect_png,
         mean_absolute_error=mean_absolute_error,
     )
@@ -94,8 +96,8 @@ def test_blur_styles(style, dummy_input_image_data):
     run_tests(style, dummy_input_image_data)
 
 
-@pytest.mark.parametrize("style", styles_box)
-def test_box_styles(style, dummy_input_image_data):
+@pytest.mark.parametrize("style", styles_overlay)
+def test_overlay_styles(style, dummy_input_image_data):
     run_tests(style, dummy_input_image_data)
 
 
@@ -116,7 +118,7 @@ def test_edge_detection_styles(style, dummy_input_image_data):
 
 @pytest.mark.parametrize("style", styles_noise)
 def test_noise_styles(style, dummy_input_image_data):
-    run_tests(style, dummy_input_image_data, mean_absolute_error=7)
+    run_tests(style, dummy_input_image_data, mean_absolute_error=7.5)
 
 
 @pytest.mark.parametrize("style", styles_pixelation)

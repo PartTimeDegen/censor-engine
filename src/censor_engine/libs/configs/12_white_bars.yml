@@ -1,29 +1,29 @@
 censor_settings:
   enabled_parts:
-  - "FACE_FEMALE"
-  - "FEMALE_BREAST_EXPOSED"
-  - "FEMALE_BREAST_COVERED"
-  - "BELLY_EXPOSED"
-  - "BELLY_COVERED"
-  - "BUTTOCKS_EXPOSED"
-  - "BUTTOCKS_COVERED"
-  - "ANUS_EXPOSED"
-  - "ANUS_COVERED"
-  - "FEMALE_GENITALIA_EXPOSED"
-  - "FEMALE_GENITALIA_COVERED"
-  - "FEET_EXPOSED"
-  - "FEET_COVERED"
-  - "MALE_GENITALIA_EXPOSED"
+    - "FACE_FEMALE"
+    - "FEMALE_BREAST_EXPOSED"
+    - "FEMALE_BREAST_COVERED"
+    - "BELLY_EXPOSED"
+    - "BELLY_COVERED"
+    - "BUTTOCKS_EXPOSED"
+    - "BUTTOCKS_COVERED"
+    - "ANUS_EXPOSED"
+    - "ANUS_COVERED"
+    - "FEMALE_GENITALIA_EXPOSED"
+    - "FEMALE_GENITALIA_COVERED"
+    - "FEET_EXPOSED"
+    - "FEET_COVERED"
+    - "MALE_GENITALIA_EXPOSED"
 
   merge_settings:
     merge_groups:
-    - [ "FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED" ]
+      - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
 
   default_part_settings:
     censors:
-    - function: "box"
-      args:
-        colour: "WHITE"
+      - function: "overlay"
+        args:
+          colour: "WHITE"
     protected_shape: "ellipse"
     shape: "bar"
     # Censored

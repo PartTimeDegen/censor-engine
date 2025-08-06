@@ -1,25 +1,25 @@
 censor_settings:
   enabled_parts:
-  - "FACE_FEMALE"
-  - "ARMPITS_EXPOSED"
-  - "ARMPITS_COVERED"
-  - "FEMALE_BREAST_EXPOSED"
-  - "FEMALE_BREAST_COVERED"
-  - "BELLY_EXPOSED"
-  - "BELLY_COVERED"
-  - "BUTTOCKS_EXPOSED"
-  - "BUTTOCKS_COVERED"
-  - "ANUS_EXPOSED"
-  - "ANUS_COVERED"
-  - "FEMALE_GENITALIA_EXPOSED"
-  - "FEMALE_GENITALIA_COVERED"
-  - "FEET_EXPOSED"
-  - "FEET_COVERED"
-  - "MALE_GENITALIA_EXPOSED"
+    - "FACE_FEMALE"
+    - "ARMPITS_EXPOSED"
+    - "ARMPITS_COVERED"
+    - "FEMALE_BREAST_EXPOSED"
+    - "FEMALE_BREAST_COVERED"
+    - "BELLY_EXPOSED"
+    - "BELLY_COVERED"
+    - "BUTTOCKS_EXPOSED"
+    - "BUTTOCKS_COVERED"
+    - "ANUS_EXPOSED"
+    - "ANUS_COVERED"
+    - "FEMALE_GENITALIA_EXPOSED"
+    - "FEMALE_GENITALIA_COVERED"
+    - "FEET_EXPOSED"
+    - "FEET_COVERED"
+    - "MALE_GENITALIA_EXPOSED"
 
   merge_settings:
     merge_groups:
-    - [ "FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED" ]
+      - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
 
   default_part_settings:
     state: "revealed"
@@ -28,61 +28,61 @@ censor_settings:
   FEMALE_BREAST_EXPOSED:
     state: "protected"
     censors:
-    - function: "outline"
-      args:
-        colour: DARK_RED
-    - function: "box"
-      args:
-        colour: "BLACK"
+      - function: "outline"
+        args:
+          colour: DARK_RED
+      - function: "overlay"
+        args:
+          colour: "BLACK"
   FEMALE_BREAST_COVERED:
     state: "protected"
     censors:
-    - function: "outline"
-      args:
-        colour: DARK_RED
-    - function: "box"
-      args:
-        colour: "BLACK"
+      - function: "outline"
+        args:
+          colour: DARK_RED
+      - function: "overlay"
+        args:
+          colour: "BLACK"
 
   FEMALE_GENITALIA_EXPOSED:
     state: "protected"
     margin: -0.3
     censors:
-    - function: "outline"
-      args:
-        colour: DARK_RED
-    - function: "box"
-      args:
-        colour: "BLACK"
+      - function: "outline"
+        args:
+          colour: DARK_RED
+      - function: "overlay"
+        args:
+          colour: "BLACK"
   FEMALE_GENITALIA_COVERED:
     state: "protected"
     margin: -0.3
     censors:
-    - function: "outline"
-      args:
-        colour: DARK_RED
-    - function: "box"
-      args:
-        colour: "BLACK"
+      - function: "outline"
+        args:
+          colour: DARK_RED
+      - function: "overlay"
+        args:
+          colour: "BLACK"
 
   BUTTOCKS_EXPOSED:
     state: "unprotected"
     censors:
-    - function: "outline"
-      args:
-        colour: DARK_RED
-    - function: "box"
-      args:
-        colour: "BLACK"
+      - function: "outline"
+        args:
+          colour: DARK_RED
+      - function: "overlay"
+        args:
+          colour: "BLACK"
   BUTTOCKS_COVERED:
     state: "unprotected"
     censors:
-    - function: "outline"
-      args:
-        colour: DARK_RED
-    - function: "box"
-      args:
-        colour: "BLACK"
+      - function: "outline"
+        args:
+          colour: DARK_RED
+      - function: "overlay"
+        args:
+          colour: "BLACK"
 
   ANUS_EXPOSED:
     margin: -0.2
@@ -102,13 +102,13 @@ censor_settings:
     margin: 0.2
 
   reverse_censor_settings:
-  - function: "outline"
-    args:
-      colour: DARK_RED
-      thickness: 2
-  - function: "greyscale"
-    args:
-      alpha: 0.8
-  - function: "blur"
-    args:
-      factor: 8
+    - function: "outline"
+      args:
+        colour: DARK_RED
+        thickness: 2
+    - function: "greyscale"
+      args:
+        alpha: 0.8
+    - function: "blur"
+      args:
+        factor: 8

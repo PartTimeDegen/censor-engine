@@ -101,7 +101,7 @@ class Debug(DevStyle):
     def apply_style(
         self,
         image: Image,
-        contour: Contour,
+        contours: list[Contour],
         part: "Part",
         colour: tuple[int, int, int] | str = "WHITE",
     ) -> Image:

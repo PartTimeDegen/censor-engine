@@ -2,21 +2,22 @@ import math
 
 import cv2
 import numpy as np
+from censor_engine.detected_part import Part
 from censor_engine.libs.registries import StyleRegistry
 from censor_engine.models.lib_models.styles import PixelateStyle
 from censor_engine.models.structs.contours import Contour
-from censor_engine.typing import Image
+from censor_engine.typing import Image, Mask
 
 
 @StyleRegistry.register()
 class Pixelate(PixelateStyle):
     def _get_distortion_factor(
         self,
-        image,
-        contour: Contour,
+        image: Image,
+        contours: list[Contour],
         factor,
     ):
-        bounding_rect = contour.as_bounding_box()
+        bounding_rect = contours[0].as_bounding_box()  # Only Biggest Matters
         _, _, box_width, box_height = bounding_rect
 
         fixed_size = max(box_width, box_height)
@@ -60,12 +61,14 @@ class Pixelate(PixelateStyle):
     def apply_style(
         self,
         image: Image,
-        contour: Contour,
+        mask: Mask,
+        contours: list[Contour],
+        part: Part,
         factor: int | float = 12,
     ) -> Image:
         factors = self._get_distortion_factor(
             image,
-            contour,
+            contours,
             factor,
         )
 
@@ -149,7 +152,12 @@ class HexagonPixelate(PixelateStyle):
         return output
 
     def apply_style(
-        self, image: Image, contour: Contour, factor: int | float = 12
+        self,
+        image: Image,
+        mask: Mask,
+        contours: list[Contour],
+        part: Part,
+        factor: int | float = 12,
     ) -> Image:
         """Apply hexagonal pixelation to the image within the given contour."""
         factor = self.normalise_factor(image, factor)
@@ -162,7 +170,9 @@ class Crystallise(PixelateStyle):
     def apply_style(
         self,
         image: Image,
-        contour: Contour,
+        mask: Mask,
+        contours: list[Contour],
+        part: Part,
         point_density: int = 50,
     ) -> Image:
         blur_image = image.copy()
@@ -256,7 +266,9 @@ class HexagonPixelateSoft(HexagonPixelate):
     def apply_style(
         self,
         image: Image,
-        contour: Contour,
+        mask: Mask,
+        contours: list[Contour],
+        part: Part,
         factor: int | float = 12,
         softness: float = 2.0,
     ) -> Image:
@@ -264,7 +276,7 @@ class HexagonPixelateSoft(HexagonPixelate):
         Apply soft hexagonal pixelation to the image within the given contour.
 
         :param image: input image
-        :param contour: contour mask
+        :param contours: list[Contour] mask
         :param factor: hexagon size
         :param softness: softness amount (default=1.0)
         """

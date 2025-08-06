@@ -1,9 +1,10 @@
 import cv2
 
+from censor_engine.detected_part import Part
 from censor_engine.libs.registries import StyleRegistry
 from censor_engine.models.lib_models.styles import EdgeDetectionStyle
 from censor_engine.models.structs.contours import Contour
-from censor_engine.typing import Image
+from censor_engine.typing import Image, Mask
 
 # Edge Detection Effects
 # https://blog.roboflow.com/edge-detection/
@@ -15,7 +16,9 @@ class EdgeDetectionCanny(EdgeDetectionStyle):
     def apply_style(
         self,
         image: Image,
-        contour: Contour,
+        mask: Mask,
+        contours: list[Contour],
+        part: Part,
         threshold: int = 100,
         alpha=1,
     ) -> Image:
@@ -36,7 +39,9 @@ class EdgeDetectionSobel(EdgeDetectionStyle):
     def apply_style(
         self,
         image: Image,
-        contour: Contour,
+        mask: Mask,
+        contours: list[Contour],
+        part: Part,
         kernel_size: int = 5,
         alpha=1,
     ) -> Image:
@@ -57,7 +62,9 @@ class EdgeDetectionScharr(EdgeDetectionStyle):
     def apply_style(
         self,
         image: Image,
-        contour: Contour,
+        mask: Mask,
+        contours: list[Contour],
+        part: Part,
         alpha=1,
     ) -> Image:
         # Prepare Image to get better Results
@@ -77,7 +84,9 @@ class EdgeDetectionLapacian(EdgeDetectionStyle):
     def apply_style(
         self,
         image: Image,
-        contour: Contour,
+        mask: Mask,
+        contours: list[Contour],
+        part: Part,
         kernel_size: int = 5,
         alpha=1,
     ) -> Image:
