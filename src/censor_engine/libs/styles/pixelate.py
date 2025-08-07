@@ -142,12 +142,8 @@ class HexagonPixelate(PixelateStyle):
                 )
 
                 # Fill the hexagon with the computed color
-                hex_corners = self._hexagon_corners(
-                    center_x, center_y, hexagon_size
-                )
-                cv2.fillPoly(
-                    output, [hex_corners], color=tuple(map(int, color))
-                )
+                hex_corners = self._hexagon_corners(center_x, center_y, hexagon_size)
+                cv2.fillPoly(output, [hex_corners], color=tuple(map(int, color)))
 
         return output
 
@@ -249,12 +245,8 @@ class HexagonPixelateSoft(HexagonPixelate):
                     center_x, center_y, image, hexagon_size, softness
                 )
 
-                hex_corners = self._hexagon_corners(
-                    center_x, center_y, hexagon_size
-                )
-                cv2.fillPoly(
-                    output, [hex_corners], color=tuple(map(int, color))
-                )
+                hex_corners = self._hexagon_corners(center_x, center_y, hexagon_size)
+                cv2.fillPoly(output, [hex_corners], color=tuple(map(int, color)))
 
         # Optional: Gaussian blur the final output based on softness
         if softness > 0:

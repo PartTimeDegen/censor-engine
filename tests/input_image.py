@@ -143,9 +143,7 @@ class ImageGenerator:
             return self.parts
         if isinstance(list_parts_enabled, str):
             list_parts_enabled = [list_parts_enabled]
-        return [
-            part for part in self.parts if part.label in list_parts_enabled
-        ]
+        return [part for part in self.parts if part.label in list_parts_enabled]
 
 
 if __name__ == "__main__":

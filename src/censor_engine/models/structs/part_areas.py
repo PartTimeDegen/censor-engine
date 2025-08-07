@@ -7,7 +7,7 @@ class Coord:
     X: int
     Y: int
 
-    def convert_to_tuple(self):
+    def convert_to_tuple(self) -> tuple[int, int]:
         return (self.X, self.Y)
 
 
@@ -57,7 +57,10 @@ class Region:
         )
 
     def get_corners(self) -> tuple[tuple[int, int], tuple[int, int]]:
-        return (self.top_left.convert_to_tuple(), self.bot_right.convert_to_tuple())
+        return (
+            self.top_left.convert_to_tuple(),
+            self.bot_right.convert_to_tuple(),
+        )
 
 
 @dataclass(slots=True)

@@ -66,11 +66,6 @@ class RoundedJointBox(JointShape):
     single_shape: str = "rounded_box"
 
     def generate(self, part: "Part", empty_mask: "Mask") -> "Mask":
-        cont_rect = cv2.findContours(
-            image=part.mask, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_SIMPLE
-        )
-        cv2.imwrite("blah.jpg", part.mask)
-
         mask = JointBox().generate(part, empty_mask)
 
         if len(mask.shape) > 2:

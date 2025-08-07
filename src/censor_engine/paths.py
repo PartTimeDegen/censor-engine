@@ -67,8 +67,8 @@ class PathManager:
         self._cache_uncensored_folder = self.base_directory / self._uncensored_folder
         return self._cache_uncensored_folder
 
-    def get_censored_folder(self):
-        if folder := self._cache_censored_folder:
+    def get_censored_folder(self) -> Path:
+        if (folder := self._cache_censored_folder) is not None:
             return folder
 
         base_dir = self.base_directory
@@ -87,6 +87,8 @@ class PathManager:
             return PATH_SHORTCUT_UNCENSORED / self._censored_folder.relative_to(
                 self.config.file_settings.censored_folder
             )
+
+        return None
 
     def get_flag_is_using_full_path(self):
         return self._is_using_full_output

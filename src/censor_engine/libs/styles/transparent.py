@@ -33,9 +33,7 @@ class Cutout(TransparentStyle):
         elif image.shape[2] == 4:
             pass
         else:
-            raise ValueError(
-                f"Unsupported number of channels: {image.shape[2]}"
-            )
+            raise ValueError(f"Unsupported number of channels: {image.shape[2]}")
 
         # Build new alpha channel: 0 where mask is white, else alpha_value
         black_pixels = np.all(mask == 000, axis=2)

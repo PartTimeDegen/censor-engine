@@ -94,7 +94,7 @@ class Part:
         self.base_masks = [self.mask]
 
     def __str__(self) -> str:
-        return f"{self.part_name}_{self.part_id}{"_merged" if self.is_merged else ""}"
+        return f"{self.part_name}_{self.part_id}{'_merged' if self.is_merged else ''}"
 
     def __repr__(self) -> str:
         return self.part_name
@@ -120,13 +120,13 @@ class Part:
         # Calculate New Values
         margin_width, margin_height = w_margin * width, h_margin * height
 
-        top_left_x -= margin_width / 2
-        top_left_y -= margin_height / 2
-        width += margin_width
-        height += margin_height
+        top_left_x -= int(margin_width / 2)
+        top_left_y -= int(margin_height / 2)
+        width += int(margin_width)
+        height += int(margin_height)
 
         # Format Box Values to Int and Make to Standard Box Format
-        new_relative_box = (int(top_left_x), int(top_left_y), int(width), int(height))
+        new_relative_box = (top_left_x, top_left_y, width, height)
 
         self.part_area = PartArea(
             new_relative_box,
@@ -137,10 +137,10 @@ class Part:
     # Public Methods
     # # Naming Methods
     def get_id_name_and_merged(self) -> str:
-        return f"{self.part_id}_{self.part_name}{"_merged" if self.is_merged else ""}"
+        return f"{self.part_id}_{self.part_name}{'_merged' if self.is_merged else ''}"
 
     def get_name_and_merged(self) -> str:
-        return f"{self.part_name}{"_merged" if self.is_merged else ""}"
+        return f"{self.part_name}{'_merged' if self.is_merged else ''}"
 
     def get_name(self) -> str:
         return self.part_name

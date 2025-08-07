@@ -1,5 +1,4 @@
 import cv2
-import numpy as np
 
 from censor_engine.detected_part import Part
 from censor_engine.models.structs.colours import Colour
@@ -84,9 +83,7 @@ class OutlinedOverlay(OverlayStyle):
         alpha: float = 1.0,
         softness: int = 0,
     ) -> Image:
-        overlay = self._apply_mask_as_overlay(
-            image, mask, Colour(colour_box), alpha
-        )
+        overlay = self._apply_mask_as_overlay(image, mask, Colour(colour_box), alpha)
 
         contours_points = [contour.points for contour in contours]
         cv2.drawContours(

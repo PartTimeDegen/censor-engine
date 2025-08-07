@@ -19,9 +19,7 @@ class Contour:
     def as_bounding_box(self) -> tuple[int, int, int, int]:
         return cv2.boundingRect(self.points)
 
-    def as_mask(
-        self, image_shape: tuple[int, int], mask_thickness: int = -1
-    ) -> Mask:
+    def as_mask(self, image_shape: tuple[int, int], mask_thickness: int = -1) -> Mask:
         mask = np.zeros(image_shape, dtype=np.uint8)
         cv2.drawContours(
             mask,
@@ -57,9 +55,7 @@ class ContourNormalizer:
 
     def from_mask(self, binary_mask: np.ndarray) -> list[Contour]:
         # OpenCV findContours returns (contours, hierarchy) in OpenCV 4.x+
-        contours, hierarchy = cv2.findContours(
-            binary_mask, self.mode, self.method
-        )
+        contours, hierarchy = cv2.findContours(binary_mask, self.mode, self.method)
 
         if hierarchy is not None:
             hierarchy = hierarchy[0]  # shape (N, 4)

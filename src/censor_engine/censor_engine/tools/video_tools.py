@@ -101,7 +101,6 @@ class VideoInfo:
     # Internals
     _frame_info: list[str] = field(init=False, default_factory=list)
     _part_info: list[str] = field(init=False, default_factory=list)
-    _frame_info: list[str] = field(init=False, default_factory=list)
 
     def _get_counter(self, value: int, max_value: int) -> str:
         value_str = str(value)

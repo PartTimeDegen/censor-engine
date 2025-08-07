@@ -76,7 +76,7 @@ class MixinArguments(Mixin):
         if debug_word := args.debug_level:
             try:
                 output_dict["debug_level"] = DebugLevels[debug_word.upper()]
-                print(f"**Using Debug Mode: {output_dict["debug_level"].name}**")
+                print(f"**Using Debug Mode: {output_dict['debug_level'].name}**")
             except ValueError:
                 raise ValueError(f"Invalid DebugLevels value: {str(debug_word)}")
 

@@ -32,9 +32,7 @@ def run_shape_tests(shape, dummy_input_image_data):
             ],
             "merge_settings": {"merge_groups": [["FEMALE_BREAST_EXPOSED"]]},
             "default_part_settings": {
-                "censors": [
-                    {"function": "overlay", "args": {"colour": "BLACK"}}
-                ],
+                "censors": [{"function": "overlay", "args": {"colour": "BLACK"}}],
                 "shape": shape,
             },
         },
@@ -46,9 +44,7 @@ def run_shape_tests(shape, dummy_input_image_data):
         config_data,
         subfolder=shape,
         batch_tests=True,
-        group_name=os.path.splitext(
-            os.path.basename(inspect.stack()[1].filename)
-        )[0],
+        group_name=os.path.splitext(os.path.basename(inspect.stack()[1].filename))[0],
     )
 
 
@@ -76,9 +72,7 @@ def test_bar_single_object(dummy_input_image_data):
                 "FEMALE_BREAST_EXPOSED",
             ],
             "default_part_settings": {
-                "censors": [
-                    {"function": "overlay", "args": {"colour": "BLACK"}}
-                ],
+                "censors": [{"function": "overlay", "args": {"colour": "BLACK"}}],
                 "shape": "bar",
             },
         },
@@ -88,8 +82,6 @@ def test_bar_single_object(dummy_input_image_data):
     run_image_test(
         dummy_input_image_data,
         config_data,
-        group_name=os.path.splitext(
-            os.path.basename(inspect.stack()[0].filename)
-        )[0],
+        group_name=os.path.splitext(os.path.basename(inspect.stack()[0].filename))[0],
         edge_case=True,
     )

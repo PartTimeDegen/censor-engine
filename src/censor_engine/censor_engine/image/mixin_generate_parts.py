@@ -1,7 +1,6 @@
 from uuid import UUID
 
 from censor_engine.models.structs import Mixin
-from censor_engine.typing import Mask
 from censor_engine.models.config import Config
 from censor_engine.detected_part import Part
 from censor_engine.models.enums import ShapeType
@@ -56,7 +55,7 @@ class MixinGenerateParts(Mixin):
             :return Optional[Part]: A Part object (or None)
             """
             if detect_part.label not in config.censor_settings.enabled_parts:
-                return
+                return None
 
             return Part(
                 part_name=detect_part.label,
@@ -65,7 +64,7 @@ class MixinGenerateParts(Mixin):
                 relative_box=detect_part.relative_box,
                 config=config,
                 file_uuid=file_uuid,
-                image_shape=shape,  # type: ignore Assume Two Dimensions
+                image_shape=shape,
             )
 
         return [part for part in map(add_parts, detected_parts) if part is not None]
@@ -90,8 +89,8 @@ class MixinGenerateParts(Mixin):
             return part
 
         # Prep Stuff
-        new_parts = []
-        merged_indices = set()
+        new_parts: list[Part] = []
+        merged_indices: set[int] = set()
         for index, part in enumerate(parts):
             if index in merged_indices:
                 continue

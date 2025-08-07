@@ -41,9 +41,7 @@ class BlurStyle(Style):
 
         return new_factor
 
-    def apply_factor(
-        self, image: Image, factor: int | float
-    ) -> tuple[int, int]:
+    def apply_factor(self, image: Image, factor: int | float) -> tuple[int, int]:
         # Fixing Strength
         factor = factor * 4 + 1
 

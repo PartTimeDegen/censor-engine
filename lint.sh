@@ -1,7 +1,7 @@
 
 echo "Running Ruff"
-poetry run ruff check src/censorengine
+ruff check src/censor_engine
 
 echo ""
 echo "Running MyPy"
-poetry run mypy src/censorengine 
+uv run mypy src/censor_engine 

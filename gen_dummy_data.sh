@@ -1,1 +1,0 @@
-PYTHONPATH=. python src/dev_tools.py

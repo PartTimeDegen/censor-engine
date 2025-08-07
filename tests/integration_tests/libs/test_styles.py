@@ -83,9 +83,7 @@ def run_tests(
         config_data,
         subfolder=style,
         batch_tests=True,
-        group_name=os.path.splitext(
-            os.path.basename(inspect.stack()[1].filename)
-        )[0],
+        group_name=os.path.splitext(os.path.basename(inspect.stack()[1].filename))[0],
         expect_png=expect_png,
         mean_absolute_error=mean_absolute_error,
     )

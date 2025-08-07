@@ -50,13 +50,9 @@ class GaussianBlur(BlurStyle):
         factors = self.apply_factor(image, factor)
 
         try:
-            blurred_image = cv2.GaussianBlur(
-                image, (factors[1], factors[1]), 0
-            )
+            blurred_image = cv2.GaussianBlur(image, (factors[1], factors[1]), 0)
         except Exception:
-            blurred_image = cv2.GaussianBlur(
-                image, (factors[0], factors[0]), 0
-            )
+            blurred_image = cv2.GaussianBlur(image, (factors[0], factors[0]), 0)
 
         return blurred_image
 

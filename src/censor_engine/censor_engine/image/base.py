@@ -3,7 +3,6 @@ from dataclasses import dataclass, field
 import itertools
 from uuid import uuid4, UUID
 
-import numpy as np
 
 from .mixin_compile_masks import MixinComponentCompile
 from .mixin_generate_censors import MixinGenerateCensors
@@ -163,10 +162,9 @@ class ImageProcessor(MixinComponentCompile, MixinGenerateCensors, MixinGenerateP
 
         # Apply Censors
         self._debugger.time_start("Apply Censors")
-        self.file_image = self._apply_censors(
+        self.file_image, self._force_png = self._apply_censors(
             self._image_parts,
             self.file_image,
-            self._force_png,
         )
         self._debugger.time_stop()
 

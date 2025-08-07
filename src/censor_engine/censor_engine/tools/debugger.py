@@ -46,7 +46,7 @@ class TimerSchema:
     time_id: int = itertools.count(start=1)  # type: ignore
 
     def __str__(self):
-        time = f"{self.duration*1_000:> 10.6f}"
+        time = f"{self.duration * 1_000:> 10.6f}"
 
         # Decimal Sep
         # # Splitting into Components
@@ -186,7 +186,7 @@ class Debugger:
             else:
                 factor = int(proc_time.duration / min_time)
                 print(
-                    f"[ {proc_time.time_id:02d}) {proc_time} [{factor if factor > 0 else 1}x / {proc_time.duration/max_time:2.1%}]"
+                    f"[ {proc_time.time_id:02d}) {proc_time} [{factor if factor > 0 else 1}x / {proc_time.duration / max_time:2.1%}]"
                 )
         print()
 

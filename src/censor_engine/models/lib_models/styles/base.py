@@ -13,7 +13,6 @@ from censor_engine.typing import Image, Mask, ProcessedImage
 class Style(ABC, MixinContourMasking, MixinImageBlending):
     # Information
     style_type: StyleType = StyleType.INVALID
-    default_linetype = cv2.LINE_AA
 
     # Supporting Information
     force_png: bool = False
