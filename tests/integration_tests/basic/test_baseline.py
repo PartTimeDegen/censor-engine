@@ -1,10 +1,12 @@
 from pathlib import Path
+
 import cv2
+
+from tests.input_image import ImageGenerator
 from tests.utils import (
     load_config_base_yaml,
     run_image_test,
 )
-from tests.input_image import ImageGenerator
 
 
 def test_test_working(dummy_input_image_data):

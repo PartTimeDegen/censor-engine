@@ -1,5 +1,7 @@
 from censor_engine.models.structs import Mixin
+
 from .utils import FrameProcessorUtils
+
 # from .structs import FramePart
 
 

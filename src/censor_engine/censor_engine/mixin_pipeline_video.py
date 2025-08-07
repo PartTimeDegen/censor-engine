@@ -1,18 +1,20 @@
 import os
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
+
 import progressbar
+
 from censor_engine.models.config import Config
 from censor_engine.models.lib_models.detectors import DetectedPartSchema
 from censor_engine.models.structs import Mixin
 from censor_engine.paths import PathManager
 from censor_engine.typing import Image
-from .mixin_pipeline_image import ImageProcessor
-from .video import FrameProcessor, VideoProcessor
 
+from .mixin_pipeline_image import ImageProcessor
 from .tools.debugger import DebugLevels
 from .tools.dev_tools import DevTools
 from .tools.video_tools import VideoInfo
+from .video import FrameProcessor, VideoProcessor
 
 
 class MixinVideoPipeline(Mixin):

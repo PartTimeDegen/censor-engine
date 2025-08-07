@@ -1,5 +1,5 @@
-from dataclasses import dataclass, field
 import os
+from dataclasses import dataclass, field
 
 import cv2
 
@@ -26,7 +26,9 @@ class VideoProcessor:
         self._width = int(self.video_capture.get(cv2.CAP_PROP_FRAME_WIDTH))
         self._height = int(self.video_capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self._fps = int(self.video_capture.get(cv2.CAP_PROP_FPS))
-        fourcc = cv2.VideoWriter_fourcc(*self._get_codec_from_extension(self.file_path))
+        fourcc = cv2.VideoWriter_fourcc(
+            *self._get_codec_from_extension(self.file_path)
+        )
 
         self.video_writer = cv2.VideoWriter(
             self.new_file_name,  # type: ignore
@@ -34,7 +36,9 @@ class VideoProcessor:
             self._fps,
             (self._width, self._height),
         )
-        self.total_frames = int(self.video_capture.get(cv2.CAP_PROP_FRAME_COUNT))
+        self.total_frames = int(
+            self.video_capture.get(cv2.CAP_PROP_FRAME_COUNT)
+        )
 
     def _get_codec_from_extension(self, filename: str) -> str:
         """
@@ -43,14 +47,14 @@ class VideoProcessor:
         :param str filename: Name of the file, it will determine the extension
         """
         ext = os.path.splitext(filename)[-1].lower()
-        CODEC_MAPPING = {
+        codec_mapping = {
             ".mp4": "mp4v",  # MPEG-4
             ".avi": "XVID",  # AVI format
             ".mov": "avc1",  # QuickTime
             ".mkv": "X264",  # Matroska
             ".webm": "VP80",  # WebM format
         }
-        return CODEC_MAPPING.get(ext, "mp4v")  # Default to 'mp4v' if unknown
+        return codec_mapping.get(ext, "mp4v")  # Default to 'mp4v' if unknown
 
     def get_fps(self):
         return self._fps

@@ -1,6 +1,8 @@
 import math
+
 import cv2
 import numpy as np
+
 from censor_engine.detected_part import Part
 from censor_engine.libs.registries import StyleRegistry
 from censor_engine.models.lib_models.styles import NoiseStyle
@@ -40,13 +42,13 @@ class ChromaticAberration(NoiseStyle):
             dy = int(offset * (i + 1) * comp_y)
 
             # Create the affine transformation matrix for shifting
-            M = np.float32([[1, 0, dx], [0, 1, dy]])  # type: ignore
+            matrix_moment = np.float32([[1, 0, dx], [0, 1, dy]])  # type: ignore
 
             # Apply the shift using warpAffine (faster than np.roll)
 
             channels[i] = cv2.warpAffine(  # type: ignore
                 channel,
-                M,  # type: ignore
+                matrix_moment,  # type: ignore
                 (channel.shape[1], channel.shape[0]),
                 borderMode=cv2.BORDER_REFLECT,
             )  # type: ignore

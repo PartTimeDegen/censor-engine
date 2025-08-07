@@ -1,13 +1,15 @@
 from abc import ABC, abstractmethod
 from typing import Literal
+
 import cv2
 
 from censor_engine.detected_part import Part
 from censor_engine.models.enums import StyleType
-from .mixin_contour_masking import MixinContourMasking
-from .mixin_image_blending import MixinImageBlending
 from censor_engine.models.structs.contours import Contour
 from censor_engine.typing import Image, Mask, ProcessedImage
+
+from .mixin_contour_masking import MixinContourMasking
+from .mixin_image_blending import MixinImageBlending
 
 
 class Style(ABC, MixinContourMasking, MixinImageBlending):

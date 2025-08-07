@@ -1,7 +1,7 @@
 # import datetime
 import os
-# import shutil
 
+# import shutil
 import cv2
 import numpy as np
 
@@ -148,7 +148,9 @@ def dev_compare_before_after_if_different(
     )
     image_difference = cv2.erode(image_difference, element, iterations=2)
     image_difference[np.where(image_difference > 0)] = 255
-    image_difference = cv2.morphologyEx(image_difference, cv2.MORPH_CLOSE, element)
+    image_difference = cv2.morphologyEx(
+        image_difference, cv2.MORPH_CLOSE, element
+    )
 
     # Get Percent of Image that Isn't Black
     count_white = np.sum(image_difference == 255)

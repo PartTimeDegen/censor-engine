@@ -3,12 +3,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-import pydload  # type: ignore
 import gdown  # type: ignore
+import pydload  # type: ignore
 
 # import tensorflow as tf  # type: ignore # NOTE: I can't run this due to my shitty Xeon CPU
-import torch
-
 from censor_engine.typing import Image
 
 
@@ -75,28 +73,30 @@ class AIModel:
 
     def load_model(self):
         if self.model_path is None:
-            raise ValueError("Model path is not set. Please download a model first.")
+            raise ValueError(
+                "Model path is not set. Please download a model first."
+            )
 
-        ext = self.model_path.suffix.lower().lstrip(".")
+        # ext = self.model_path.suffix.lower().lstrip(".")
 
-        # PyTorch model loading
-        if ext == "pt":
-            self.model = torch.load(str(self.model_path))
-            self.model.eval()
-        else:
-            raise ValueError(f"Unsupported model format: {ext}")
+        # # PyTorch model loading
+        # if ext == "pt":
+        #     self.model = torch.load(str(self.model_path))
+        #     self.model.eval()
+        # else:
+        #     raise ValueError(f"Unsupported model format: {ext}")
 
     def predict(self, input_data: Any):
         if self.model is None:
             raise ValueError("Missing AI model. Please load the model first.")
 
-        if isinstance(self.model, torch.nn.Module):
-            with torch.no_grad():
-                input_tensor = torch.tensor(input_data, dtype=torch.float32)
-                output = self.model(input_tensor)
-                return output.numpy()
-        else:
-            raise ValueError("Cannot find supported model type")
+        # if isinstance(self.model, torch.nn.Module):
+        #     with torch.no_grad():
+        #         input_tensor = torch.tensor(input_data, dtype=torch.float32)
+        #         output = self.model(input_tensor)
+        #         return output.numpy()
+        # else:
+        #     raise ValueError("Cannot find supported model type")
 
     def proceed_model(self, url: str, input_data: Any):
         if "drive.google" in url:
@@ -124,7 +124,9 @@ class Detector(AIModel):
     model_classifiers: tuple[str, ...]
 
     @abstractmethod
-    def detect_image(self, file_images_or_path: str) -> list[DetectedPartSchema]:
+    def detect_image(
+        self, file_images_or_path: str
+    ) -> list[DetectedPartSchema]:
         raise NotImplementedError
 
     @abstractmethod

@@ -1,7 +1,8 @@
-from dataclasses import dataclass, field
-from enum import IntEnum
 import itertools
 import time
+from dataclasses import dataclass, field
+from enum import IntEnum
+
 import onnxruntime as ort  # type: ignore
 
 
@@ -100,7 +101,9 @@ class Debugger:
     # # Stats
     stats_duration: float = field(init=False)
 
-    def __init__(self, name: str, level: DebugLevels, show_stats: bool = False):
+    def __init__(
+        self, name: str, level: DebugLevels, show_stats: bool = False
+    ):
         self.debug_name = name.upper()
         self.debug_level = level
         self.time_logger = []
@@ -116,7 +119,9 @@ class Debugger:
         )
 
     def time_total_end(self):
-        self.program_start.duration = time.time() - self.program_start.timestamp
+        self.program_start.duration = (
+            time.time() - self.program_start.timestamp
+        )
 
         self.time_logger.append(self.program_start)
 
@@ -159,7 +164,9 @@ class Debugger:
         if self.debug_level >= DebugLevels.DETAILED:
             print(f"[ DEBUG {self.debug_name}: ONNX_INFO")
             print(f"[ - Onnxruntime device: {ort.get_device()}")
-            print(f"[ - Ort available providers: {ort.get_available_providers()}")
+            print(
+                f"[ - Ort available providers: {ort.get_available_providers()}"
+            )
             print()
 
     def display_times(self):
@@ -168,7 +175,7 @@ class Debugger:
 
         print(f"[ DEBUG {self.debug_name}: FUNCTION TIMES")
         sorted_times = list(
-            reversed(sorted(self.time_logger, key=lambda x: x.duration))
+            sorted(self.time_logger, key=lambda x: x.duration, reverse=True)
         )
         if len(sorted_times) == 1:
             print(sorted_times[0])
@@ -177,7 +184,9 @@ class Debugger:
         max_time = max(logged.duration for logged in self.time_logger)
         min_time = min(logged.duration for logged in self.time_logger)
         min_time = min(
-            logged.duration for logged in self.time_logger if logged.duration > min_time
+            logged.duration
+            for logged in self.time_logger
+            if logged.duration > min_time
         )
 
         for proc_time in sorted_times:

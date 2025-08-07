@@ -1,10 +1,12 @@
 import inspect
 import os
+
+import pytest
+
+from censor_engine.libs.detectors.multi_detectors import NudeNetDetector
+from censor_engine.libs.registries import StyleRegistry
 from censor_engine.models.enums import StyleType
 from tests.utils import run_image_test
-from censor_engine.libs.detectors.multi_detectors import NudeNetDetector
-import pytest
-from censor_engine.libs.registries import StyleRegistry
 
 styles = StyleRegistry.get_all()
 styles_blur = [
@@ -83,7 +85,9 @@ def run_tests(
         config_data,
         subfolder=style,
         batch_tests=True,
-        group_name=os.path.splitext(os.path.basename(inspect.stack()[1].filename))[0],
+        group_name=os.path.splitext(
+            os.path.basename(inspect.stack()[1].filename)
+        )[0],
         expect_png=expect_png,
         mean_absolute_error=mean_absolute_error,
     )

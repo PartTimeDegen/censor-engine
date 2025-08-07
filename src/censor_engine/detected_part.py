@@ -6,11 +6,9 @@ import cv2
 import numpy as np
 
 from censor_engine.libs.registries import ShapeRegistry
-from censor_engine.models.config import PartSettingsConfig
+from censor_engine.models.config import Config, PartSettingsConfig
 from censor_engine.models.lib_models.shapes import Shape
-from censor_engine.models.config import Config
 from censor_engine.models.structs.part_areas import PartArea
-
 
 if TYPE_CHECKING:
     from censor_engine.typing import Mask
@@ -53,7 +51,9 @@ class Part:
 
     def __post_init__(self):
         # Connect Settings
-        self.part_settings = self.config.censor_settings.parts_settings[self.part_name]
+        self.part_settings = self.config.censor_settings.parts_settings[
+            self.part_name
+        ]
 
         # Derived
         # # Box
@@ -90,7 +90,9 @@ class Part:
         self.original_mask = Part.create_empty_mask(self.image_shape)
 
         base_shape = Part.get_shape_class(self.shape_object.base_shape)
-        self.mask = base_shape.generate(self, Part.create_empty_mask(self.image_shape))
+        self.mask = base_shape.generate(
+            self, Part.create_empty_mask(self.image_shape)
+        )
         self.base_masks = [self.mask]
 
     def __str__(self) -> str:
@@ -102,7 +104,7 @@ class Part:
     def _correct_relative_box_size(self) -> None:
         margin_data = self.part_settings.margin
 
-        if isinstance(margin_data, (float, int)):
+        if isinstance(margin_data, float | int):
             margin_data = float(margin_data)
             w_margin = margin_data
             h_margin = margin_data
@@ -176,7 +178,9 @@ class Part:
     def get_shape_class(shape: str) -> Shape:
         shapes = ShapeRegistry.get_all()
         if shape not in shapes:
-            raise ValueError(f"Shape {shape} does not Exist! {[shapes.keys()]}")
+            raise ValueError(
+                f"Shape {shape} does not Exist! {[shapes.keys()]}"
+            )
 
         return shapes[shape]()
 

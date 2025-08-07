@@ -1,10 +1,10 @@
 from uuid import UUID
 
-from censor_engine.models.structs import Mixin
-from censor_engine.models.config import Config
 from censor_engine.detected_part import Part
+from censor_engine.models.config import Config
 from censor_engine.models.enums import ShapeType
 from censor_engine.models.lib_models.detectors import DetectedPartSchema
+from censor_engine.models.structs import Mixin
 
 
 class MixinGenerateParts(Mixin):
@@ -67,7 +67,9 @@ class MixinGenerateParts(Mixin):
                 image_shape=shape,
             )
 
-        return [part for part in map(add_parts, detected_parts) if part is not None]
+        return [
+            part for part in map(add_parts, detected_parts) if part is not None
+        ]
 
     def _merge_parts_if_in_merge_groups(self, parts: list[Part]) -> list[Part]:
         def merge_fellow_parts(
@@ -113,7 +115,9 @@ class MixinGenerateParts(Mixin):
             empty_mask = Part.create_empty_mask(part.image_shape)
             # For Simple Shapes
             if not part.is_merged:
-                shape_single = Part.get_shape_class(part.shape_object.single_shape)
+                shape_single = Part.get_shape_class(
+                    part.shape_object.single_shape
+                )
                 part.mask = shape_single.generate(part, empty_mask)
                 new_parts.append(part)
                 continue

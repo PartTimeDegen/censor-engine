@@ -5,10 +5,6 @@ file_settings:
   uncensored_folder: "00_uncensored"
   censored_folder: "01_censored"
 
-# Rendering Settings
-render_settings:
-  smoothing: True
-
 # Information
 censor_settings:
   enabled_parts:

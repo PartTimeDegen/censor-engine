@@ -1,13 +1,15 @@
-from dataclasses import dataclass
 import inspect
+from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
+
 import cv2
 import numpy as np
 import yaml
+
+from censor_engine import CensorEngine
 from censor_engine.models.lib_models.detectors import DetectedPartSchema
 from tests.input_image import ImageGenerator
-from pathlib import Path
-from censor_engine import CensorEngine
 
 
 # Utils
@@ -77,7 +79,9 @@ def assert_image(
     # Load expected image
     expected_image = cv2.imread(str(expected_path), cv2.IMREAD_UNCHANGED)
     if expected_image is None:
-        raise AssertionError(f"Failed to load expected image from: {expected_path}")
+        raise AssertionError(
+            f"Failed to load expected image from: {expected_path}"
+        )
 
     # Check shape
     if output_image.shape != expected_image.shape:
@@ -88,7 +92,9 @@ def assert_image(
         )
 
     # Compare using MAE
-    diff = np.abs(output_image.astype(np.int16) - expected_image.astype(np.int16))
+    diff = np.abs(
+        output_image.astype(np.int16) - expected_image.astype(np.int16)
+    )
     mae = diff.mean()
 
     if mae <= mean_absolute_error:
@@ -106,8 +112,10 @@ def assert_image(
 
 
 def load_config_base_yaml(config: str = "00_default.yml"):
-    base_config_path = Path("src") / "censor_engine" / "libs" / "configs" / config
-    with open(str(base_config_path), "r") as file:
+    base_config_path = (
+        Path("src") / "censor_engine" / "libs" / "configs" / config
+    )
+    with open(str(base_config_path)) as file:
         return yaml.safe_load(file)
 
 
@@ -121,7 +129,9 @@ class ImageFixtureData:
         if isinstance(list_parts_enabled, str):
             list_parts_enabled = [list_parts_enabled]
 
-        self.parts = [part for part in self.parts if part.label in list_parts_enabled]
+        self.parts = [
+            part for part in self.parts if part.label in list_parts_enabled
+        ]
         if not self.parts:
             raise ValueError(f"Missing parts: {list_parts_enabled}")
 

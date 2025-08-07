@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+
 from censor_engine.detected_part import Part
 from censor_engine.libs.registries import StyleRegistry
 from censor_engine.models.lib_models.styles import BlurStyle
@@ -50,9 +51,13 @@ class GaussianBlur(BlurStyle):
         factors = self.apply_factor(image, factor)
 
         try:
-            blurred_image = cv2.GaussianBlur(image, (factors[1], factors[1]), 0)
+            blurred_image = cv2.GaussianBlur(
+                image, (factors[1], factors[1]), 0
+            )
         except Exception:
-            blurred_image = cv2.GaussianBlur(image, (factors[0], factors[0]), 0)
+            blurred_image = cv2.GaussianBlur(
+                image, (factors[0], factors[0]), 0
+            )
 
         return blurred_image
 
@@ -113,9 +118,7 @@ class MotionBlur(BlurStyle):
         else:
             type(self).current_angle -= 1
 
-        if type(self).current_angle >= 180:
-            type(self).current_angle = 0
-        elif type(self).current_angle <= -180:
+        if type(self).current_angle >= 180 or type(self).current_angle <= -180:
             type(self).current_angle = 0
 
     def apply_style(

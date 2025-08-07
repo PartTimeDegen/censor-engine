@@ -28,3 +28,17 @@ dependencies = [
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 79
+lint.extend-select = [
+    "I",
+    "B",
+    "UP",
+    "N",
+    "C4",
+    "SIM",
+]
+
+[tool.ruff.format]
+quote-style = "double" 

@@ -1,15 +1,15 @@
 from .base import StyleType
 from .sub_variants import (
-    TransparentStyle,
     BlurStyle,
-    PixelateStyle,
-    NoiseStyle,
-    OverlayStyle,
     ColourStyle,
-    StyliseStyle,
-    TextStyle,
     DevStyle,
     EdgeDetectionStyle,
+    NoiseStyle,
+    OverlayStyle,
+    PixelateStyle,
+    StyliseStyle,
+    TextStyle,
+    TransparentStyle,
 )
 
 __all__ = [

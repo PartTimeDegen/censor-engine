@@ -1,10 +1,10 @@
-import cv2
-
 from typing import TYPE_CHECKING
 
+import cv2
+
 if TYPE_CHECKING:
-    from censor_engine.typing import Mask
     from censor_engine.detected_part import Part
+    from censor_engine.typing import Mask
 
 from censor_engine.libs.registries import ShapeRegistry
 from censor_engine.models.lib_models.shapes import Shape

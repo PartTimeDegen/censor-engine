@@ -1,13 +1,14 @@
 from dataclasses import dataclass, field
+
 import cv2
 
-from censor_engine.typing import Image
+from censor_engine.censor_engine.tools.debugger import DebugLevels
 from censor_engine.censor_engine.video import (
     FrameProcessor,
     VideoProcessor,
 )
 from censor_engine.detected_part import Part
-from censor_engine.censor_engine.tools.debugger import DebugLevels
+from censor_engine.typing import Image
 
 
 class InfoGenerator:
@@ -111,7 +112,9 @@ class VideoInfo:
 
         return f"{fixed_value}/{max_value_str}"
 
-    def _get_frame_info(self, output_image, frame_processor: FrameProcessor) -> Image:
+    def _get_frame_info(
+        self, output_image, frame_processor: FrameProcessor
+    ) -> Image:
         info = [
             f"Frame: {self._get_counter(self.frame_count, int(self.video_processor.video_capture.get(cv2.CAP_PROP_FRAME_COUNT)))}",
             f"FPS: {self.video_processor.get_fps()}",
@@ -154,11 +157,16 @@ class VideoInfo:
         return InfoGenerator().generate_info(
             output_image,
             (255, 0, 255),
-            [f"{value} ({key})" for key, value in frame_processor.loaded_frame.items()],
+            [
+                f"{value} ({key})"
+                for key, value in frame_processor.loaded_frame.items()
+            ],
             group_title="Initially Found Parts",
         )
 
-    def get_debug_info(self, output_image: Image, frame_processor: FrameProcessor):
+    def get_debug_info(
+        self, output_image: Image, frame_processor: FrameProcessor
+    ):
         # Frame Information
         output_image = self._get_frame_info(output_image, frame_processor)
 
@@ -169,7 +177,9 @@ class VideoInfo:
         output_image = self._get_shown_part_info(output_image, frame_processor)
 
         # Initially Found Frame Parts
-        output_image = self._get_initial_part_info(output_image, frame_processor)
+        output_image = self._get_initial_part_info(
+            output_image, frame_processor
+        )
 
         InfoGenerator().reset_position()
         return output_image

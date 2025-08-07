@@ -3,7 +3,6 @@ from pathlib import Path
 
 from censor_engine.models.config import Config
 
-
 PATH_TEST_DATA = Path(".test_data")
 PATH_SHORTCUT_UNCENSORED = Path(".")
 
@@ -30,7 +29,9 @@ class PathManager:
     def __post_init__(self):
         self._is_using_test_data = self.flags.get("using_test_data", False)
         self._is_using_shortcut = self.flags.get("_using_shortcut", False)
-        self._is_using_full_output = self.flags.get("show_full_output_path", False)
+        self._is_using_full_output = self.flags.get(
+            "show_full_output_path", False
+        )
 
         if self._is_using_shortcut and self.args_loc:
             self.args_loc = (
@@ -51,8 +52,12 @@ class PathManager:
 
         if self._is_using_test_data:
             self.base_directory = self.base_directory / PATH_TEST_DATA
-            uncensored_folder = self.base_directory / "uncensored" / uncensored_folder
-            censored_folder = self.base_directory / "censored" / censored_folder
+            uncensored_folder = (
+                self.base_directory / "uncensored" / uncensored_folder
+            )
+            censored_folder = (
+                self.base_directory / "censored" / censored_folder
+            )
 
         self._uncensored_folder = uncensored_folder
         self._censored_folder = censored_folder
@@ -64,7 +69,9 @@ class PathManager:
         if folder := self._cache_uncensored_folder:
             return folder
 
-        self._cache_uncensored_folder = self.base_directory / self._uncensored_folder
+        self._cache_uncensored_folder = (
+            self.base_directory / self._uncensored_folder
+        )
         return self._cache_uncensored_folder
 
     def get_censored_folder(self) -> Path:
@@ -74,8 +81,9 @@ class PathManager:
         base_dir = self.base_directory
         base_dir = base_dir / self._censored_folder
 
-        self._cache_censored_folder = base_dir / base_dir.resolve().relative_to(
-            self._censored_folder.resolve()
+        self._cache_censored_folder = (
+            base_dir
+            / base_dir.resolve().relative_to(self._censored_folder.resolve())
         )
         return self._cache_censored_folder
 
@@ -84,8 +92,11 @@ class PathManager:
             return PATH_SHORTCUT_UNCENSORED / self._censored_folder
 
         if self._is_using_shortcut:
-            return PATH_SHORTCUT_UNCENSORED / self._censored_folder.relative_to(
-                self.config.file_settings.censored_folder
+            return (
+                PATH_SHORTCUT_UNCENSORED
+                / self._censored_folder.relative_to(
+                    self.config.file_settings.censored_folder
+                )
             )
 
         return None

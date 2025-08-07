@@ -1,8 +1,8 @@
-from pathlib import Path
-import re
 import importlib
 import pkgutil
-from typing import Callable
+import re
+from collections.abc import Callable
+from pathlib import Path
 
 
 class Registry:
@@ -29,7 +29,9 @@ class Registry:
     def _auto_register(self):
         module = importlib.import_module(self.package)
         package_dir = Path(module.__file__).parent  # type: ignore
-        for finder, module_name, is_package in pkgutil.iter_modules([str(package_dir)]):
+        for _, module_name, is_package in pkgutil.iter_modules(
+            [str(package_dir)]
+        ):
             if not is_package:
                 importlib.import_module(f"{self.package}.{module_name}")
         self._loaded = True

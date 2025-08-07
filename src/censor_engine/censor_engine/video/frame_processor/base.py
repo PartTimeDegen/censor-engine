@@ -1,9 +1,10 @@
+from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Iterable
-from .structs import FramePart
-from .mixin_part_persistence import MixinPartPersistence
 
 from censor_engine.detected_part import Part
+
+from .mixin_part_persistence import MixinPartPersistence
+from .structs import FramePart
 
 
 @dataclass(slots=True)
@@ -22,12 +23,18 @@ class FrameProcessor(MixinPartPersistence):
 
     frame_lag_counter: int = field(default=0, init=False)
 
-    loaded_frame: dict[str, FramePart] = field(default_factory=dict, init=False)
-    current_frame: dict[str, FramePart] = field(default_factory=dict, init=False)
+    loaded_frame: dict[str, FramePart] = field(
+        default_factory=dict, init=False
+    )
+    current_frame: dict[str, FramePart] = field(
+        default_factory=dict, init=False
+    )
 
     first_frame: bool = field(default=True, init=False)
 
-    part_dictionary: dict[int, FramePart] = field(default_factory=dict, init=False)
+    part_dictionary: dict[int, FramePart] = field(
+        default_factory=dict, init=False
+    )
 
     def load_parts(self, parts: list[Part]) -> None:
         # TODO Too tired to do now, but an approximate area of the box might be worth it, then having a double forloop to go through and find new ones, can optimise after
@@ -57,5 +64,7 @@ class FrameProcessor(MixinPartPersistence):
         return [part.part for part in self.current_frame.values()]
 
     @staticmethod
-    def get_list_of_frame_parts(list_of_parts: Iterable[FramePart]) -> list[str]:
+    def get_list_of_frame_parts(
+        list_of_parts: Iterable[FramePart],
+    ) -> list[str]:
         return [part.get_debug_text() for part in list_of_parts]

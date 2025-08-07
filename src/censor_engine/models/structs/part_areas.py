@@ -75,15 +75,22 @@ class ApproximateRegion:
     def __post_init__(self):
         # Get Approximate Area Dimensions
         approximate_dimensions = AreaDimensions(
-            int(self.approximate_percent_region * self.region.area_dimensions.width),
-            int(self.approximate_percent_region * self.region.area_dimensions.height),
+            int(
+                self.approximate_percent_region
+                * self.region.area_dimensions.width
+            ),
+            int(
+                self.approximate_percent_region
+                * self.region.area_dimensions.height
+            ),
         )
 
         # Get Regions of Top Left and Bottom Right
         self.top_left_approx = Region(
             (
                 self.region.top_left.X - int(approximate_dimensions.width / 2),
-                self.region.top_left.Y - int(approximate_dimensions.height / 2),
+                self.region.top_left.Y
+                - int(approximate_dimensions.height / 2),
                 approximate_dimensions.width,
                 approximate_dimensions.height,
             ),
@@ -91,8 +98,10 @@ class ApproximateRegion:
         )
         self.bot_right_approx = Region(
             (
-                self.region.bot_right.X - int(approximate_dimensions.width / 2),
-                self.region.bot_right.Y - int(approximate_dimensions.height / 2),
+                self.region.bot_right.X
+                - int(approximate_dimensions.width / 2),
+                self.region.bot_right.Y
+                - int(approximate_dimensions.height / 2),
                 approximate_dimensions.width,
                 approximate_dimensions.height,
             ),
@@ -134,17 +143,23 @@ class PartArea:
         top_left_check = (
             # Top Left X
             area.top_left.X >= self.approx_region.top_left_approx.top_left.X
-            and area.top_left.X <= self.approx_region.top_left_approx.bot_right.X
+            and area.top_left.X
+            <= self.approx_region.top_left_approx.bot_right.X
             # Top Left Y
-            and area.top_left.Y >= self.approx_region.top_left_approx.top_left.Y
-            and area.top_left.Y <= self.approx_region.top_left_approx.bot_right.Y
+            and area.top_left.Y
+            >= self.approx_region.top_left_approx.top_left.Y
+            and area.top_left.Y
+            <= self.approx_region.top_left_approx.bot_right.Y
         )
         bottom_right_check = (
             # Bottom Right X
             area.bot_right.X >= self.approx_region.bot_right_approx.top_left.X
-            and area.bot_right.X <= self.approx_region.bot_right_approx.bot_right.X
+            and area.bot_right.X
+            <= self.approx_region.bot_right_approx.bot_right.X
             # Bottom Right Y
-            and area.bot_right.Y >= self.approx_region.bot_right_approx.top_left.Y
-            and area.bot_right.Y <= self.approx_region.bot_right_approx.bot_right.Y
+            and area.bot_right.Y
+            >= self.approx_region.bot_right_approx.top_left.Y
+            and area.bot_right.Y
+            <= self.approx_region.bot_right_approx.bot_right.Y
         )
         return top_left_check and bottom_right_check

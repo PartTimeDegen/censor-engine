@@ -2,6 +2,7 @@ import math
 
 import cv2
 import numpy as np
+
 from censor_engine.detected_part import Part
 from censor_engine.libs.registries import StyleRegistry
 from censor_engine.models.lib_models.styles import PixelateStyle
@@ -142,8 +143,14 @@ class HexagonPixelate(PixelateStyle):
                 )
 
                 # Fill the hexagon with the computed color
-                hex_corners = self._hexagon_corners(center_x, center_y, hexagon_size)
-                cv2.fillPoly(output, [hex_corners], color=tuple(map(int, color)))
+                hex_corners = self._hexagon_corners(
+                    center_x, center_y, hexagon_size
+                )
+                cv2.fillPoly(
+                    output,
+                    [hex_corners],
+                    color=tuple(map(int, color)),  # type: ignore
+                )
 
         return output
 
@@ -245,8 +252,14 @@ class HexagonPixelateSoft(HexagonPixelate):
                     center_x, center_y, image, hexagon_size, softness
                 )
 
-                hex_corners = self._hexagon_corners(center_x, center_y, hexagon_size)
-                cv2.fillPoly(output, [hex_corners], color=tuple(map(int, color)))
+                hex_corners = self._hexagon_corners(
+                    center_x, center_y, hexagon_size
+                )
+                cv2.fillPoly(
+                    output,
+                    [hex_corners],
+                    color=tuple(map(int, color)),  # type: ignore
+                )
 
         # Optional: Gaussian blur the final output based on softness
         if softness > 0:

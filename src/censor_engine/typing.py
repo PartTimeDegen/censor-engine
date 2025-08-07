@@ -1,7 +1,4 @@
-from typing import TypeAlias
-
 import numpy as np
-
 
 # Information:
 # You probably noticed there's three types for the same thing, it's to make
@@ -11,7 +8,7 @@ import numpy as np
 #
 
 
-Mask: TypeAlias = np.ndarray
-EmptyMask: TypeAlias = np.ndarray
-Image: TypeAlias = np.ndarray
-ProcessedImage: TypeAlias = np.ndarray
+type Mask = np.ndarray
+type EmptyMask = np.ndarray
+type Image = np.ndarray
+type ProcessedImage = np.ndarray

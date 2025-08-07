@@ -59,8 +59,12 @@ class MixinComponentCompile(Mixin):
                 # REVEALED: Higher-ranked part subtracts from lower-ranked part
                 elif primary_state == PartState.REVEALED:
                     subtract_masks(
-                        secondary_part if primary_has_higher_rank else primary_part,
-                        primary_part if primary_has_higher_rank else secondary_part,
+                        secondary_part
+                        if primary_has_higher_rank
+                        else primary_part,
+                        primary_part
+                        if primary_has_higher_rank
+                        else secondary_part,
                     )
 
                 # UNPROTECTED: Merge if same censors, otherwise subtract

@@ -2,22 +2,19 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+import __main__
+from censor_engine.models.config import Config
 from censor_engine.models.lib_models.detectors import DetectedPartSchema
 from censor_engine.paths import PathManager
 from censor_engine.typing import Image
 
+from .mixin_arguments import MixinArguments
 from .mixin_pipeline_image import MixinImagePipeline
 from .mixin_pipeline_video import MixinVideoPipeline
 from .mixin_reporting import MixinReporting
-from .mixin_arguments import MixinArguments
 from .mixin_utils import MixinUtils
-
-from censor_engine.models.config import Config
-
 from .tools.debugger import DebugLevels
 from .tools.dev_tools import DevTools
-
-import __main__
 
 
 @dataclass(slots=True, repr=False, eq=False, order=False)
@@ -120,7 +117,9 @@ class CensorEngine(
         video_args["function_display_times"] = self.display_times
 
         # What to Censor
-        memory_files: list[Image] = []  # TODO This should be a dict or class maybe
+        memory_files: list[
+            Image
+        ] = []  # TODO This should be a dict or class maybe
         if self.censor_mode == "image":
             memory_files.extend(self._image_pipeline(**args))
         elif self.censor_mode == "video":

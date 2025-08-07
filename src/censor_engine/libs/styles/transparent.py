@@ -4,7 +4,6 @@ import numpy as np
 from censor_engine.detected_part import Part
 from censor_engine.libs.registries import StyleRegistry
 from censor_engine.models.lib_models.styles import TransparentStyle
-
 from censor_engine.models.structs.contours import Contour
 from censor_engine.typing import Image, Mask
 
@@ -33,7 +32,9 @@ class Cutout(TransparentStyle):
         elif image.shape[2] == 4:
             pass
         else:
-            raise ValueError(f"Unsupported number of channels: {image.shape[2]}")
+            raise ValueError(
+                f"Unsupported number of channels: {image.shape[2]}"
+            )
 
         # Build new alpha channel: 0 where mask is white, else alpha_value
         black_pixels = np.all(mask == 000, axis=2)

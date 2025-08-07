@@ -76,9 +76,13 @@ class MixinArguments(Mixin):
         if debug_word := args.debug_level:
             try:
                 output_dict["debug_level"] = DebugLevels[debug_word.upper()]
-                print(f"**Using Debug Mode: {output_dict['debug_level'].name}**")
+                print(
+                    f"**Using Debug Mode: {output_dict['debug_level'].name}**"
+                )
             except ValueError:
-                raise ValueError(f"Invalid DebugLevels value: {str(debug_word)}")
+                raise ValueError(
+                    f"Invalid DebugLevels value: {str(debug_word)}"
+                )
 
         # Handle Handle Flags
         output_dict["flags"] = {key: getattr(args, key) for key in flag_mapper}
@@ -90,7 +94,8 @@ class MixinArguments(Mixin):
             output_dict["config"] = self.load_config(base_folder, config_data)
 
         if output_dict["arg_loc"] and (
-            output_dict["arg_loc"].parts and output_dict["arg_loc"].parts[0] == "."
+            output_dict["arg_loc"].parts
+            and output_dict["arg_loc"].parts[0] == "."
         ):
             output_dict["flags"]["_using_shortcut"] = True
 

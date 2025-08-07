@@ -1,6 +1,7 @@
 import os
-from censor_engine.censor_engine import CensorEngine
+
 import censor_engine
+from censor_engine.censor_engine import CensorEngine
 
 __all__ = ["CensorEngine"]
 

@@ -9,7 +9,7 @@ class Colour:
 
     def __init__(
         self,
-        colour_name_or_rgb_value: str | tuple[int, int, int],
+        colour_name_or_rgb_value: str | tuple[int, int, int] = "WHITE",
         already_bgr: bool = False,
     ) -> None:
         if already_bgr and isinstance(
@@ -27,7 +27,9 @@ class Colour:
         else:
             raise ValueError("Bad Colour:", colour_name_or_rgb_value)
 
-    def _flip_colour(self, colour: tuple[int, int, int]) -> tuple[int, int, int]:
+    def _flip_colour(
+        self, colour: tuple[int, int, int]
+    ) -> tuple[int, int, int]:
         return (colour[2], colour[1], colour[0])
 
     def get_colour(self, colour: tuple[int, int, int]) -> str:

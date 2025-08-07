@@ -1,9 +1,9 @@
-from dataclasses import dataclass, field
 import os
+from dataclasses import dataclass, field
+from itertools import count
 from pathlib import Path
 
 import cv2
-from itertools import count
 
 from censor_engine.detected_part import Part
 

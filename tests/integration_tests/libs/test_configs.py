@@ -1,8 +1,10 @@
 from pathlib import Path
+
+import pytest
+
 from tests.utils import (
     run_image_test,
 )
-import pytest
 
 
 def list_config_files():

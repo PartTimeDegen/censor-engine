@@ -1,9 +1,9 @@
-from censor_engine.typing import Image
+from typing import Any
+
 from censor_engine.models.lib_models.detectors import Determiner
+from censor_engine.typing import Image
 
-from typing import TypeAlias, Any
-
-Model: TypeAlias = Any
+type Model = Any
 
 
 class ImageGenreDeterminer(Determiner):

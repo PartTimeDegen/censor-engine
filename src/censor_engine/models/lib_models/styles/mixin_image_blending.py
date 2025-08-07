@@ -1,9 +1,10 @@
 from typing import Literal
+
 import cv2
 import numpy as np
 
 from censor_engine.models.structs.meta_structs import Mixin
-from censor_engine.typing import Mask, Image
+from censor_engine.typing import Image, Mask
 
 
 class MixinImageBlending(Mixin):

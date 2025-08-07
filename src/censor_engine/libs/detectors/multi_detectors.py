@@ -1,6 +1,10 @@
-from censor_engine.typing import Image
-from censor_engine.models.lib_models.detectors import Detector, DetectedPartSchema
 from nudenet import NudeDetector  # type: ignore
+
+from censor_engine.models.lib_models.detectors import (
+    DetectedPartSchema,
+    Detector,
+)
+from censor_engine.typing import Image
 
 
 class NudeNetDetector(Detector):
@@ -34,7 +38,9 @@ class NudeNetDetector(Detector):
     )
     model_object = NudeDetector()
 
-    def detect_image(self, file_images_or_path: str) -> list[DetectedPartSchema]:
+    def detect_image(
+        self, file_images_or_path: str
+    ) -> list[DetectedPartSchema]:
         return [
             DetectedPartSchema(
                 label=found_part["class"],
@@ -49,7 +55,9 @@ class NudeNetDetector(Detector):
     def detect_batch(
         self, file_images_or_paths: list[str] | list[Image], batch_size: int
     ) -> dict[int, list[DetectedPartSchema]]:
-        output = self.model_object.detect_batch(file_images_or_paths, batch_size)
+        output = self.model_object.detect_batch(
+            file_images_or_paths, batch_size
+        )
 
         dict_output = {}
         for index, image in enumerate(output):

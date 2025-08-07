@@ -1,4 +1,5 @@
 import cv2
+
 from censor_engine.detected_part import Part
 from censor_engine.libs.registries import StyleRegistry
 from censor_engine.models.lib_models.styles import StyliseStyle

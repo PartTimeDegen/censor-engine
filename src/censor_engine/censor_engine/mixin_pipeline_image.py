@@ -1,4 +1,6 @@
+from collections.abc import Callable
 from pathlib import Path
+
 import cv2
 
 from censor_engine.models.config import Config
@@ -6,10 +8,10 @@ from censor_engine.models.lib_models.detectors import DetectedPartSchema
 from censor_engine.models.structs import Mixin
 from censor_engine.paths import PathManager
 from censor_engine.typing import Image
+
 from .image import ImageProcessor
 from .tools.debugger import DebugLevels
 from .tools.dev_tools import DevTools
-from typing import Callable
 
 
 class MixinImagePipeline(Mixin):
@@ -36,7 +38,9 @@ class MixinImagePipeline(Mixin):
                 continue
 
             # Print that it's Censoring
-            index_text = function_get_index(index, max([f[0] for f in indexed_files]))
+            index_text = function_get_index(
+                index, max([f[0] for f in indexed_files])
+            )
 
             # Dev Tools
             dev_tools = None
@@ -82,7 +86,9 @@ class MixinImagePipeline(Mixin):
             prefix = ""
             if not flags["show_full_output_path"]:
                 prefix = "./"
-                new_file_name = new_file_name.replace(str(main_files_path), "", 1)[1:]
+                new_file_name = new_file_name.replace(
+                    str(main_files_path), "", 1
+                )[1:]
             print(f'{index_text} Censored: "{prefix}{new_file_name}"')
 
             # Save Duration

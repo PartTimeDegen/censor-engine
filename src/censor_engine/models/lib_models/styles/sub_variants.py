@@ -4,6 +4,7 @@ import numpy as np
 from censor_engine.models.enums import StyleType
 from censor_engine.models.structs.colours import Colour
 from censor_engine.typing import Image, Mask
+
 from .base import Style
 
 
@@ -41,7 +42,9 @@ class BlurStyle(Style):
 
         return new_factor
 
-    def apply_factor(self, image: Image, factor: int | float) -> tuple[int, int]:
+    def apply_factor(
+        self, image: Image, factor: int | float
+    ) -> tuple[int, int]:
         # Fixing Strength
         factor = factor * 4 + 1
 

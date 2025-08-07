@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+
 from censor_engine.models.structs.contours import Contour
 from censor_engine.models.structs.meta_structs import Mixin
 from censor_engine.typing import Mask

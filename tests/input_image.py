@@ -1,8 +1,10 @@
 from pathlib import Path
+
 import cv2
 import numpy as np
-from src.censor_engine.typing import Image
+
 from censor_engine.models.lib_models.detectors import DetectedPartSchema
+from src.censor_engine.typing import Image
 
 HORIZONTAL_ROWS = {
     "far-left": 100,
@@ -143,7 +145,9 @@ class ImageGenerator:
             return self.parts
         if isinstance(list_parts_enabled, str):
             list_parts_enabled = [list_parts_enabled]
-        return [part for part in self.parts if part.label in list_parts_enabled]
+        return [
+            part for part in self.parts if part.label in list_parts_enabled
+        ]
 
 
 if __name__ == "__main__":

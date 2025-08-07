@@ -1,19 +1,21 @@
 import cv2
 import numpy as np
 
+from censor_engine.detected_part import Part
+from censor_engine.libs.registries import StyleRegistry
 from censor_engine.models.enums import StyleType
 from censor_engine.models.lib_models.styles.base import Style
+from censor_engine.models.structs import Censor, Mixin
 from censor_engine.models.structs.contours import Contour
 from censor_engine.typing import Image, Mask
-from censor_engine.detected_part import Part
-from censor_engine.models.structs import Censor, Mixin
-from censor_engine.libs.registries import StyleRegistry
 
 styles = StyleRegistry.get_all()
 
 
 def get_contours_from_mask(mask: Mask) -> list[Contour]:
-    contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    contours, hierarchy = cv2.findContours(
+        mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+    )
     return [
         Contour(
             points=cnt,
@@ -118,7 +120,9 @@ class MixinGenerateCensors(Mixin):
             # Use the first contour for mask and bounding box (adjust as needed)
             mask_norm = (mask_norm / 255).astype(np.float32)
             x, y, w, h = part_contours[0].as_bounding_box()
-            fade_percent = np.clip(int(part.part_settings.fade_percent), 0, 100)
+            fade_percent = np.clip(
+                int(part.part_settings.fade_percent), 0, 100
+            )
             max_dim = max(w, h)
             feathering_amount = int((fade_percent / 100.0) * max_dim)
             kernel_size = min(51, max(3, feathering_amount // 2 * 2 + 1))
@@ -128,7 +132,9 @@ class MixinGenerateCensors(Mixin):
                 np.ones((kernel_size, kernel_size), np.uint8),
                 iterations=1,
             ).astype(float)
-            feathered_mask = cv2.GaussianBlur(mask_norm, (kernel_size, kernel_size), 0)
+            feathered_mask = cv2.GaussianBlur(
+                mask_norm, (kernel_size, kernel_size), 0
+            )
 
             feathered_mask = cv2.merge([feathered_mask] * 3)  # type: ignore
 
@@ -137,7 +143,8 @@ class MixinGenerateCensors(Mixin):
             file_image = file_image.astype(np.float32)
 
             merged_image = (
-                feathered_mask * working_image + (1 - feathered_mask) * file_image
+                feathered_mask * working_image
+                + (1 - feathered_mask) * file_image
             )
             working_image = merged_image.astype(np.uint8)
 

@@ -1,28 +1,28 @@
+import itertools
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
-import itertools
-from uuid import uuid4, UUID
+from uuid import UUID, uuid4
 
-
-from .mixin_compile_masks import MixinComponentCompile
-from .mixin_generate_censors import MixinGenerateCensors
-from .mixin_generate_parts import MixinGenerateParts
 from censor_engine.censor_engine.tools.debugger import (
     Debugger,
     DebugLevels,
 )
 from censor_engine.censor_engine.tools.dev_tools import DevTools
-
-from censor_engine.typing import Image
 from censor_engine.detected_part import Part
-from censor_engine.models.config import Config
-
 from censor_engine.libs.detectors import enabled_detectors
+from censor_engine.models.config import Config
 from censor_engine.models.lib_models.detectors import DetectedPartSchema
+from censor_engine.typing import Image
+
+from .mixin_compile_masks import MixinComponentCompile
+from .mixin_generate_censors import MixinGenerateCensors
+from .mixin_generate_parts import MixinGenerateParts
 
 
 @dataclass(slots=True)
-class ImageProcessor(MixinComponentCompile, MixinGenerateCensors, MixinGenerateParts):
+class ImageProcessor(
+    MixinComponentCompile, MixinGenerateCensors, MixinGenerateParts
+):
     file_image: Image
     config: Config
     debug_level: DebugLevels = DebugLevels.NONE
@@ -32,8 +32,12 @@ class ImageProcessor(MixinComponentCompile, MixinGenerateCensors, MixinGenerateP
     # Internals
     _force_png: bool = False
 
-    _detected_parts: list[DetectedPartSchema] = field(init=False, default_factory=list)
-    _extracted_information: dict[str, str] = field(init=False, default_factory=dict)
+    _detected_parts: list[DetectedPartSchema] = field(
+        init=False, default_factory=list
+    )
+    _extracted_information: dict[str, str] = field(
+        init=False, default_factory=dict
+    )
 
     _image_parts: list[Part] = field(init=False, default_factory=list)
 
@@ -89,7 +93,9 @@ class ImageProcessor(MixinComponentCompile, MixinGenerateCensors, MixinGenerateP
         all_parts = list(itertools.chain(*detected_parts))
 
         # Sort and Label ID Based on Position
-        all_parts.sort(key=lambda part: (part.relative_box[1], part.relative_box[0]))
+        all_parts.sort(
+            key=lambda part: (part.relative_box[1], part.relative_box[0])
+        )
 
         for index, part in enumerate(all_parts, start=1):
             part.set_part_id(index)
@@ -129,21 +135,27 @@ class ImageProcessor(MixinComponentCompile, MixinGenerateCensors, MixinGenerateP
         # Merge Parts
         self._decompile_masks("00_stage_base_01_merged")
         self._debugger.time_start("Merge Parts")
-        self._image_parts = self._merge_parts_if_in_merge_groups(self._image_parts)
+        self._image_parts = self._merge_parts_if_in_merge_groups(
+            self._image_parts
+        )
         self._debugger.time_stop()
         self._decompile_masks("00_stage_result_01_merged")
 
         # Handle More Advanced Parts (i.e., Bars and Joints)
         self._decompile_masks("00_stage_base_02_advanced")
         self._debugger.time_start("Handle Advanced Shapes")
-        self._image_parts = self._apply_and_generate_mask_shapes(self._image_parts)
+        self._image_parts = self._apply_and_generate_mask_shapes(
+            self._image_parts
+        )
         self._debugger.time_stop()
         self._decompile_masks("00_stage_result_02_advanced")
 
     def compile_masks(self):
         # Test Parts for Overlap
         self._debugger.time_start("Process State Logic")
-        self._image_parts = self._process_state_logic_for_masks(self._image_parts)
+        self._image_parts = self._process_state_logic_for_masks(
+            self._image_parts
+        )
         self._debugger.time_stop()
 
     def apply_censors(self):

@@ -1,9 +1,10 @@
 import statistics
-from censor_engine.libs.registries import ShapeRegistry, StyleRegistry
+
 from censor_engine.libs.detectors import (
     enabled_detectors,
     enabled_determiners,
 )
+from censor_engine.libs.registries import ShapeRegistry, StyleRegistry
 from censor_engine.models.structs import Mixin
 
 
