@@ -3,7 +3,8 @@ echo "=== Formatting ==="
 # # Linters
 echo ""
 echo "Running Ruff"
-poetry run ruff format .
+uv run ruff check . --fix
+uv run ruff format .
 
 # Check
 echo ""

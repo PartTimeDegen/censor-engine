@@ -1,46 +1,44 @@
-[tool.poetry]
-name = "censorengine"
-version = "0.2.0"
-description = "This is an open censoring tool for NSFW images and videos"
-authors = ["PartTimeDegen"]
-license = "GPL"
-packages = [
-    { include = "censorengine", from = "src" },
+[project]
+name = "censor-engine"
+version = "0.1.0"
+description = "Censor Engine, Censors 'stuff'"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastai>=2.1.10",
+    "gdown>=5.2.0",
+    "keras>=3.11.1",
+    "mypy>=1.17.1",
+    "nudenet>=3.4.2",
+    "numpy>=2.3.2",
+    "onnxruntime-gpu>=1.22.0",
+    "opencv-python>=4.11.0.86",
+    "opencv-python-headless>=4.11.0.86",
+    "opencv-stubs>=0.1.0",
+    "pillow>=11.3.0",
+    "progressbar2>=4.5.0",
+    "pydload>=1.0.9",
+    "pyright>=1.1.403",
+    "pytest>=8.4.1",
+    "pyyaml>=6.0.2",
+    "ruff>=0.12.7",
+    "torch>=2.8.0",
+    "types-pyyaml>=6.0.12.20250516",
 ]
 
-[tool.poetry.dependencies]
-python                  = "^3.12"
-PyYAML                  = "^6"
-numpy                   = "^1"
-opencv-python           = "^4"
-pillow                  = "^10"
-pytest                  = "^8"
-nudenet                 = "^3"
-opencv-stubs            = "^0"
-opencv-python-headless  = "^4"
-types-pyyaml            = "^6.0.12.20240917"
-pytest-timeout          = "^2.3.1"
-onnxruntime-gpu         = "^1.19.2"
-torch                   = "^2.5.0"
-pydload                 = "^1.0.9"
-keras                   = "^3.8.0"
-tensorflow              = "^2.18.0"
-gdown                   = "^5.2.0"
-fastai                  = "^1.0.61"
-progressbar2 = "^4.5.0"
-pyright = "^1.1.395"
-
-[tool.poetry.group.dev.dependencies]
-snakeviz        = "^2.2.2"
-ruff            = "^0"
-autoflake       = "^2"
-pre-commit      = "^4"
-pyclean         = "^3"
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
-
-
 [tool.pytest.ini_options]
-pythonpath = "src"
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 79
+lint.extend-select = [
+    "I",
+    "B",
+    "UP",
+    "N",
+    "C4",
+    "SIM",
+]
+
+[tool.ruff.format]
+quote-style = "double" 

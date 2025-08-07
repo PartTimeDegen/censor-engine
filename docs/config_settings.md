@@ -1,5 +1,7 @@
 # Config Settings Documentation
 
+UPDATED LAST VERSION: 0.1
+
 ## 1. Background
 
 ## 2. General Settings
