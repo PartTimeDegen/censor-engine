@@ -144,7 +144,7 @@ def run_image_test(
     group_name: str | None = None,
     expect_png: bool = False,
     edge_case: bool = False,
-    mean_absolute_error: float = 6,
+    mean_absolute_error: float = 1,
 ):
     if isinstance(config, str):
         config = load_config_base_yaml(config)

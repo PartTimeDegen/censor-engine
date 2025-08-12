@@ -61,6 +61,13 @@ class MergingConfig:
         if isinstance(self.merge_range, int):
             self.merge_range = float(self.merge_range)
 
+        if len(self.merge_groups) > 0 and not isinstance(
+            self.merge_groups[0], list
+        ):
+            raise TypeError(
+                "Merge Groups are a list of lists, not just one list"
+            )
+
 
 @dataclass(slots=True)
 class PartInformationConfig:

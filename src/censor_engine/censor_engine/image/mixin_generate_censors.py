@@ -51,10 +51,11 @@ class MixinGenerateCensors(Mixin):
         # Create Mask
         base_mask_reverse = inverse_empty_mask
         for part in parts:
-            base_mask_reverse = cv2.subtract(inverse_empty_mask, part.mask)
+            base_mask_reverse = cv2.subtract(base_mask_reverse, part.mask)
 
         # Apply Censors
         contours = get_contours_from_mask(base_mask_reverse)
+        mask_norm = cv2.merge([base_mask_reverse] * 3)  # type: ignore
         for censor in reverse_censors[::-1]:
             # Get Censor Object
             censor_object = styles[censor.function]()
@@ -64,7 +65,7 @@ class MixinGenerateCensors(Mixin):
             file_image = censor_object.internal_run_style(
                 image=file_image,
                 contours=contours,
-                mask=base_mask_reverse.copy(),
+                mask=mask_norm.copy(),
                 part=None,
                 **censor.args,
             )

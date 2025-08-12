@@ -5,6 +5,7 @@ from typing import Any
 import yaml
 
 from censor_engine.libs.configs import get_config_path
+from censor_engine.libs.detectors.multi_detectors import NudeNetDetector
 
 from .dev_settings import DevConfig
 from .file_settings import FileConfig
@@ -53,11 +54,17 @@ class Config:
         )
         merge_settings = censor_settings.get("merge_settings", {})
 
-        # Extract part-specific settings
-        parts_settings = {}
-        default_settings_object = PartSettingsConfig(**default_part_settings)
+        # Shortcuts
+        if isinstance(enabled_parts, str) and enabled_parts == "all":
+            enabled_parts = list(
+                NudeNetDetector.model_classifiers
+            )  # HACK: make for more models
+        elif isinstance(enabled_parts, str):
+            enabled_parts = [enabled_parts]
 
         # # Handle Part Data
+        parts_settings: dict[str, PartSettingsConfig] = {}
+        default_settings_object = PartSettingsConfig(**default_part_settings)
         for part_name in enabled_parts:
             part_data = censor_settings.get(part_name, {})
 
@@ -68,9 +75,16 @@ class Config:
                 part_data["censors"] = []
 
             # Update Part Data
-            part_object = replace(default_settings_object, **part_data)
-            part_object.__post_init__()
+            if part_data:
+                part_object = replace(default_settings_object, **part_data)
+                part_object.__post_init__()
+            else:
+                part_object = default_settings_object
             parts_settings[part_name] = part_object
+
+            # Part Corrects
+            if parts_settings[part_name].name == "MISSING_NAME":
+                parts_settings[part_name].name = part_name
 
         # Compile
         return {

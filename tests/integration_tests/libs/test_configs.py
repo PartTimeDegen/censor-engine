@@ -17,13 +17,23 @@ def list_config_files():
 
 config_files = list_config_files()
 
+expected_error: dict[str, float] = {
+    "09_red_tape.yml": 1.5,
+    "11_trigger_focus.yml": 3,
+    "10_state_approved_triggers.yml": 4,
+    "zz_dev.yml": 5,
+}
+
 
 @pytest.mark.parametrize("config_name", config_files)
 def test_core_configs(config_name, dummy_input_image_data):
+    error = expected_error.get(config_name)
+    error_arg = {"mean_absolute_error": error} if error else {}
     run_image_test(
         dummy_input_image_data,
         config_name,
         subfolder=config_name,
         batch_tests=False,
-        expect_png=True if config_name == "06_cutouts.yml" else False,
+        expect_png=config_name == "06_cutouts.yml",
+        **error_arg,  # type: ignore
     )

@@ -93,6 +93,8 @@ class MixinPartPersistence(FrameProcessorUtils):
         If the frame has been held for enough time, it will be updated.
 
         """
+        if frame_hold_limit < 0:
+            return current_frame, part_dictionary
 
         # Remove Parts with Lifespan too Old else Age
         for key, value in list(part_dictionary.items()):

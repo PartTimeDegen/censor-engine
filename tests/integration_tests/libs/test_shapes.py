@@ -27,7 +27,6 @@ shapes_bar = [
 
 def run_shape_tests(shape, dummy_input_image_data):
     config_data = {
-        "render_settings": {"smoothing": True},
         "censor_settings": {
             "enabled_parts": [
                 "FEMALE_BREAST_EXPOSED",
@@ -72,7 +71,6 @@ def test_bar_shapes(shape, dummy_input_image_data):
 # Exceptions
 def test_bar_single_object(dummy_input_image_data):
     config_data = {
-        "render_settings": {"smoothing": True},
         "censor_settings": {
             "enabled_parts": [
                 "FEMALE_BREAST_EXPOSED",

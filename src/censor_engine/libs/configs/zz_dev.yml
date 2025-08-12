@@ -1,0 +1,9 @@
+censor_settings:
+  enabled_parts: "all"
+
+  default_part_settings:
+    censors:
+      - function: "debug"
+
+render_settings:
+  merge_method: "none"

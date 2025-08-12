@@ -68,8 +68,8 @@ def run_tests(
     mean_absolute_error: float = 6,
 ):
     all_parts = list(NudeNetDetector.model_classifiers)
+    merge = "none" if style == "debug" else "groups"
     config_data = {
-        "render_settings": {"smoothing": True},
         "censor_settings": {
             "enabled_parts": all_parts,
             "merge_settings": {"merge_groups": [all_parts]},
@@ -77,9 +77,9 @@ def run_tests(
                 "censors": [{"function": style}],
             },
         },
+        "render_settings": {"merge_method": merge},
     }
 
-    dummy_input_image_data.update_parts("FEMALE_BREAST_EXPOSED")
     run_image_test(
         dummy_input_image_data,
         config_data,

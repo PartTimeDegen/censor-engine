@@ -25,3 +25,10 @@ class StyleType(IntEnum):
     STYLISATION = 8
     TEXT = 9
     TRANSPARENCY = 10
+
+
+class MergeMethod(IntEnum):
+    NONE = 1
+    GROUPS = 2
+    PARTS = 3
+    FULL = 4

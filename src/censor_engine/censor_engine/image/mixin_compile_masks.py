@@ -1,5 +1,5 @@
 from censor_engine.detected_part import Part
-from censor_engine.models.enums import PartState
+from censor_engine.models.enums import MergeMethod, PartState
 from censor_engine.models.structs import Mixin
 
 
@@ -9,6 +9,10 @@ class MixinComponentCompile(Mixin):
             parts, key=lambda x: (-x.part_settings.state, x.part_name)[::-1]
         )
         removed_parts = []  # Track removed parts
+
+        # HACK: This is is a patchwork fix, needs to properly be done
+        if parts[0].config.rendering_settings.merge_method == MergeMethod.NONE:
+            return sorted_parts
 
         for index, primary_part in enumerate(sorted_parts):
             if primary_part in removed_parts:

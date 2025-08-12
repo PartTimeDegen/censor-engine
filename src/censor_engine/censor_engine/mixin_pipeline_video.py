@@ -90,11 +90,9 @@ class MixinVideoPipeline(Mixin):
             )
 
             # Iterate through Frames
-            frame_counter = 0
-            for _ in progress_bar:
+            for frame_counter, _ in enumerate(progress_bar):
                 # Check Frames
                 ret, frame = video_processor.video_capture.read()
-                frame_counter += 1
                 if not ret:
                     break
 
