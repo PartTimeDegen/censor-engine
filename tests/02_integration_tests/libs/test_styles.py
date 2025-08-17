@@ -3,7 +3,9 @@ import os
 
 import pytest
 
-from censor_engine.libs.detectors.multi_detectors import NudeNetDetector
+from censor_engine.libs.detectors.box_based_detectors.multi_detectors import (
+    NudeNetDetector,
+)
 from censor_engine.libs.registries import StyleRegistry
 from censor_engine.models.enums import StyleType
 from tests.utils import run_image_test
@@ -74,7 +76,7 @@ def run_tests(
             "enabled_parts": all_parts,
             "merge_settings": {"merge_groups": [all_parts]},
             "default_part_settings": {
-                "censors": [{"function": style}],
+                "censors": [{"style": style}],
             },
         },
         "render_settings": {"merge_method": merge},

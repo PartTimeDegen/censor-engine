@@ -15,7 +15,7 @@ censor_settings:
 
   default_part_settings:
     censors:
-      - function: "overlay"
-        args:
+      - style: "overlay"
+        parameters:
           colour: "BLACK"
     shape: "ellipse"

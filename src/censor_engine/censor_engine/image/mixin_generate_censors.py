@@ -58,7 +58,7 @@ class MixinGenerateCensors(Mixin):
         mask_norm = cv2.merge([base_mask_reverse] * 3)  # type: ignore
         for censor in reverse_censors[::-1]:
             # Get Censor Object
-            censor_object = styles[censor.function]()
+            censor_object = styles[censor.style]()
             censor_object.change_linetype(enable_aa=False)
             censor_object.using_reverse_censor = True
 
@@ -67,7 +67,7 @@ class MixinGenerateCensors(Mixin):
                 contours=contours,
                 mask=mask_norm.copy(),
                 part=None,
-                **censor.args,
+                **censor.parameters,
             )
         return file_image
 
@@ -91,12 +91,12 @@ class MixinGenerateCensors(Mixin):
             mask_norm = cv2.merge([mask] * 3)  # type: ignore
 
             for censor in part.part_settings.censors[::-1]:
-                censor_object: Style = styles[censor.function]()
+                censor_object: Style = styles[censor.style]()
                 censor_object.change_linetype(enable_aa=True)
                 force_png = censor_object.force_png
 
                 additional_args = {
-                    **censor.args,
+                    **censor.parameters,
                     **(
                         {"part_list": parts}
                         if censor_object.style_type == StyleType.DEV

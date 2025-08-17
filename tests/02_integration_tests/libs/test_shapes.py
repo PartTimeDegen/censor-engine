@@ -34,7 +34,7 @@ def run_shape_tests(shape, dummy_input_image_data):
             "merge_settings": {"merge_groups": [["FEMALE_BREAST_EXPOSED"]]},
             "default_part_settings": {
                 "censors": [
-                    {"function": "overlay", "args": {"colour": "BLACK"}}
+                    {"style": "overlay", "parameters": {"colour": "BLACK"}}
                 ],
                 "shape": shape,
             },
@@ -77,7 +77,7 @@ def test_bar_single_object(dummy_input_image_data):
             ],
             "default_part_settings": {
                 "censors": [
-                    {"function": "overlay", "args": {"colour": "BLACK"}}
+                    {"style": "overlay", "parameters": {"colour": "BLACK"}}
                 ],
                 "shape": "bar",
             },

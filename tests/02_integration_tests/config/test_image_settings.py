@@ -3,7 +3,9 @@ import os
 
 import pytest
 
-from censor_engine.libs.detectors.multi_detectors import NudeNetDetector
+from censor_engine.libs.detectors.box_based_detectors.multi_detectors import (
+    NudeNetDetector,
+)
 from tests.utils import run_image_test
 
 rendering_merge_method = [
@@ -32,7 +34,7 @@ def run_merge_method(merge_method, dummy_input_image_data):
                 else [all_parts]
             },
             "default_part_settings": {
-                "censors": [{"function": "outlined_overlay"}],
+                "censors": [{"style": "outlined_overlay"}],
                 "shape": "joint_box",
             },
         },
@@ -64,10 +66,10 @@ def run_reverse_censor(dummy_input_image_data):
                 ]
             },
             "default_part_settings": {
-                "censors": [{"function": "no_censor"}],
+                "censors": [{"style": "no_censor"}],
                 "shape": "joint_box",
             },
-            "reverse_censor_settings": [{"function": "outlined_overlay"}],
+            "reverse_censor_settings": [{"style": "outlined_overlay"}],
         },
     }
 

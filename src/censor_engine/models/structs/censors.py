@@ -10,5 +10,5 @@ class Censor:
 
     """
 
-    function: str
-    args: dict[str, Any] = field(default_factory=dict)
+    style: str
+    parameters: dict[str, Any] = field(default_factory=dict)

@@ -56,29 +56,14 @@ class ImageProcessor(
 
         # Debug
         self._debugger = Debugger("Image Processor", level=self.debug_level)
-        self._debugger.time_total_start()
         self._debugger.display_onnx_info()
 
-        # Empty Mask
-        self._debugger.time_start("Create Empty Mask")
-        self._debugger.time_stop()
-
-        # Determine Image # TODO: Find Some Models I can Run
-        # self.debugger.time_start("Determine Image")
-        # self.extracted_information = {
-        #     determiner.model_name: determiner.determine_image(self.file_images)
-        #     for determiner in enabled_determiners
-        # }
-        # self.debugger.time_stop()
-
         # Detect Parts for Image
-        self._debugger.time_start("Detect Parts")
         if self._test_detection_output:
             self._detected_parts = self._test_detection_output
             self._debugger.time_stop()
         else:
             self._detect_parts()
-        self._debugger.time_stop()
 
     # Post Init Helper Functions
     def _detect_parts(self):
@@ -101,7 +86,6 @@ class ImageProcessor(
             part.set_part_id(index)
 
         self._detected_parts = all_parts
-        self._debugger.time_stop()
 
     # Dev Tools
     def _decompile_masks(
@@ -111,7 +95,7 @@ class ImageProcessor(
     ):
         if self.dev_tools:
             self.dev_tools.dev_decompile_masks(
-                self._image_parts if not iter_part else iter_part,
+                iter_part if iter_part else self._image_parts,
                 subfolder=subfolder,
             )
 
@@ -121,46 +105,38 @@ class ImageProcessor(
 
     def generate_parts_and_shapes(self):
         # Create Parts
-        self._decompile_masks("00_stage_base_00_create_part")
-        self._debugger.time_start("Create Parts")
         self._image_parts = self._create_parts(
             self.config,
             self._file_uuid,
             self._detected_parts,
             self.file_image.shape,  # type: ignore
         )
-        self._debugger.time_stop()
-        self._decompile_masks("00_stage_result_00_create_part")
+
+        # Filter Parts
+        self._image_parts = [
+            part
+            for part in self._image_parts
+            if part.score >= part.minimum_score
+        ]
 
         # Merge Parts
-        self._decompile_masks("00_stage_base_01_merged")
-        self._debugger.time_start("Merge Parts")
         self._image_parts = self._merge_parts_if_in_merge_groups(
             self._image_parts
         )
-        self._debugger.time_stop()
-        self._decompile_masks("00_stage_result_01_merged")
 
         # Handle More Advanced Parts (i.e., Bars and Joints)
-        self._decompile_masks("00_stage_base_02_advanced")
-        self._debugger.time_start("Handle Advanced Shapes")
         self._image_parts = self._apply_and_generate_mask_shapes(
             self._image_parts
         )
-        self._debugger.time_stop()
-        self._decompile_masks("00_stage_result_02_advanced")
 
     def compile_masks(self):
         # Test Parts for Overlap
-        self._debugger.time_start("Process State Logic")
         self._image_parts = self._process_state_logic_for_masks(
             self._image_parts
         )
-        self._debugger.time_stop()
 
     def apply_censors(self):
         # Generate and Apply Reverse Censor
-        self._debugger.time_start("Generate Reverse Censor")
         self.file_image = self._handle_reverse_censor(
             self.config.reverse_censor.censors,
             Part.create_empty_mask(
@@ -170,19 +146,12 @@ class ImageProcessor(
             self._image_parts,
             self.file_image,
         )
-        self._debugger.time_stop()
 
         # Apply Censors
-        self._debugger.time_start("Apply Censors")
         self.file_image, self._force_png = self._apply_censors(
             self._image_parts,
             self.file_image,
         )
-        self._debugger.time_stop()
-
-        # DEBUG: Times
-        self._debugger.time_total_end()
-        self._debugger.display_times()
 
     def start(self):
         self.generate_parts_and_shapes()

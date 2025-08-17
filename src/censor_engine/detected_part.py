@@ -37,6 +37,7 @@ class Part:
 
     # # Generated
     part_area: PartArea = field(init=False)
+    minimum_score: float = field(init=False, default=0.0)
     merge_group: list[str] = field(default_factory=list, init=False)
     persistence_group: list[str] = field(default_factory=list, init=False)
 
@@ -56,6 +57,10 @@ class Part:
         ]
 
         # Derived
+        # # Minimum score
+        if min_score := self.part_settings.minimum_score:
+            self.minimum_score = min_score
+
         # # Box
         self._correct_relative_box_size()
 

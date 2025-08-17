@@ -72,6 +72,9 @@ class MixinGenerateParts(Mixin):
         ]
 
     def _merge_parts_if_in_merge_groups(self, parts: list[Part]) -> list[Part]:
+        if not parts:
+            return parts
+
         def merge_fellow_parts(
             part: Part,
             start_index: int,
@@ -163,11 +166,15 @@ class MixinGenerateParts(Mixin):
                 case ShapeType.BAR:
                     if not part.is_merged:
                         # Make Basic Shape
-                        shape_single = Part.get_shape_class("ellipse")
+                        shape_single = Part.get_shape_class(
+                            part.shape_object.base_shape
+                        )
                         part.mask = shape_single.generate(part, empty_mask)
 
                     # Make Shape Joint for Bar Basis
-                    shape_joint = Part.get_shape_class("joint_ellipse")
+                    shape_joint = Part.get_shape_class(
+                        part.shape_object.joint_shape
+                    )
                     part.mask = shape_joint.generate(part, empty_mask)
 
                     # Generate Bar

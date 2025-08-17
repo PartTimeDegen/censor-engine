@@ -3,7 +3,7 @@ censor_settings:
 
   default_part_settings:
     censors:
-      - function: "debug"
+      - style: "debug"
 
 render_settings:
   merge_method: "none"

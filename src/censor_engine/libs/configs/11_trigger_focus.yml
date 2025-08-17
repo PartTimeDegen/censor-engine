@@ -1,27 +1,27 @@
 censor_settings:
   enabled_parts:
-  - "FACE_FEMALE"
-  - "ARMPITS_EXPOSED"
-  - "ARMPITS_COVERED"
-  - "FEMALE_BREAST_EXPOSED"
-  - "FEMALE_BREAST_COVERED"
-  - "BELLY_EXPOSED"
-  - "BELLY_COVERED"
-  - "BUTTOCKS_EXPOSED"
-  - "BUTTOCKS_COVERED"
-  - "ANUS_EXPOSED"
-  - "ANUS_COVERED"
-  - "FEMALE_GENITALIA_EXPOSED"
-  - "FEMALE_GENITALIA_COVERED"
-  - "FEET_EXPOSED"
-  - "FEET_COVERED"
-  - "FACE_MALE"
-  - "MALE_GENITALIA_EXPOSED"
-  - "MALE_BREAST_EXPOSED"
+    - "FACE_FEMALE"
+    - "ARMPITS_EXPOSED"
+    - "ARMPITS_COVERED"
+    - "FEMALE_BREAST_EXPOSED"
+    - "FEMALE_BREAST_COVERED"
+    - "BELLY_EXPOSED"
+    - "BELLY_COVERED"
+    - "BUTTOCKS_EXPOSED"
+    - "BUTTOCKS_COVERED"
+    - "ANUS_EXPOSED"
+    - "ANUS_COVERED"
+    - "FEMALE_GENITALIA_EXPOSED"
+    - "FEMALE_GENITALIA_COVERED"
+    - "FEET_EXPOSED"
+    - "FEET_COVERED"
+    - "FACE_MALE"
+    - "MALE_GENITALIA_EXPOSED"
+    - "MALE_BREAST_EXPOSED"
 
   merge_settings:
     merge_groups:
-    - [ "FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED" ]
+      - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
 
   default_part_settings:
     shape: "bar"
@@ -29,21 +29,21 @@ censor_settings:
   FEMALE_BREAST_EXPOSED:
     margin: 0.3
     censors:
-    - function: "outline"
-      args:
-        colour: "PINK"
-    - function: "blur"
-      args:
-        factor: 20
-    - function: "greyscale"
+      - style: "outline"
+        parameters:
+          colour: "PINK"
+      - style: "blur"
+        parameters:
+          factor: 20
+      - style: "greyscale"
 
   FEMALE_GENITALIA_EXPOSED:
     margin: 0.3
     censors:
-    - function: "outline"
-      args:
-        colour: "PINK"
-    - function: "blur"
-      args:
-        factor: 20
-    - function: "greyscale"
+      - style: "outline"
+        parameters:
+          colour: "PINK"
+      - style: "blur"
+        parameters:
+          factor: 20
+      - style: "greyscale"

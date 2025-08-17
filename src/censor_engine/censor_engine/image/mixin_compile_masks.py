@@ -10,6 +10,9 @@ class MixinComponentCompile(Mixin):
         )
         removed_parts = []  # Track removed parts
 
+        if not sorted_parts:
+            return sorted_parts
+
         # HACK: This is is a patchwork fix, needs to properly be done
         if parts[0].config.rendering_settings.merge_method == MergeMethod.NONE:
             return sorted_parts
@@ -35,7 +38,7 @@ class MixinComponentCompile(Mixin):
                 primary_has_higher_rank = primary_state > secondary_state
 
                 def subtract_masks(target: Part, source: Part):
-                    """Subtract one part’s mask from another."""
+                    """Subtract one part's mask from another."""
                     target.subtract(source.mask)
 
                 def combine_parts():

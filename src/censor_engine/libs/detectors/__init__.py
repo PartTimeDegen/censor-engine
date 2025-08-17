@@ -1,7 +1,8 @@
 from censor_engine.models.lib_models.detectors import Detector
 
+from .box_based_detectors.multi_detectors import NudeNetDetector
 from .determination_tools import ImageGenreDeterminer
-from .multi_detectors import NudeNetDetector
+from .mask_based_detectors.multi_detectors import SapiensDetector
 
 """
 This is used for enabling new models. You may notice it's different from the

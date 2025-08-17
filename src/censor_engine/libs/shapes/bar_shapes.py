@@ -29,6 +29,7 @@ class _BarInfo:
 @ShapeRegistry.register()
 class Bar(BarShape, _BarInfo):
     base_shape: str = "ellipse"
+    joint_shape: str = "joint_box"
     single_shape: str = "bar"
 
     # Controls
@@ -37,10 +38,11 @@ class Bar(BarShape, _BarInfo):
     def generate(
         self,
         part: "Part",
-        empty_mask: "Mask",
+        empty_mask: "Mask",  # TODO: Update Shapes with same format as Styles
         force_horizontal: bool = False,
         force_vertical: bool = False,
         long_direction: bool = False,
+        tight_bar: bool = False,
     ) -> "Mask":
         if not part.is_merged:
             force_horizontal = True
@@ -59,11 +61,21 @@ class Bar(BarShape, _BarInfo):
             print(f"{len(cnt)=}")
             raise ValueError("Not enough points to fit an ellipse.")
 
-        ellipse = cv2.fitEllipse(cnt)
-        center, axes, angle = ellipse  # axes = (major, minor)
+        if tight_bar:
+            ellipse = cv2.fitEllipse(cnt)
+            centre, axes, angle = ellipse  # axes = (major, minor)
+        else:
+            rect = cv2.minAreaRect(cnt)
+            centre, (w, h), angle = rect
+            if w < h:
+                axes = (h, w)
+                if abs(angle) > self.deg_angle_snap:
+                    angle += 90
+            else:
+                axes = (w, h)
 
         # Handle cv2 having a weird Axes System
-        if not long_direction:
+        if long_direction or tight_bar:
             angle += 90
 
         # Normalize Angle between 0 and 180
@@ -86,10 +98,11 @@ class Bar(BarShape, _BarInfo):
 
         # Create A Blank Mask And Draw The Rotated Rectangle Bar
         height, width = part.mask.shape
+
         bar_length = (
             int(np.hypot(width, height)) * 2
         )  # long enough to span image plus any offset
-        bar_thickness = int(min(axes))
+        bar_thickness = int(max(axes)) if long_direction else int(min(axes))
 
         # Handle Better Thickness for Forced Orientations
         if force_horizontal or force_vertical:
@@ -99,7 +112,7 @@ class Bar(BarShape, _BarInfo):
             elif force_vertical:
                 bar_thickness = int(w)  # width of bounding box
 
-        rect = (center, (bar_length, bar_thickness), corrected_angle)
+        rect = (centre, (bar_length, bar_thickness), corrected_angle)
         box = cv2.boxPoints(rect).astype(np.int32)
 
         mask = empty_mask
@@ -123,6 +136,7 @@ class HorizontalBar(Bar):
         force_horizontal: bool = False,
         force_vertical: bool = False,
         long_direction: bool = False,
+        tight_bar: bool = False,
     ) -> "Mask":
         return super().generate(part, empty_mask, force_horizontal=True)
 
@@ -136,6 +150,7 @@ class VerticalBar(Bar):
         force_horizontal: bool = False,
         force_vertical: bool = False,
         long_direction: bool = False,
+        tight_bar: bool = False,
     ) -> "Mask":
         return super().generate(part, empty_mask, force_vertical=True)
 
@@ -149,5 +164,22 @@ class LongBar(Bar):
         force_horizontal: bool = False,
         force_vertical: bool = False,
         long_direction: bool = False,
+        tight_bar: bool = False,
     ) -> "Mask":
         return super().generate(part, empty_mask, long_direction=True)
+
+
+@ShapeRegistry.register()
+class EllipseBasedBar(Bar):
+    joint_shape: str = "joint_ellipse"
+
+    def generate(
+        self,
+        part: "Part",
+        empty_mask: "Mask",
+        force_horizontal: bool = False,
+        force_vertical: bool = False,
+        long_direction: bool = False,
+        tight_bar: bool = False,
+    ) -> "Mask":
+        return super().generate(part, empty_mask, tight_bar=True)

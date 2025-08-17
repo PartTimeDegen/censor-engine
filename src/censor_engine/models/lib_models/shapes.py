@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 class Shape:
     shape_name: str = "invalid_shape"
     base_shape: str = "invalid_shape"
+    joint_shape: str = "invalid_shape"
     single_shape: str = "invalid_shape"
 
     shape_type: ShapeType = ShapeType.BASIC

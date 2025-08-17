@@ -1,28 +1,28 @@
 censor_settings:
   enabled_parts:
-  - "FEMALE_BREAST_EXPOSED"
-  - "FEMALE_BREAST_COVERED"
-  - "BUTTOCKS_EXPOSED"
-  - "BUTTOCKS_COVERED"
-  - "ANUS_EXPOSED"
-  - "ANUS_COVERED"
-  - "FEMALE_GENITALIA_EXPOSED"
-  - "FEMALE_GENITALIA_COVERED"
+    - "FEMALE_BREAST_EXPOSED"
+    - "FEMALE_BREAST_COVERED"
+    - "BUTTOCKS_EXPOSED"
+    - "BUTTOCKS_COVERED"
+    - "ANUS_EXPOSED"
+    - "ANUS_COVERED"
+    - "FEMALE_GENITALIA_EXPOSED"
+    - "FEMALE_GENITALIA_COVERED"
 
   merge_settings:
     merge_groups:
-    - [ "FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED" ]
+      - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
 
   default_part_settings:
     censors:
-    - function: "outline"
-      args:
-        colour: "BLACK"
-        thickness: 1
-    - function: "greyscale"
-    - function: "blur"
-      args:
-        factor: 10
+      - style: "outline"
+        parameters:
+          colour: "BLACK"
+          thickness: 1
+      - style: "greyscale"
+      - style: "blur"
+        parameters:
+          factor: 10
 
     minimum_score: 0.20
     shape: "bar"

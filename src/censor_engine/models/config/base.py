@@ -5,7 +5,9 @@ from typing import Any
 import yaml
 
 from censor_engine.libs.configs import get_config_path
-from censor_engine.libs.detectors.multi_detectors import NudeNetDetector
+from censor_engine.libs.detectors.box_based_detectors.multi_detectors import (
+    NudeNetDetector,
+)
 
 from .dev_settings import DevConfig
 from .file_settings import FileConfig

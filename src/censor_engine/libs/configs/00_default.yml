@@ -43,8 +43,8 @@ censor_settings:
   # Fall Back Options as "General" Settings
   default_part_settings:
     censors:
-      - function: "overlay"
-        args:
+      - style: "overlay"
+        parameters:
           colour: "BLACK"
 
     minimum_score: 0.20

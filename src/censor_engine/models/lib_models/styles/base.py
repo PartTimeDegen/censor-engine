@@ -80,7 +80,7 @@ class Style(ABC, MixinContourMasking, MixinImageBlending):
         contours: list[Contour],
         part: Part | None,
         thickness: int = -1,
-        *args,
+        *parameters,
         **kwargs,
     ) -> ProcessedImage:
         raise NotImplementedError

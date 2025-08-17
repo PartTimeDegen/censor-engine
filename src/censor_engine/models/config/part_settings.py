@@ -10,7 +10,7 @@ class PartSettingsConfig:
     name: str = "MISSING_NAME"
 
     # Settings
-    minimum_score: float | None = 0.20
+    minimum_score: float | None = 0.00
     censors: list[Censor] = field(default_factory=list)
     shape: str = "box"
     margin: int | float | dict[str, float] = 0.0
@@ -34,11 +34,34 @@ class PartSettingsConfig:
         at some point.
 
         """
+        # Minimum Score
+        if self.minimum_score:
+            if isinstance(self.minimum_score, int):
+                self.minimum_score = float(self.minimum_score)
+            if self.minimum_score > 1.0:
+                self.minimum_score = 1.0
+            elif self.minimum_score < 0.0:
+                self.minimum_score = 0.0
+
         # Censors
-        self.censors = [
-            Censor(**censor) if isinstance(censor, dict) else censor
-            for censor in self.censors
-        ]
+        if isinstance(self.censors, list):
+            censors = []
+            for censor in self.censors:
+                if isinstance(censor, dict):
+                    processed_censor = [Censor(**censor)]
+                elif isinstance(censor, str):
+                    processed_censor = [Censor(censor)]
+                else:
+                    processed_censor = [censor]
+
+                censors.extend(processed_censor)
+            self.censors = censors
+
+        elif isinstance(self.censors, str):
+            self.censors = [Censor(self.censors)]
+
+        else:
+            raise TypeError("Invalid Censor input")
 
         # Part State
         if isinstance(self.state, str):

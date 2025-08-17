@@ -3,7 +3,9 @@ from statistics import fmean
 import cv2
 
 from censor_engine.detected_part import Part
-from censor_engine.libs.detectors.multi_detectors import NudeNetDetector
+from censor_engine.libs.detectors.box_based_detectors.multi_detectors import (
+    NudeNetDetector,
+)
 from censor_engine.libs.registries import StyleRegistry
 from censor_engine.models.enums import MergeMethod
 from censor_engine.models.lib_models.styles import DevStyle

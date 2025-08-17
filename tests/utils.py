@@ -25,22 +25,24 @@ def assert_image(
     # Get caller info to name the dump folder by test name
     stack_trace = 3 if batch_tests else 2
     caller = inspect.stack()[stack_trace]
-    caller_file = Path(caller.filename).resolve()
+    caller_file = (
+        Path(caller.filename).resolve().relative_to(Path("tests").resolve())
+    )
+    print(caller_file)
     test_name = caller.function
 
     if test_name.startswith("test_"):
         test_name = test_name[len("test_") :]
 
     if group_name:
-        if group_name:
-            base_path = Path(group_name.removeprefix("test_"))
-            if edge_case:
-                test_name = base_path / "edge_cases" / test_name
-            else:
-                test_name = base_path / test_name
+        base_path = Path(group_name.removeprefix("test_"))
+        if edge_case:
+            test_name = base_path / "edge_cases" / test_name
+        else:
+            test_name = base_path / test_name
 
     # Base path for image I/O
-    dump_path = caller_file.parent / "test_output_data" / test_name
+    dump_path = Path("tests") / "00_test_data" / caller_file.parent / test_name
     if subfolder:
         dump_path = dump_path / subfolder
     dump_path.mkdir(parents=True, exist_ok=True)
