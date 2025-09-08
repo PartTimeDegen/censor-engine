@@ -55,10 +55,9 @@ class ChromaticAberration(NoiseStyle):
 
         # Merge the shifted channels back
         channels = tuple(channels)
-        noise_image = cv2.merge(channels)  # type: ignore
+        return cv2.merge(channels)  # type: ignore
 
         # Apply the effect to the masked area
-        return noise_image
 
 
 @StyleRegistry.register()
@@ -129,14 +128,14 @@ class Noise(NoiseStyle):
         mask: Mask,
         contours: list[Contour],
         part: Part,
-        alpha: int | float = 1,
+        alpha: float = 1,
         coloured: bool = True,
         intensity: float = 1,
         grain_size: int = 1,
         seed: int = 69,
     ) -> Image:
         np.random.seed(seed)
-        noise_image = image.copy()
+        image.copy()
 
         h, w, c = image.shape
 
@@ -150,9 +149,7 @@ class Noise(NoiseStyle):
         if not coloured:
             noise = cv2.cvtColor(noise, cv2.COLOR_BGR2GRAY)  # type: ignore
             noise = cv2.cvtColor(noise, cv2.COLOR_GRAY2BGR)  # type: ignore
-        noise_image = cv2.addWeighted(noise, alpha, image, 1 - alpha, 0)
-
-        return noise_image
+        return cv2.addWeighted(noise, alpha, image, 1 - alpha, 0)
 
 
 @StyleRegistry.register()
@@ -165,5 +162,4 @@ class DeNoise(NoiseStyle):
         part: Part,
         strength: int = 10,
     ) -> Image:
-        noise_image = cv2.fastNlMeansDenoisingColored(image, h=strength)
-        return noise_image
+        return cv2.fastNlMeansDenoisingColored(image, h=strength)

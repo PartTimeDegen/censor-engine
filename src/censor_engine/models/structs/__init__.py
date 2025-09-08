@@ -5,13 +5,13 @@ from .meta_structs import Mixin
 from .part_areas import ApproximateRegion, Coord, PartArea, Region
 
 __all__ = [
+    "ApproximateRegion",
     "Censor",
     "Colour",
     "Contour",
     "ContourNormalizer",
+    "Coord",
     "Mixin",
     "PartArea",
     "Region",
-    "Coord",
-    "ApproximateRegion",
 ]

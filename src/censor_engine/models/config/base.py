@@ -5,7 +5,7 @@ from typing import Any
 import yaml
 
 from censor_engine.libs.configs import get_config_path
-from censor_engine.libs.detectors.box_based_detectors.multi_detectors import (
+from censor_engine.libs.detectors.box_based_detectors.nude_net import (
     NudeNetDetector,
 )
 
@@ -49,17 +49,19 @@ class Config:
         # Censor Part Information
         enabled_parts = censor_settings.get("enabled_parts", [])
         default_part_settings = censor_settings.get(
-            "default_part_settings", {}
+            "default_part_settings",
+            {},
         )
         reverse_censor_settings = censor_settings.get(
-            "reverse_censor_settings", {}
+            "reverse_censor_settings",
+            {},
         )
         merge_settings = censor_settings.get("merge_settings", {})
 
         # Shortcuts
         if isinstance(enabled_parts, str) and enabled_parts == "all":
             enabled_parts = list(
-                NudeNetDetector.model_classifiers
+                NudeNetDetector.model_classifiers,
             )  # HACK: make for more models
         elif isinstance(enabled_parts, str):
             enabled_parts = [enabled_parts]
@@ -102,14 +104,14 @@ class Config:
                 merge_settings=MergingConfig(**merge_settings),
             ),
             "reverse_censor": ReverseCensorConfig(
-                censors=reverse_censor_settings
+                censors=reverse_censor_settings,
             ),
         }
 
     @classmethod
     def from_yaml(cls, main_file_path, config_path: str) -> "Config":
         """
-        Loads the YAML file and initializes the Config object
+        Loads the YAML file and initializes the Config object.
 
         Example:
             dev_settings:
@@ -159,8 +161,9 @@ class Config:
 
         # If It still doesn't Exist, It must be Wrong
         if not full_config_path.exists():
+            msg = f"Cannot find config at {config_path} or {full_config_path}"
             raise FileNotFoundError(
-                f"Cannot find config at {config_path} or {full_config_path}"
+                msg,
             )
 
         # Load Config File
@@ -173,7 +176,7 @@ class Config:
     def from_dictionary(cls, dict_config: dict[str, Any]) -> "Config":
         return cls(**Config._process_dict_data(dict_config))
 
-    def _test_recalculate_missing_part_settings(self):
+    def _test_recalculate_missing_part_settings(self) -> None:
         existing_parts = self.censor_settings.parts_settings
         for part_name in self.censor_settings.enabled_parts:
             if not existing_parts.get(part_name):

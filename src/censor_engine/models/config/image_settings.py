@@ -14,8 +14,9 @@ class RenderingConfig:
         if isinstance(self.merge_method, str):
             self.merge_method = getattr(MergeMethod, self.merge_method.upper())
             if not self.merge_method:
+                msg = f"Invalid MergeMethod value: {self.merge_method}"
                 raise ValueError(
-                    f"Invalid MergeMethod value: {self.merge_method}"
+                    msg,
                 )
 
 
@@ -29,9 +30,7 @@ class ReverseCensorConfig:
     censors: list[Censor] = field(default_factory=list)
 
     def __post_init__(self):
-        """
-        Ensure censors are converted to Censor objects
-        """
+        """Ensure censors are converted to Censor objects."""
         self.censors = [
             Censor(**censor) if isinstance(censor, dict) else censor
             for censor in self.censors

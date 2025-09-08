@@ -61,7 +61,7 @@ class Style(ABC, MixinContourMasking, MixinImageBlending):
             **kwargs,
         )
 
-        working_image = self._merge_processed_to_input_image(
+        return self._merge_processed_to_input_image(
             image,
             mask,
             processed_image,
@@ -69,8 +69,6 @@ class Style(ABC, MixinContourMasking, MixinImageBlending):
             gradient_mode,
             mask_thickness,
         )
-
-        return working_image
 
     @abstractmethod
     def apply_style(

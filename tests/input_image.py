@@ -2,9 +2,9 @@ from pathlib import Path
 
 import cv2
 import numpy as np
+from src.censor_engine.typing import Image
 
 from censor_engine.models.lib_models.detectors import DetectedPartSchema
-from src.censor_engine.typing import Image
 
 HORIZONTAL_ROWS = {
     "far-left": 100,
@@ -110,7 +110,7 @@ class ImageGenerator:
                     score=0.2,
                     relative_box=relbox,
                     part_id=index,
-                )
+                ),
             )
 
     def _generate_background(self):
@@ -118,9 +118,7 @@ class ImageGenerator:
         rng = np.random.default_rng(self.seed)
         noise = rng.integers(0, 256, (height, width, 3), dtype=np.uint8)
         grey = cv2.cvtColor(noise, cv2.COLOR_BGR2GRAY)
-        bw_3ch = cv2.merge([grey, grey, grey])  # type: ignore
-
-        return bw_3ch
+        return cv2.merge([grey, grey, grey])  # type: ignore
 
     def _draw_circle(self, image: Image, part: DetectedPartSchema):
         x, y, w, h = part.relative_box
@@ -139,7 +137,8 @@ class ImageGenerator:
         return image
 
     def return_detected_parts(
-        self, list_parts_enabled: list[str] | str | None = None
+        self,
+        list_parts_enabled: list[str] | str | None = None,
     ) -> list[DetectedPartSchema]:
         if not list_parts_enabled:
             return self.parts

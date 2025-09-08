@@ -10,10 +10,7 @@ from censor_engine.typing import Image, Mask
 
 @StyleRegistry.register()
 class Blur(BlurStyle):
-    """
-    This is a Average Blur
-
-    """
+    """This is a Average Blur."""
 
     def apply_style(
         self,
@@ -21,7 +18,7 @@ class Blur(BlurStyle):
         mask: Mask,
         contours: list[Contour],
         part: Part,
-        factor: int | float = 5,
+        factor: float = 5,
     ) -> Image:
         factors = self.apply_factor(image, factor)
 
@@ -35,10 +32,7 @@ class Blur(BlurStyle):
 
 @StyleRegistry.register()
 class GaussianBlur(BlurStyle):
-    """
-    This is a Gaussian Blur
-
-    """
+    """This is a Gaussian Blur."""
 
     def apply_style(
         self,
@@ -46,17 +40,21 @@ class GaussianBlur(BlurStyle):
         mask: Mask,
         contours: list[Contour],
         part: Part,
-        factor: int | float = 5,
+        factor: float = 5,
     ) -> Image:
         factors = self.apply_factor(image, factor)
 
         try:
             blurred_image = cv2.GaussianBlur(
-                image, (factors[1], factors[1]), 0
+                image,
+                (factors[1], factors[1]),
+                0,
             )
         except Exception:
             blurred_image = cv2.GaussianBlur(
-                image, (factors[0], factors[0]), 0
+                image,
+                (factors[0], factors[0]),
+                0,
             )
 
         return blurred_image
@@ -70,7 +68,7 @@ class MedianBlur(BlurStyle):
         mask: Mask,
         contours: list[Contour],
         part: Part,
-        factor: int | float = 5,
+        factor: float = 5,
     ) -> Image:
         factors = self.apply_factor(image, factor)
 
@@ -90,7 +88,7 @@ class BilateralBlur(BlurStyle):
         mask: Mask,
         contours: list[Contour],
         part: Part,
-        distance: int | float = 20,
+        distance: float = 20,
         sigma_colour: int = 150,
         sigma_space: int = 150,
     ) -> Image:
@@ -98,11 +96,17 @@ class BilateralBlur(BlurStyle):
 
         try:
             blurred_image = cv2.bilateralFilter(
-                image, factors[1], sigma_colour, sigma_space
+                image,
+                factors[1],
+                sigma_colour,
+                sigma_space,
             )
         except Exception:
             blurred_image = cv2.bilateralFilter(
-                image, factors[0], sigma_colour, sigma_space
+                image,
+                factors[0],
+                sigma_colour,
+                sigma_space,
             )
 
         return blurred_image
@@ -112,7 +116,7 @@ class BilateralBlur(BlurStyle):
 class MotionBlur(BlurStyle):
     current_angle: int = -45
 
-    def _rotate(self, rotation: int):
+    def _rotate(self, rotation: int) -> None:
         if rotation > 0:
             type(self).current_angle += 1
         else:
@@ -155,6 +159,4 @@ class MotionBlur(BlurStyle):
             rotated_kernel = apply_factor_to_kernel(factors[0])
 
         # Step 3: Apply the kernel to the image
-        noise_image = cv2.filter2D(blur_image, -1, rotated_kernel)
-
-        return noise_image
+        return cv2.filter2D(blur_image, -1, rotated_kernel)

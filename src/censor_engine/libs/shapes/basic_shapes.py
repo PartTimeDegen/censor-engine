@@ -17,8 +17,7 @@ class Box(Shape):
 
     def generate(self, part: "Part", empty_mask: "Mask") -> "Mask":
         box = part.part_area.region.get_corners()
-        mask = cv2.rectangle(empty_mask, box[0], box[1], (255, 255, 255), -1)  # type: ignore
-        return mask
+        return cv2.rectangle(empty_mask, box[0], box[1], (255, 255, 255), -1)  # type: ignore
 
 
 @ShapeRegistry.register()
@@ -27,14 +26,13 @@ class Circle(Shape):
     single_shape: str = "circle"
 
     def generate(self, part: "Part", empty_mask: "Mask") -> "Mask":
-        mask = cv2.circle(
+        return cv2.circle(
             empty_mask,
             part.part_area.region.centre.convert_to_tuple(),
             min(part.part_area.region.radius),
             (255, 255, 255),
             -1,
         )
-        return mask
 
 
 @ShapeRegistry.register()
@@ -43,7 +41,7 @@ class Ellipse(Shape):
     single_shape: str = "ellipse"
 
     def generate(self, part: "Part", empty_mask: "Mask") -> "Mask":
-        mask = cv2.ellipse(
+        return cv2.ellipse(
             empty_mask,  # type: ignore
             part.part_area.region.centre.convert_to_tuple(),
             part.part_area.region.radius,
@@ -53,7 +51,6 @@ class Ellipse(Shape):
             color=(255, 255, 255),
             thickness=-1,
         )
-        return mask
 
 
 @ShapeRegistry.register()
@@ -73,10 +70,8 @@ class RoundedBox(Shape):
             kernel,
             iterations=iterations >> 1,
         )
-        mask_changed = cv2.dilate(
+        return cv2.dilate(
             mask_changed,
             kernel,
             iterations=iterations,
         )
-
-        return mask_changed

@@ -1,0 +1,3 @@
+- test holes in other shapes
+- docs
+- readmet

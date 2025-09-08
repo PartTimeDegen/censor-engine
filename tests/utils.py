@@ -21,18 +21,16 @@ def assert_image(
     group_name: str | None = None,
     expect_png: bool = False,
     edge_case: bool = False,
-):
+) -> None:
     # Get caller info to name the dump folder by test name
     stack_trace = 3 if batch_tests else 2
     caller = inspect.stack()[stack_trace]
     caller_file = (
         Path(caller.filename).resolve().relative_to(Path("tests").resolve())
     )
-    print(caller_file)
     test_name = caller.function
 
-    if test_name.startswith("test_"):
-        test_name = test_name[len("test_") :]
+    test_name = test_name.removeprefix("test_")
 
     if group_name:
         base_path = Path(group_name.removeprefix("test_"))
@@ -59,11 +57,14 @@ def assert_image(
         cv2.imwrite(str(expected_path), output_image)
         cv2.imwrite(str(output_path), output_image)
         checkme_flag.touch()
-        raise AssertionError(
+        msg = (
             f"No baseline found.\n"
             f"  → Saved expected image to: {expected_path}\n"
             f"  → Review the output at:     {output_path}\n"
             f"  → Then delete {checkme_flag} to accept it.\n"
+        )
+        raise AssertionError(
+            msg,
         )
 
     # Save artifacts for review
@@ -71,31 +72,38 @@ def assert_image(
 
     # Check for `.checkme` marker
     if checkme_flag.exists():
-        raise AssertionError(
+        msg = (
             f"Baseline approval pending.\n"
             f"  {checkme_flag} exists — review expected/output images at:\n"
             f"    {dump_path}\n"
             f"  Delete the `.checkme` file if you're happy with the result."
         )
+        raise AssertionError(
+            msg,
+        )
 
     # Load expected image
     expected_image = cv2.imread(str(expected_path), cv2.IMREAD_UNCHANGED)
     if expected_image is None:
+        msg = f"Failed to load expected image from: {expected_path}"
         raise AssertionError(
-            f"Failed to load expected image from: {expected_path}"
+            msg,
         )
 
     # Check shape
     if output_image.shape != expected_image.shape:
         cv2.imwrite(str(output_path), output_image)
-        raise AssertionError(
+        msg = (
             f"Image shapes differ: {output_image.shape} vs {expected_image.shape}\n"
             f"  → Output saved to: {output_path}"
+        )
+        raise AssertionError(
+            msg,
         )
 
     # Compare using MAE
     diff = np.abs(
-        output_image.astype(np.int16) - expected_image.astype(np.int16)
+        output_image.astype(np.int16) - expected_image.astype(np.int16),
     )
     mae = diff.mean()
 
@@ -105,11 +113,14 @@ def assert_image(
     # Save artifacts for review
     cv2.imwrite(str(diff_path), diff.astype(np.uint8))
 
-    raise AssertionError(
+    msg = (
         f"Image mismatch: MAE={mae:.2f} > {mean_absolute_error}\n"
         f"  → Output image: {output_path}\n"
         f"  → Diff image:   {diff_path}\n"
         f"  → Baseline:     {expected_path}"
+    )
+    raise AssertionError(
+        msg,
     )
 
 
@@ -135,11 +146,13 @@ class ImageFixtureData:
             part for part in self.parts if part.label in list_parts_enabled
         ]
         if not self.parts:
-            raise ValueError(f"Missing parts: {list_parts_enabled}")
+            msg = f"Missing parts: {list_parts_enabled}"
+            raise ValueError(msg)
 
 
 def run_image_test(
     dummy_image_data: ImageFixtureData,
+    *,
     config: str | dict[str, Any],
     subfolder: str | None = None,
     batch_tests: bool = False,
@@ -147,7 +160,7 @@ def run_image_test(
     expect_png: bool = False,
     edge_case: bool = False,
     mean_absolute_error: float = 1,
-):
+) -> None:
     if isinstance(config, str):
         config = load_config_base_yaml(config)
 

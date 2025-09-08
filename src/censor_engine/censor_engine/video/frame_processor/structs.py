@@ -19,5 +19,5 @@ class FramePart:
         # return f"{self.part_name}"
         return f"{self.part_name}_lifespan={self.lifespan_frames}"
 
-    def get_debug_text(self):
+    def get_debug_text(self) -> str:
         return f"{self.part.get_id_name_and_merged()} ({self.part_name})"

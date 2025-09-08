@@ -26,12 +26,12 @@ expected_error: dict[str, float] = {
 
 
 @pytest.mark.parametrize("config_name", config_files)
-def test_core_configs(config_name, dummy_input_image_data):
+def test_core_configs(config_name, dummy_input_image_data) -> None:
     error = expected_error.get(config_name)
     error_arg = {"mean_absolute_error": error} if error else {}
     run_image_test(
         dummy_input_image_data,
-        config_name,
+        config=config_name,
         subfolder=config_name,
         batch_tests=False,
         expect_png=config_name == "06_cutouts.yml",

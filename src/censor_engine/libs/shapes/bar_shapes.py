@@ -53,13 +53,14 @@ class Bar(BarShape, _BarInfo):
             cv2.CHAIN_APPROX_SIMPLE,
         )
         if not contours:
-            raise ValueError(f"No contours found in mask: {part.part_name}")
+            msg = f"No contours found in mask: {part.part_name}"
+            raise ValueError(msg)
 
         # Fit Ellipse to get Contour Back
         cnt = max(contours, key=cv2.contourArea)
         if len(cnt) < 5:
-            print(f"{len(cnt)=}")
-            raise ValueError("Not enough points to fit an ellipse.")
+            msg = "Not enough points to fit an ellipse."
+            raise ValueError(msg)
 
         if tight_bar:
             ellipse = cv2.fitEllipse(cnt)

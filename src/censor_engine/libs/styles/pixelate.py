@@ -65,7 +65,7 @@ class Pixelate(PixelateStyle):
         mask: Mask,
         contours: list[Contour],
         part: Part,
-        factor: int | float = 12,
+        factor: float = 12,
     ) -> Image:
         factors = self._get_distortion_factor(
             image,
@@ -79,13 +79,11 @@ class Pixelate(PixelateStyle):
             factors,  # type: ignore
             interpolation=cv2.INTER_LINEAR,
         )
-        pixel_image = cv2.resize(
+        return cv2.resize(
             down_image,
             (image.shape[1], image.shape[0]),
             interpolation=cv2.INTER_NEAREST,
         )
-
-        return pixel_image
 
 
 @StyleRegistry.register()
@@ -144,7 +142,9 @@ class HexagonPixelate(PixelateStyle):
 
                 # Fill the hexagon with the computed color
                 hex_corners = self._hexagon_corners(
-                    center_x, center_y, hexagon_size
+                    center_x,
+                    center_y,
+                    hexagon_size,
                 )
                 cv2.fillPoly(
                     output,
@@ -160,12 +160,11 @@ class HexagonPixelate(PixelateStyle):
         mask: Mask,
         contours: list[Contour],
         part: Part,
-        factor: int | float = 12,
+        factor: float = 12,
     ) -> Image:
         """Apply hexagonal pixelation to the image within the given contour."""
         factor = self.normalise_factor(image, factor)
-        pixel_image = self._hexagonify(image, factor)
-        return pixel_image
+        return self._hexagonify(image, factor)
 
 
 @StyleRegistry.register()
@@ -185,7 +184,7 @@ class Crystallise(PixelateStyle):
             [
                 np.random.randint(0, w, point_density),
                 np.random.randint(0, h, point_density),
-            ]
+            ],
         ).T.astype(np.float32)
 
         subdiv = cv2.Subdiv2D((0, 0, w, h))  # type: ignore
@@ -249,11 +248,17 @@ class HexagonPixelateSoft(HexagonPixelate):
 
                 # Get the soft blended color
                 color = self._blend_color(
-                    center_x, center_y, image, hexagon_size, softness
+                    center_x,
+                    center_y,
+                    image,
+                    hexagon_size,
+                    softness,
                 )
 
                 hex_corners = self._hexagon_corners(
-                    center_x, center_y, hexagon_size
+                    center_x,
+                    center_y,
+                    hexagon_size,
                 )
                 cv2.fillPoly(
                     output,
@@ -274,7 +279,7 @@ class HexagonPixelateSoft(HexagonPixelate):
         mask: Mask,
         contours: list[Contour],
         part: Part,
-        factor: int | float = 12,
+        factor: float = 12,
         softness: float = 2.0,
     ) -> Image:
         """
@@ -286,5 +291,4 @@ class HexagonPixelateSoft(HexagonPixelate):
         :param softness: softness amount (default=1.0)
         """
         factor = self.normalise_factor(image, factor)
-        pixel_image = self._hexagonify(image, factor, softness)
-        return pixel_image
+        return self._hexagonify(image, factor, softness)

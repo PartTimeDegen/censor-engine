@@ -77,11 +77,11 @@ class ApproximateRegion:
         approximate_dimensions = AreaDimensions(
             int(
                 self.approximate_percent_region
-                * self.region.area_dimensions.width
+                * self.region.area_dimensions.width,
             ),
             int(
                 self.approximate_percent_region
-                * self.region.area_dimensions.height
+                * self.region.area_dimensions.height,
             ),
         )
 
@@ -111,9 +111,7 @@ class ApproximateRegion:
 
 @dataclass(slots=True)
 class PartArea:
-    """
-    This is used to manage the areas of parts
-    """
+    """This is used to manage the areas of parts."""
 
     relative_box: tuple[int, int, int, int]  # x, y, width, height
     approximate_percent_region: float  # 0.0+
@@ -127,7 +125,8 @@ class PartArea:
 
     def __post_init__(self):
         if (pc := self.approximate_percent_region) <= 0.0:
-            raise ValueError(f"Approximate Percent Region ({pc}) is below 0.0")
+            msg = f"Approximate Percent Region ({pc}) is below 0.0"
+            raise ValueError(msg)
 
         # Precise Region
         self.region = Region(self.relative_box, self.image_bounds)

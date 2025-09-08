@@ -6,7 +6,7 @@ APPROVED_FORMATS_VIDEO = [".mp4", ".webm"]
 
 
 class MixinUtils(Mixin):
-    def _get_index_text(self, index: int, max_file_index: int):
+    def _get_index_text(self, index: int, max_file_index: int) -> str:
         index_percent = index / max_file_index
         leading_spaces = " " * (len(str(max_file_index)) - len(str(index)))
         leading_spaces_pc = " " * (3 - len(str(int(100 * index_percent))))
@@ -21,7 +21,8 @@ class MixinUtils(Mixin):
         full_files_path = path_manager.get_uncensored_folder()
 
         if not full_files_path.exists():
-            raise TypeError(f"Path Does Not Exist: {full_files_path}")
+            msg = f"Path Does Not Exist: {full_files_path}"
+            raise TypeError(msg)
 
         # Recursive glob for all files under the folder
         files = [
@@ -31,7 +32,8 @@ class MixinUtils(Mixin):
         ]
 
         if not files:
-            raise FileNotFoundError(f"Empty folder: {full_files_path}")
+            msg = f"Empty folder: {full_files_path}"
+            raise FileNotFoundError(msg)
 
         indexed_files = [
             (
@@ -55,5 +57,5 @@ class MixinUtils(Mixin):
                 "video"
                 if full_files_path.suffix.lower() in APPROVED_FORMATS_VIDEO
                 else "image",
-            )
+            ),
         ]

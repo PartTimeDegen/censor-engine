@@ -29,7 +29,7 @@ class MixinPartPersistence(FrameProcessorUtils):
 
             is_within_approx_region = (
                 dict_value.part.part_area.check_in_approx_region(
-                    frame_value.part.part_area.region
+                    frame_value.part.part_area.region,
                 )
             )
 
@@ -51,11 +51,10 @@ class MixinPartPersistence(FrameProcessorUtils):
 
         # Return Youngest Part
         if part_candidates:
-            selected_index = min(
+            return min(
                 part_candidates,
                 key=lambda index: part_dictionary[index].lifespan_frames,
             )
-            return selected_index
 
         return None
 

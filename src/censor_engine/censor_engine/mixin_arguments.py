@@ -15,10 +15,10 @@ class MixinArguments(Mixin):
     ) -> Config:
         if isinstance(config_data, str):
             return Config.from_yaml(base_folder, config_data)
-        elif isinstance(config_data, dict):
+        if isinstance(config_data, dict):
             return Config.from_dictionary(config_data)
-        else:
-            raise TypeError("invalid type used")
+        msg = "invalid type used"
+        raise TypeError(msg)
 
     def _parse_arguments(
         self,
@@ -76,19 +76,17 @@ class MixinArguments(Mixin):
         if debug_word := args.debug_level:
             try:
                 output_dict["debug_level"] = DebugLevels[debug_word.upper()]
-                print(
-                    f"**Using Debug Mode: {output_dict['debug_level'].name}**"
-                )
             except ValueError:
+                msg = f"Invalid DebugLevels value: {debug_word!s}"
                 raise ValueError(
-                    f"Invalid DebugLevels value: {str(debug_word)}"
+                    msg,
                 )
 
         # Handle Handle Flags
         output_dict["flags"] = {key: getattr(args, key) for key in flag_mapper}
-        for key, value in output_dict["flags"].items():
+        for value in output_dict["flags"].values():
             if value:
-                print(f"**{key.replace('_', ' ').title()} Activated!**")
+                pass
 
         if not output_dict["config"]:
             output_dict["config"] = self.load_config(base_folder, config_data)

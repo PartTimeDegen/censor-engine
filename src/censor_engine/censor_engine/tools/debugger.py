@@ -3,28 +3,26 @@ import time
 from dataclasses import dataclass, field
 from enum import IntEnum
 
-import onnxruntime as ort  # type: ignore
-
 
 class DebugLevels(IntEnum):
     """
     This function determines the levels of debug that are active (stacks):
-        -   NONE:
-            -   Nothing ever happens (I'm all in)
-        -   BASIC:
-            -   Found Parts
-            -   Censor Time
-        -   DETAILED:
-            -   GPU and ONNX Info
-            -   Times of the Functions
-            -   Censor Part Info
-            -   Config Info
-        -   ADVANCED:
-            -   Shape IDs
-            -   Merge IDs
-            -   Used Censors and Styles
-        -   FULL:
-            -   Mask Breakdowns
+    -   NONE:
+        -   Nothing ever happens (I'm all in)
+    -   BASIC:
+        -   Found Parts
+        -   Censor Time
+    -   DETAILED:
+        -   GPU and ONNX Info
+        -   Times of the Functions
+        -   Censor Part Info
+        -   Config Info
+    -   ADVANCED:
+        -   Shape IDs
+        -   Merge IDs
+        -   Used Censors and Styles
+    -   FULL:
+        -   Mask Breakdowns.
 
     """
 
@@ -102,7 +100,10 @@ class Debugger:
     stats_duration: float = field(init=False)
 
     def __init__(
-        self, name: str, level: DebugLevels, show_stats: bool = False
+        self,
+        name: str,
+        level: DebugLevels,
+        show_stats: bool = False,
     ):
         self.debug_name = name.upper()
         self.debug_level = level
@@ -110,7 +111,7 @@ class Debugger:
         self.show_stats = show_stats
         self.temp_time_holder = None
 
-    def time_total_start(self):
+    def time_total_start(self) -> None:
         self.program_start = TimerSchema(
             name=self.debug_name,
             timestamp=time.time(),
@@ -118,28 +119,30 @@ class Debugger:
             program_start_time=True,
         )
 
-    def time_total_end(self):
+    def time_total_end(self) -> None:
         self.program_start.duration = (
             time.time() - self.program_start.timestamp
         )
 
         self.time_logger.append(self.program_start)
 
-    def time_start(self, name: str):
+    def time_start(self, name: str) -> None:
         if self.debug_level < DebugLevels.TIMED:
             return
 
         if Debugger.temp_time_holder:
-            raise TypeError("Missing Stop for Timer")
+            msg = "Missing Stop for Timer"
+            raise TypeError(msg)
 
         self.temp_time_holder = (name, time.time())
 
-    def time_stop(self):
+    def time_stop(self) -> None:
         if Debugger.debug_level < DebugLevels.TIMED:
             return
 
         if not Debugger.temp_time_holder:
-            raise TypeError("Missing Start for Timer")
+            msg = "Missing Start for Timer"
+            raise TypeError(msg)
 
         duration = time.time() - Debugger.temp_time_holder[1]
         Debugger.time_logger.append(
@@ -147,13 +150,13 @@ class Debugger:
                 name=Debugger.temp_time_holder[0],
                 timestamp=Debugger.temp_time_holder[1],
                 duration=duration,
-            )
+            ),
         )
 
         self.temp_time_holder = None
 
     # Display Information
-    def display_onnx_info(self):
+    def display_onnx_info(self) -> None:
         """
         This function simply displays the AI information such as the device and
         provider. Used to tell if GPU-acceleration is used.
@@ -162,26 +165,21 @@ class Debugger:
 
         """
         if self.debug_level >= DebugLevels.DETAILED:
-            print(f"[ DEBUG {self.debug_name}: ONNX_INFO")
-            print(f"[ - Onnxruntime device: {ort.get_device()}")
-            print(
-                f"[ - Ort available providers: {ort.get_available_providers()}"
-            )
-            print()
+            pass
 
-    def display_times(self):
+    def display_times(self) -> None:
         if self.debug_level < DebugLevels.BASIC:
             return
 
-        print(f"[ DEBUG {self.debug_name}: FUNCTION TIMES")
-        sorted_times = list(
-            sorted(self.time_logger, key=lambda x: x.duration, reverse=True)
+        sorted_times = sorted(
+            self.time_logger,
+            key=lambda x: x.duration,
+            reverse=True,
         )
         if len(sorted_times) == 1:
-            print(sorted_times[0])
             return
 
-        max_time = max(logged.duration for logged in self.time_logger)
+        max(logged.duration for logged in self.time_logger)
         min_time = min(logged.duration for logged in self.time_logger)
         min_time = min(
             logged.duration
@@ -191,13 +189,9 @@ class Debugger:
 
         for proc_time in sorted_times:
             if proc_time.program_start_time:
-                print(f"{proc_time}")
+                pass
             else:
-                factor = int(proc_time.duration / min_time)
-                print(
-                    f"[ {proc_time.time_id:02d}) {proc_time} [{factor if factor > 0 else 1}x / {proc_time.duration / max_time:2.1%}]"
-                )
-        print()
+                int(proc_time.duration / min_time)
 
 
 class TempTimer:
@@ -205,12 +199,12 @@ class TempTimer:
         self.debugger = Debugger(name, DebugLevels.DETAILED)
         self.debugger.time_total_start()
 
-    def time_start(self, name):
+    def time_start(self, name) -> None:
         self.debugger.time_start(name)
 
-    def time_stop(self):
+    def time_stop(self) -> None:
         self.debugger.time_stop()
 
-    def time_end(self):
+    def time_end(self) -> None:
         self.debugger.time_total_end()
         self.debugger.display_times()

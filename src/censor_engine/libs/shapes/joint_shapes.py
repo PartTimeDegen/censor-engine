@@ -18,7 +18,9 @@ class JointBox(JointShape):
 
     def generate(self, part: "Part", empty_mask: "Mask") -> "Mask":
         cont_rect = cv2.findContours(
-            image=part.mask, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_SIMPLE
+            image=part.mask,
+            mode=cv2.RETR_TREE,
+            method=cv2.CHAIN_APPROX_SIMPLE,
         )
 
         # Acquired from:
@@ -49,16 +51,16 @@ class JointEllipse(JointShape):
 
     def generate(self, part: "Part", empty_mask: "Mask") -> "Mask":
         cont_rect = cv2.findContours(
-            image=part.mask, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_SIMPLE
+            image=part.mask,
+            mode=cv2.RETR_TREE,
+            method=cv2.CHAIN_APPROX_SIMPLE,
         )
 
         # Find Minimum Area Ellipse
         cont_flat = np.vstack(cont_rect[0]).squeeze()
         shape_ellipse = cv2.fitEllipse(cont_flat)
 
-        mask = cv2.ellipse(empty_mask, shape_ellipse, (255, 255, 255), -1)  # type: ignore
-
-        return mask
+        return cv2.ellipse(empty_mask, shape_ellipse, (255, 255, 255), -1)  # type: ignore
 
 
 @ShapeRegistry.register()
@@ -80,10 +82,8 @@ class RoundedJointBox(JointShape):
             kernel,
             iterations=iterations >> 1,
         )
-        mask_changed = cv2.dilate(
+        return cv2.dilate(
             mask_changed,
             kernel,
             iterations=iterations >> 1,
         )
-
-        return mask_changed

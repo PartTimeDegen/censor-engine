@@ -13,15 +13,15 @@ from .sub_variants import (
 )
 
 __all__ = [
-    "StyleType",
-    "TransparentStyle",
     "BlurStyle",
-    "PixelateStyle",
-    "NoiseStyle",
-    "OverlayStyle",
     "ColourStyle",
-    "StyliseStyle",
-    "TextStyle",
     "DevStyle",
     "EdgeDetectionStyle",
+    "NoiseStyle",
+    "OverlayStyle",
+    "PixelateStyle",
+    "StyleType",
+    "StyliseStyle",
+    "TextStyle",
+    "TransparentStyle",
 ]

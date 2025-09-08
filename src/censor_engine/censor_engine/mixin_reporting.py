@@ -38,11 +38,9 @@ class MixinReporting(Mixin):
             dict_stats["Stdev"] = stdev
             dict_stats["CoV"] = coefficient_of_variation
 
-        max_key_length = max(len(key) for key in dict_stats) + 4
-        print()
-        print("Run Statistics:")
-        for key, value in dict_stats.items():
+        max(len(key) for key in dict_stats) + 4
+        for key in dict_stats:
             if key != "CoV":
-                print(f"- {key:<{max_key_length}}: {value * 1000:>6.3f} ms")
+                pass
             else:
-                print(f"- {key:<{max_key_length}}: {value:>2.3%}")
+                pass

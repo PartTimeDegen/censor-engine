@@ -94,7 +94,7 @@ class CensorEngine(
             self._test_mode,
         )
 
-    def display_times(self):
+    def display_times(self) -> None:
         # Reporting
         if self._flags["show_stat_metrics"] and len(self._time_durations) != 0:
             self.display_bulk_stats(self._time_durations)
@@ -123,10 +123,10 @@ class CensorEngine(
         if self.censor_mode == "image":
             memory_files.extend(self._image_pipeline(**args))
         elif self.censor_mode == "video":
-            memory_files.extend(self._video_pipeline(**video_args))
+            memory_files.extend(self.run_video_pipeline(**video_args))
         else:
             memory_files.extend(self._image_pipeline(**args))
-            memory_files.extend(self._video_pipeline(**video_args))
+            memory_files.extend(self.run_video_pipeline(**video_args))
         self.display_times()
 
         return memory_files

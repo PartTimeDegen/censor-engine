@@ -19,7 +19,7 @@ class BlurStyle(Style):
     def normalise_factor(
         self,
         image: Image,
-        factor: int | float,
+        factor: float,
     ) -> int | float:
         # factor = 1, size = 1
         # factor = 100, size = minimum_size/blur_cap
@@ -37,13 +37,16 @@ class BlurStyle(Style):
 
         new_factor = int(normalised_size * normalised_factor * blur_rate)
 
-        if new_factor > 2:
+        minimum_factor = 2
+        if new_factor > minimum_factor:
             return int(factor)
 
         return new_factor
 
     def apply_factor(
-        self, image: Image, factor: int | float
+        self,
+        image: Image,
+        factor: float,
     ) -> tuple[int, int]:
         # Fixing Strength
         factor = factor * 4 + 1
@@ -128,7 +131,7 @@ class TextStyle(Style):
         thickness: int = 2,
         line_type: int = cv2.LINE_AA,
         line_spacing: float = 1.2,
-    ):
+    ) -> Image:
         if isinstance(text, list):
             text = "\n".join(text)
 
@@ -140,7 +143,7 @@ class TextStyle(Style):
                 * (
                     cv2.getTextSize(line, font, font_scale, thickness)[0][1]
                     * line_spacing
-                )
+                ),
             )
             cv2.putText(
                 image,
@@ -163,24 +166,21 @@ class EdgeDetectionStyle(Style):
     style_type: StyleType = StyleType.EDGE_DETECTION
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (11, 11))
 
-    def prepare_mask(self, mask_image):
+    def prepare_mask(self, mask_image: Image) -> Image:
         mask_image = cv2.cvtColor(
             mask_image,
             cv2.COLOR_BGR2GRAY,
         )
 
-        mask_image = cv2.GaussianBlur(
-            mask_image, (3, 3), 0
+        return cv2.GaussianBlur(
+            mask_image,
+            (3, 3),
+            0,
         )  # Minor blur for better results
 
-        return mask_image
-
-    def clean_image(self, mask_image):
+    def clean_image(self, mask_image: Image) -> Image:
         # Dilute/Erode to Connect Noise
         mask_image = cv2.dilate(mask_image, self.kernel, iterations=2)
         mask_image = cv2.erode(mask_image, self.kernel, iterations=2)
-        # mask_image = cv2.morphologyEx(mask_image, cv2.MORPH_CLOSE, self.kernel)
-        # mask_image = cv2.erode(mask_image, self.kernel, iterations=1)
         mask_image = mask_image.astype(np.uint8)
-        mask_image = cv2.cvtColor(mask_image, cv2.COLOR_GRAY2BGR)
-        return mask_image
+        return cv2.cvtColor(mask_image, cv2.COLOR_GRAY2BGR)

@@ -3,6 +3,7 @@ from typing import Literal
 import cv2
 import numpy as np
 
+from censor_engine.constant import DIM_COLOUR, DIM_RGBA, MAX_COLOUR_VALUE
 from censor_engine.models.structs.meta_structs import Mixin
 from censor_engine.typing import Image, Mask
 
@@ -15,7 +16,7 @@ class MixinImageBlending(Mixin):
         mask: Mask,
         fade_width: int,
         gradient_mode: Literal["linear", "gaussian"] = "linear",
-        mask_thickness: int = -1,
+        mask_thickness: int = -1,  # TODO: Add
     ) -> Image:
         if gradient_mode == "gaussian":
             dist_transform = cv2.GaussianBlur(
@@ -33,15 +34,16 @@ class MixinImageBlending(Mixin):
             dist_transform = 1 - dist_transform
         else:
             dist_transform = cv2.distanceTransform(
-                cv2.bitwise_not(mask), cv2.DIST_L2, 5
+                cv2.bitwise_not(mask),
+                cv2.DIST_L2,
+                5,
             )
             dist_transform = np.clip(dist_transform / fade_width, 0, 1)
 
         alpha = (1 - dist_transform).astype(np.float32)[..., None]  # type: ignore
         overlay_f = image_with_effect.astype(np.float32)
         image_f = image.astype(np.float32)
-        blended = (overlay_f * alpha + image_f * (1 - alpha)).astype(np.uint8)
-        return blended
+        return (overlay_f * alpha + image_f * (1 - alpha)).astype(np.uint8)
 
     def apply_hard_mask(
         self,
@@ -50,19 +52,28 @@ class MixinImageBlending(Mixin):
         mask: Mask,
     ) -> Image:
         # Ensure both images have the same number of channels
-        if image.shape[2] == 3 and image_with_effect.shape[2] == 4:
+        if (
+            image.shape[2] == DIM_COLOUR
+            and image_with_effect.shape[2] == DIM_RGBA
+        ):
             # Upgrade base image to 4 channels by adding opaque alpha
             alpha = np.full(image.shape[:2], 255, dtype=np.uint8)
             image = np.dstack((image, alpha))
 
-        elif image.shape[2] == 4 and image_with_effect.shape[2] == 3:
+        elif (
+            image.shape[2] == DIM_RGBA
+            and image_with_effect.shape[2] == DIM_COLOUR
+        ):
             # Upgrade effect image to 4 channels by adding opaque alpha
             alpha = np.full(image_with_effect.shape[:2], 255, dtype=np.uint8)
             image_with_effect = np.dstack((image_with_effect, alpha))
 
-        # Create a single-channel boolean mask where all 3 channels are 255 (white)
+        # Create a single-channel boolean mask where all 3
+        # channels are 255 (white)
         single_channel_mask = (
-            np.all(mask == 255, axis=2) if mask.ndim == 3 else mask == 255
+            np.all(mask == MAX_COLOUR_VALUE, axis=2)
+            if mask.ndim == DIM_COLOUR
+            else mask == MAX_COLOUR_VALUE
         )
 
         # Broadcast to shape (H, W, channels)

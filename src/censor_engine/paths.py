@@ -4,11 +4,21 @@ from pathlib import Path
 from censor_engine.models.config import Config
 
 PATH_TEST_DATA = Path(".test_data")
-PATH_SHORTCUT_UNCENSORED = Path(".")
+PATH_SHORTCUT_UNCENSORED = Path()
 
 
 @dataclass(slots=True)
 class PathManager:
+    """
+    This dataclass is used for the path management and handling, such that
+    the paths are contained in a single area.
+
+    The PathManager handles stuff like how the uncensored folder is managed and
+    generated, especially for custom features like the commandline arg or test
+    mode.
+
+    """
+
     base_directory: Path
     config: Config
     flags: dict[str, bool]
@@ -30,7 +40,8 @@ class PathManager:
         self._is_using_test_data = self.flags.get("using_test_data", False)
         self._is_using_shortcut = self.flags.get("_using_shortcut", False)
         self._is_using_full_output = self.flags.get(
-            "show_full_output_path", False
+            "show_full_output_path",
+            False,
         )
 
         if self._is_using_shortcut and self.args_loc:
@@ -95,28 +106,31 @@ class PathManager:
             return (
                 PATH_SHORTCUT_UNCENSORED
                 / self._censored_folder.relative_to(
-                    self.config.file_settings.censored_folder
+                    self.config.file_settings.censored_folder,
                 )
             )
 
         return None
 
-    def get_flag_is_using_full_path(self):
+    def get_flag_is_using_full_path(self) -> bool:
         return self._is_using_full_output
 
     def get_save_file_path(
         self,
         file_name: str,
+        *,
         force_png: bool = False,
     ) -> str:
         file_path = Path(file_name)
 
-        # Compute relative path inside uncensored folder and map to censored folder
+        # Compute relative path inside uncensored folder and map to censored
+        # folder
         try:
             relative = file_path.relative_to(self.get_uncensored_folder())
             new_path = self.get_censored_folder() / relative
         except ValueError:
-            # If file_path is not under uncensored folder, keep as is but in censored folder base
+            # If file_path is not under uncensored folder, keep as is but in
+            # censored folder base
             new_path = self.get_censored_folder() / file_path.name
 
         # Split filename and extension
@@ -127,14 +141,15 @@ class PathManager:
         parts = [
             self.config.file_settings.file_prefix,
             stem,
-            self.config.file_settings.file_suffix,  # FIXME Dumb AI
+            self.config.file_settings.file_suffix,  # FIXME: Dumb AI
         ]
         fixed_parts = [part for part in parts if part]
 
         # Join parts with underscore to make new filename
         new_file_name = "_".join(fixed_parts)
 
-        # Construct the new full path, preserving any subfolders relative to censored folder
+        # Construct the new full path, preserving any subfolders relative to
+        # censored folder
         if new_path.parent != self.get_censored_folder():
             # Keep subfolders structure
             new_folder = new_path.parent

@@ -21,7 +21,7 @@ class EdgeDetectionCanny(EdgeDetectionStyle):
         contours: list[Contour],
         part: Part,
         threshold: int = 100,
-        alpha=1,
+        alpha: int = 1,
     ) -> Image:
         # Prepare Image to get better Results
         mask_image = self.prepare_mask(image)
@@ -44,7 +44,7 @@ class EdgeDetectionSobel(EdgeDetectionStyle):
         contours: list[Contour],
         part: Part,
         kernel_size: int = 5,
-        alpha=1,
+        alpha: int = 1,
     ) -> Image:
         # Prepare Image to get better Results
         mask_image = self.prepare_mask(image)
@@ -66,7 +66,7 @@ class EdgeDetectionScharr(EdgeDetectionStyle):
         mask: Mask,
         contours: list[Contour],
         part: Part,
-        alpha=1,
+        alpha: int = 1,
         kernel_size: int = 5,
     ) -> Image:
         # Prepare Image to get better Results
@@ -79,7 +79,7 @@ class EdgeDetectionScharr(EdgeDetectionStyle):
         mask_image = np.uint8(np.clip(mask_image, 0, 255))  # if needed
 
         # Clean Image
-        mask_image = self.clean_image(mask_image)
+        mask_image = self.clean_image(mask_image)  # type: ignore
 
         return cv2.addWeighted(mask_image, alpha, image, 1 - alpha, 0)
 

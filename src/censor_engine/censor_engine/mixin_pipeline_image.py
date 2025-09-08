@@ -25,8 +25,9 @@ class MixinImagePipeline(Mixin):
         function_get_index: Callable[[int, int], str],
         flags: dict[str, bool],
         path_manager: PathManager,
-        inline_mode: bool,
-        _test_detection_output: list[DetectedPartSchema] | None,
+        *,
+        inline_mode: bool = False,
+        _test_detection_output: list[DetectedPartSchema] | None = None,
     ) -> list[Image]:
         if not [f for f in indexed_files if f[-1] == "image"]:
             return []
@@ -38,8 +39,9 @@ class MixinImagePipeline(Mixin):
                 continue
 
             # Print that it's Censoring
-            index_text = function_get_index(
-                index, max([f[0] for f in indexed_files])
+            function_get_index(
+                index,
+                max([f[0] for f in indexed_files]),
             )
 
             # Dev Tools
@@ -67,14 +69,15 @@ class MixinImagePipeline(Mixin):
             # Dev Tools
             if dev_tools:
                 dev_tools.dev_decompile_masks(
-                    image_processor._image_parts,
+                    image_processor.get_image_parts(),
                     subfolder="zz_complete",
                 )
 
             # Output File Handling
             file_output = image_processor.return_output()
             new_file_name = path_manager.get_save_file_path(
-                file_path, image_processor._force_png
+                file_path,
+                force_png=image_processor.force_png,
             )
 
             # File Save
@@ -83,18 +86,16 @@ class MixinImagePipeline(Mixin):
                 in_memory_files.append(file_output)
 
             # Print Out
-            prefix = ""
             if not flags["show_full_output_path"]:
-                prefix = "./"
                 new_file_name = new_file_name.replace(
-                    str(main_files_path), "", 1
+                    str(main_files_path),
+                    "",
+                    1,
                 )[1:]
-            print(f'{index_text} Censored: "{prefix}{new_file_name}"')
 
             # Save Duration
             in_place_durations.append(image_processor.get_duration())
             if flags["pad_individual_items"]:
-                print()
+                pass
 
-        print("Finished Censoring Images!")
         return in_memory_files

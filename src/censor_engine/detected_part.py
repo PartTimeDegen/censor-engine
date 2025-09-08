@@ -66,14 +66,16 @@ class Part:
 
         # # Merge Groups
         for index, group in enumerate(
-            self.config.censor_settings.merge_settings.merge_groups, start=1
+            self.config.censor_settings.merge_settings.merge_groups,
+            start=1,
         ):
             if self.part_name in group:
                 self.merge_group = group
                 self.merge_group_id = index
 
         for index, group in enumerate(
-            self.config.video_settings.persistence_groups, start=1
+            self.config.video_settings.persistence_groups,
+            start=1,
         ):
             if self.part_name in group:
                 self.persistence_group = group
@@ -96,7 +98,8 @@ class Part:
 
         base_shape = Part.get_shape_class(self.shape_object.base_shape)
         self.mask = base_shape.generate(
-            self, Part.create_empty_mask(self.image_shape)
+            self,
+            Part.create_empty_mask(self.image_shape),
         )
         self.base_masks = [self.mask]
 
@@ -183,8 +186,9 @@ class Part:
     def get_shape_class(shape: str) -> Shape:
         shapes = ShapeRegistry.get_all()
         if shape not in shapes:
+            msg = f"Shape {shape} does not Exist! {[shapes.keys()]}"
             raise ValueError(
-                f"Shape {shape} does not Exist! {[shapes.keys()]}"
+                msg,
             )
 
         return shapes[shape]()
@@ -196,7 +200,7 @@ class Part:
     ):
         """
         This function acts as a factory for empty masks, due to 1) bad copying
-        issues, and 2) because it's not a one-liner
+        issues, and 2) because it's not a one-liner.
 
         :param bool inverse: Inverses the mask to make it white on black, not black on white, defaults to False
 
@@ -205,6 +209,6 @@ class Part:
         """
         if inverse:
             return Part.normalise_mask(
-                np.ones(image_shape, dtype=np.uint8) * 255  # type: ignore
+                np.ones(image_shape, dtype=np.uint8) * 255,  # type: ignore
             )
         return Part.normalise_mask(np.zeros(image_shape, dtype=np.uint8))

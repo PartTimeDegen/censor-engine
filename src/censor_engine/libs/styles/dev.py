@@ -3,7 +3,7 @@ from statistics import fmean
 import cv2
 
 from censor_engine.detected_part import Part
-from censor_engine.libs.detectors.box_based_detectors.multi_detectors import (
+from censor_engine.libs.detectors.box_based_detectors.nude_net import (
     NudeNetDetector,
 )
 from censor_engine.libs.registries import StyleRegistry
@@ -13,18 +13,22 @@ from censor_engine.models.structs.colours import Colour, _colours
 from censor_engine.models.structs.contours import Contour
 from censor_engine.typing import Image, Mask
 
+# ruff: noqa
+
 colour_dict = dict(
     zip(
         NudeNetDetector.model_classifiers,
         list(_colours.keys())[3:],  # offset due to a weird glitch with black
         strict=False,
-    )
+    ),
 )
 
 
 def _get_contours_from_mask(mask: Mask) -> list[Contour]:
     contours, hierarchy = cv2.findContours(
-        mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+        mask,
+        cv2.RETR_TREE,
+        cv2.CHAIN_APPROX_SIMPLE,
     )
     return [
         Contour(
@@ -60,7 +64,7 @@ def draw_text_below_box(
         ]
         max_line_width = max(w for w, _ in sizes)
         total_height = sum(h for _, h in sizes) + int(
-            (len(lines) - 1) * sizes[0][1] * (line_spacing - 1)
+            (len(lines) - 1) * sizes[0][1] * (line_spacing - 1),
         )
         return max_line_width, total_height
 
@@ -76,8 +80,7 @@ def draw_text_below_box(
 
     # Enforce minimum width ratio
     min_scale_width = (box_w * min_width_ratio) / base_width
-    if scale < min_scale_width:
-        scale = min_scale_width
+    scale = max(scale, min_scale_width)
 
     # Clamp scale
     scale = max(min_scale, min(scale, max_scale))
@@ -101,7 +104,10 @@ def draw_text_below_box(
     y_offset = box_y + padding
     for line in lines:
         (line_w, line_h), baseline = cv2.getTextSize(
-            line, font, scale, thickness
+            line,
+            font,
+            scale,
+            thickness,
         )
         x_offset = box_x + padding
         y_offset += line_h
@@ -133,7 +139,8 @@ class Debug(DevStyle):
         part_list: list[Part],
     ) -> Image:
         if part.config.rendering_settings.merge_method != MergeMethod.NONE:
-            raise ValueError("Requires No Merging")
+            msg = "Requires No Merging"
+            raise ValueError(msg)
 
         if self.is_done:
             return image

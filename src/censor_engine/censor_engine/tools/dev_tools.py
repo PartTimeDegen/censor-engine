@@ -24,10 +24,10 @@ class DevTools:
         self,
         parts: list[Part] | Part,
         subfolder: str | None = None,
-    ):
+    ) -> None:
         # Main folder path, relative to main_files_path, prefixed with ".dev"
         current_path = Path(".dev") / self.output_folder.relative_to(
-            self.main_files_path
+            self.main_files_path,
         )
 
         # Modify last part of path by prepending counter + "_"

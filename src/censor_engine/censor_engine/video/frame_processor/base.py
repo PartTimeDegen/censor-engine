@@ -24,16 +24,19 @@ class FrameProcessor(MixinPartPersistence):
     frame_lag_counter: int = field(default=0, init=False)
 
     loaded_frame: dict[str, FramePart] = field(
-        default_factory=dict, init=False
+        default_factory=dict,
+        init=False,
     )
     current_frame: dict[str, FramePart] = field(
-        default_factory=dict, init=False
+        default_factory=dict,
+        init=False,
     )
 
     first_frame: bool = field(default=True, init=False)
 
     part_dictionary: dict[int, FramePart] = field(
-        default_factory=dict, init=False
+        default_factory=dict,
+        init=False,
     )
 
     def load_parts(self, parts: list[Part]) -> None:
@@ -52,7 +55,7 @@ class FrameProcessor(MixinPartPersistence):
             self.current_frame,
         )
 
-    def run(self):
+    def run(self) -> None:
         # Persistence
         self.current_frame, self.part_dictionary = self.apply_part_persistence(
             self.current_frame,

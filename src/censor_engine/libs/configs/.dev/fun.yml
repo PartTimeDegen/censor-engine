@@ -1,0 +1,63 @@
+video_settings:
+  frame_difference_threshold: 0.02
+  part_frame_hold_seconds: 0.5
+  persistence_groups:
+    - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
+
+censor_settings:
+  enabled_parts:
+    - "FEMALE_BREAST_EXPOSED"
+    - "FEMALE_BREAST_COVERED"
+    - "BUTTOCKS_EXPOSED"
+    - "BUTTOCKS_COVERED"
+    - "ANUS_EXPOSED"
+    - "ANUS_COVERED"
+    - "FEMALE_GENITALIA_EXPOSED"
+    - "FEMALE_GENITALIA_COVERED"
+
+  merge_settings:
+    merge_groups:
+      - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
+
+  default_part_settings:
+    censors:
+      [
+        {
+          "style": "outline",
+          parameters: { "colour": "BLACK", "softness": 0 },
+        },
+        { "style": "gaussian_blur", parameters: { "factor": 5 } },
+      ]
+    # censors: [ { "style": "hexagon_pixelate_soft" } ]
+    shape: "circle"
+    video_part_search_region: 0.2
+
+  FEMALE_BREAST_EXPOSED:
+    censors:
+      [
+        { "style": "outline", parameters: { "colour": "RED", "softness": 0 } },
+        { "style": "gaussian_blur", parameters: { "factor": 5 } },
+      ]
+  FEMALE_BREAST_COVERED:
+    censors:
+      [
+        { "style": "outline", parameters: { "colour": "BLUE", "softness": 0 } },
+        { "style": "gaussian_blur", parameters: { "factor": 5 } },
+      ]
+
+  ANUS_EXPOSED:
+    state: "revealed"
+    shape: "ellipse"
+    margin: 0.4
+  ANUS_COVERED:
+    state: "revealed"
+    shape: "ellipse"
+    margin: 0.4
+  FEMALE_GENITALIA_EXPOSED:
+    state: "protected"
+    shape: "ellipse"
+    margin: -0.1
+  FEMALE_GENITALIA_COVERED:
+    state: "protected"
+    shape: "ellipse"
+    margin: -0.1

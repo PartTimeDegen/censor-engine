@@ -37,15 +37,13 @@ class DetectedPartSchema:
 
 
 class AIModel:
-    """
-    Handles downloading and loading AI models separately from code packages.
-    """
+    """Handles downloading and loading AI models separately from code packages."""
 
     ai_model_folder_name: str = "~/.ai_models"
     model_path: Path | None = None
     model: Any = None
 
-    def download_model(self, url: str):
+    def download_model(self, url: str) -> None:
         home = Path.home()
         model_folder = home / self.ai_model_folder_name.lstrip("~").lstrip("/")
         model_folder.mkdir(parents=True, exist_ok=True)
@@ -53,12 +51,11 @@ class AIModel:
         model_path = model_folder / Path(url).name
 
         if not model_path.exists():
-            print(f"Downloading the checkpoint to {model_path}")
             pydload.dload(url, save_to_path=str(model_path), max_time=None)  # type: ignore
 
         self.model_path = model_path
 
-    def download_google_drive_model(self, url: str):
+    def download_google_drive_model(self, url: str) -> None:
         home = Path.home()
         model_folder = home / self.ai_model_folder_name.lstrip("~").lstrip("/")
         model_folder.mkdir(parents=True, exist_ok=True)
@@ -66,15 +63,15 @@ class AIModel:
         model_path = model_folder / Path(url).name
 
         if not model_path.exists():
-            print(f"Downloading the checkpoint to {model_path}")
             gdown.download(url, str(model_path), max_time=None)  # type: ignore
 
         self.model_path = model_path
 
-    def load_model(self):
+    def load_model(self) -> None:
         if self.model_path is None:
+            msg = "Model path is not set. Please download a model first."
             raise ValueError(
-                "Model path is not set. Please download a model first."
+                msg,
             )
 
         # ext = self.model_path.suffix.lower().lstrip(".")
@@ -86,9 +83,10 @@ class AIModel:
         # else:
         #     raise ValueError(f"Unsupported model format: {ext}")
 
-    def predict(self, input_data: Any):
+    def predict(self, input_data: Any) -> None:
         if self.model is None:
-            raise ValueError("Missing AI model. Please load the model first.")
+            msg = "Missing AI model. Please load the model first."
+            raise ValueError(msg)
 
         # if isinstance(self.model, torch.nn.Module):
         #     with torch.no_grad():
@@ -125,13 +123,16 @@ class Detector(AIModel):
 
     @abstractmethod
     def detect_image(
-        self, file_images_or_path: str
+        self,
+        file_images_or_path: str,
     ) -> list[DetectedPartSchema]:
         raise NotImplementedError
 
     @abstractmethod
     def detect_batch(
-        self, file_images_or_paths: list[str] | list[Image], batch_size: int
+        self,
+        file_images_or_paths: list[str] | list[Image],
+        batch_size: int,
     ) -> dict[int, list[DetectedPartSchema]]:
         raise NotImplementedError
 

@@ -21,13 +21,14 @@ class VideoProcessor:
     def __post_init__(self):
         self.video_capture = cv2.VideoCapture(self.file_path)  # type: ignore
         if not self.video_capture.isOpened():
-            raise ValueError(f"Could not open video: {self.file_path}")
+            msg = f"Could not open video: {self.file_path}"
+            raise ValueError(msg)
 
         self._width = int(self.video_capture.get(cv2.CAP_PROP_FRAME_WIDTH))
         self._height = int(self.video_capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self._fps = int(self.video_capture.get(cv2.CAP_PROP_FPS))
         fourcc = cv2.VideoWriter_fourcc(
-            *self._get_codec_from_extension(self.file_path)
+            *self._get_codec_from_extension(self.file_path),
         )
 
         self.video_writer = cv2.VideoWriter(
@@ -37,7 +38,7 @@ class VideoProcessor:
             (self._width, self._height),
         )
         self.total_frames = int(
-            self.video_capture.get(cv2.CAP_PROP_FRAME_COUNT)
+            self.video_capture.get(cv2.CAP_PROP_FRAME_COUNT),
         )
 
     def _get_codec_from_extension(self, filename: str) -> str:
@@ -59,5 +60,5 @@ class VideoProcessor:
     def get_fps(self):
         return self._fps
 
-    def write_frame(self, file_output):
+    def write_frame(self, file_output) -> None:
         self.video_writer.write(file_output)

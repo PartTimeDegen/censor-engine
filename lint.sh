@@ -1,6 +1,6 @@
 
 echo "Running Ruff"
-ruff check src/censor_engine
+uv run ruff check src/censor_engine --statistics
 
 echo ""
 echo "Running MyPy"

@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 
+from censor_engine.constant import DIM_COLOUR, DIM_GREY, DIM_RGBA
 from censor_engine.detected_part import Part
 from censor_engine.libs.registries import StyleRegistry
 from censor_engine.models.lib_models.styles import TransparentStyle
@@ -25,15 +26,16 @@ class Cutout(TransparentStyle):
         alpha = max(0.0, min(1.0, alpha))
         alpha_value = int(alpha * 255)
 
-        if image.ndim == 2:
+        if image.ndim == DIM_GREY:
             image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGBA)
-        elif image.shape[2] == 3:
+        elif image.shape[2] == DIM_COLOUR:
             image = cv2.cvtColor(image, cv2.COLOR_RGB2RGBA)
-        elif image.shape[2] == 4:
+        elif image.shape[2] == DIM_RGBA:
             pass
         else:
+            msg = f"Unsupported number of channels: {image.shape[2]}"
             raise ValueError(
-                f"Unsupported number of channels: {image.shape[2]}"
+                msg,
             )
 
         # Build new alpha channel: 0 where mask is white, else alpha_value

@@ -43,6 +43,13 @@ class PartSettingsConfig:
             elif self.minimum_score < 0.0:
                 self.minimum_score = 0.0
 
+        # Fade Percent
+        if self.fade_percent:
+            if self.fade_percent > 100:
+                self.fade_percent = 100
+            elif self.fade_percent < 0:
+                self.fade_percent = 0
+
         # Censors
         if isinstance(self.censors, list):
             censors = []
@@ -61,17 +68,20 @@ class PartSettingsConfig:
             self.censors = [Censor(self.censors)]
 
         else:
-            raise TypeError("Invalid Censor input")
+            msg = "Invalid Censor input"
+            raise TypeError(msg)
 
         # Part State
         if isinstance(self.state, str):
             self.state = getattr(PartState, self.state.upper())
             if not self.state:
-                raise ValueError(f"Invalid PartState value: {self.state}")
+                msg = f"Invalid PartState value: {self.state}"
+                raise ValueError(msg)
 
         # Margin
         if not isinstance(self.margin, int | float | dict):
-            raise TypeError(f"Invalid type for margin: {type(self.margin)}")
+            msg = f"Invalid type for margin: {type(self.margin)}"
+            raise TypeError(msg)
 
 
 @dataclass(slots=True)
@@ -85,10 +95,12 @@ class MergingConfig:
             self.merge_range = float(self.merge_range)
 
         if len(self.merge_groups) > 0 and not isinstance(
-            self.merge_groups[0], list
+            self.merge_groups[0],
+            list,
         ):
+            msg = "Merge Groups are a list of lists, not just one list"
             raise TypeError(
-                "Merge Groups are a list of lists, not just one list"
+                msg,
             )
 
 

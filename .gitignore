@@ -184,7 +184,7 @@ src/.test_stuff/
 
 # Dev Stuff
 src/censorengine/configs/personal/
-.dev
+.dev/*
 .dev-backups
 libpng.sh
 *.Identifier

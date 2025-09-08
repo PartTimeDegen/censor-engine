@@ -1,0 +1,61 @@
+# Config details
+file_prefix: ""
+file_suffix: ""
+
+uncensored_folder: "00_uncensored"
+censored_folder: "01_censored"
+
+debug_mode: False
+
+# Parts Enabled
+enabled_parts:
+  # Female
+  # - "FACE_FEMALE"
+
+  # - "ARMPITS_EXPOSED"
+  # - "ARMPITS_COVERED"
+
+  - "FEMALE_BREAST_EXPOSED"
+# - "FEMALE_BREAST_COVERED"
+
+# - "BELLY_EXPOSED"
+# - "BELLY_COVERED"
+
+# - "BUTTOCKS_EXPOSED"
+# - "BUTTOCKS_COVERED"
+
+# - "ANUS_EXPOSED"
+# - "ANUS_COVERED"
+
+# - "FEMALE_GENITALIA_EXPOSED"
+# - "FEMALE_GENITALIA_COVERED"
+
+# - "FEET_EXPOSED"
+# - "FEET_COVERED"
+
+# Male
+# - "FACE_MALE"
+# - "MALE_GENITALIA_EXPOSED"
+# - "MALE_BREAST_EXPOSED"
+
+# Information on Merging Parts
+# merge_settings:
+#   range: -1
+#   merge_groups:
+#   - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
+
+# Rendering Settings
+render_settings:
+  smoothing: True
+
+# Information
+censor_settings:
+  # Fall Back Options as "General" Settings
+  default_part_settings:
+    censors:
+      - style: "overlay"
+        parameters:
+          colour: "BLACK"
+
+    minimum_score: 0.20
+    shape: "box"

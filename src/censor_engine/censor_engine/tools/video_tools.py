@@ -31,7 +31,7 @@ class InfoGenerator:
         group_title: str,
     ) -> Image:
         spacer = 0
-        info = [group_title] + info
+        info = [group_title, *info]
         for row in info:
             # Determine Text
             (text_width, text_height), baseline = cv2.getTextSize(
@@ -42,8 +42,7 @@ class InfoGenerator:
             )
 
             # Change Position
-            if text_width > self.longest_column_pxl:
-                self.longest_column_pxl = text_width
+            self.longest_column_pxl = max(self.longest_column_pxl, text_width)
 
             if (
                 new_height := (self.position[1] + baseline + text_height)
@@ -113,7 +112,9 @@ class VideoInfo:
         return f"{fixed_value}/{max_value_str}"
 
     def _get_frame_info(
-        self, output_image, frame_processor: FrameProcessor
+        self,
+        output_image,
+        frame_processor: FrameProcessor,
     ) -> Image:
         info = [
             f"Frame: {self._get_counter(self.frame_count, int(self.video_processor.video_capture.get(cv2.CAP_PROP_FRAME_COUNT)))}",
@@ -128,7 +129,9 @@ class VideoInfo:
         )
 
     def _get_part_dictionary(
-        self, output_image, frame_processor: FrameProcessor
+        self,
+        output_image,
+        frame_processor: FrameProcessor,
     ) -> Image:
         return InfoGenerator().generate_info(
             output_image,
@@ -152,7 +155,9 @@ class VideoInfo:
         )
 
     def _get_initial_part_info(
-        self, output_image, frame_processor: FrameProcessor
+        self,
+        output_image,
+        frame_processor: FrameProcessor,
     ) -> Image:
         return InfoGenerator().generate_info(
             output_image,
@@ -165,7 +170,9 @@ class VideoInfo:
         )
 
     def get_debug_info(
-        self, output_image: Image, frame_processor: FrameProcessor
+        self,
+        output_image: Image,
+        frame_processor: FrameProcessor,
     ):
         # Frame Information
         output_image = self._get_frame_info(output_image, frame_processor)
@@ -178,7 +185,8 @@ class VideoInfo:
 
         # Initially Found Frame Parts
         output_image = self._get_initial_part_info(
-            output_image, frame_processor
+            output_image,
+            frame_processor,
         )
 
         InfoGenerator().reset_position()

@@ -25,7 +25,7 @@ shapes_bar = [
 ]
 
 
-def run_shape_tests(shape, dummy_input_image_data):
+def run_shape_tests(shape, dummy_input_image_data) -> None:
     config_data = {
         "censor_settings": {
             "enabled_parts": [
@@ -34,7 +34,7 @@ def run_shape_tests(shape, dummy_input_image_data):
             "merge_settings": {"merge_groups": [["FEMALE_BREAST_EXPOSED"]]},
             "default_part_settings": {
                 "censors": [
-                    {"style": "overlay", "parameters": {"colour": "BLACK"}}
+                    {"style": "overlay", "parameters": {"colour": "BLACK"}},
                 ],
                 "shape": shape,
             },
@@ -44,32 +44,32 @@ def run_shape_tests(shape, dummy_input_image_data):
     dummy_input_image_data.update_parts("FEMALE_BREAST_EXPOSED")
     run_image_test(
         dummy_input_image_data,
-        config_data,
+        config=config_data,
         subfolder=shape,
         batch_tests=True,
         group_name=os.path.splitext(
-            os.path.basename(inspect.stack()[1].filename)
+            os.path.basename(inspect.stack()[1].filename),
         )[0],
     )
 
 
 @pytest.mark.parametrize("shape", shapes_basic)
-def test_basic_shapes(shape, dummy_input_image_data):
+def test_basic_shapes(shape, dummy_input_image_data) -> None:
     run_shape_tests(shape, dummy_input_image_data)
 
 
 @pytest.mark.parametrize("shape", shapes_joint)
-def test_joint_shapes(shape, dummy_input_image_data):
+def test_joint_shapes(shape, dummy_input_image_data) -> None:
     run_shape_tests(shape, dummy_input_image_data)
 
 
 @pytest.mark.parametrize("shape", shapes_bar)
-def test_bar_shapes(shape, dummy_input_image_data):
+def test_bar_shapes(shape, dummy_input_image_data) -> None:
     run_shape_tests(shape, dummy_input_image_data)
 
 
 # Exceptions
-def test_bar_single_object(dummy_input_image_data):
+def test_bar_single_object(dummy_input_image_data) -> None:
     config_data = {
         "censor_settings": {
             "enabled_parts": [
@@ -77,7 +77,7 @@ def test_bar_single_object(dummy_input_image_data):
             ],
             "default_part_settings": {
                 "censors": [
-                    {"style": "overlay", "parameters": {"colour": "BLACK"}}
+                    {"style": "overlay", "parameters": {"colour": "BLACK"}},
                 ],
                 "shape": "bar",
             },
@@ -87,9 +87,9 @@ def test_bar_single_object(dummy_input_image_data):
     dummy_input_image_data.update_parts("FEMALE_BREAST_EXPOSED")
     run_image_test(
         dummy_input_image_data,
-        config_data,
+        config=config_data,
         group_name=os.path.splitext(
-            os.path.basename(inspect.stack()[0].filename)
+            os.path.basename(inspect.stack()[0].filename),
         )[0],
         edge_case=True,
     )

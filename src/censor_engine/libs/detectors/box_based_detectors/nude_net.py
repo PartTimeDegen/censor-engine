@@ -7,15 +7,15 @@ from censor_engine.models.lib_models.detectors import (
 from censor_engine.typing import Image
 
 
-class SapiensDetector(Detector):
+class NudeNetDetector(Detector):
     """
-    This is the Sapiens AI model.
+    This Detector is the code of CensorEngine, it is the NudeNet model.
 
-    Source: https://github.com/ibaiGorordo/Sapiens-Pytorch-Inference
+    This handles the core labels of the engine.
 
     """
 
-    model_name: str = "Sapiens"
+    model_name: str = "NudeNet"
     model_classifiers: tuple[str, ...] = (
         "FACE_FEMALE",
         "ARMPITS_EXPOSED",
@@ -39,7 +39,8 @@ class SapiensDetector(Detector):
     model_object = NudeDetector()
 
     def detect_image(
-        self, file_images_or_path: str
+        self,
+        file_images_or_path: str,
     ) -> list[DetectedPartSchema]:
         return [
             DetectedPartSchema(
@@ -48,15 +49,18 @@ class SapiensDetector(Detector):
                 relative_box=found_part["box"],
             )
             for index, found_part in enumerate(
-                self.model_object.detect(file_images_or_path)
+                self.model_object.detect(file_images_or_path),
             )
         ]
 
     def detect_batch(
-        self, file_images_or_paths: list[str] | list[Image], batch_size: int
+        self,
+        file_images_or_paths: list[str] | list[Image],
+        batch_size: int,
     ) -> dict[int, list[DetectedPartSchema]]:
         output = self.model_object.detect_batch(
-            file_images_or_paths, batch_size
+            file_images_or_paths,
+            batch_size,
         )
 
         dict_output = {}

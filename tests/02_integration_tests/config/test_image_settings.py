@@ -3,7 +3,7 @@ import os
 
 import pytest
 
-from censor_engine.libs.detectors.box_based_detectors.multi_detectors import (
+from censor_engine.libs.detectors.box_based_detectors.nude_net import (
     NudeNetDetector,
 )
 from tests.utils import run_image_test
@@ -17,7 +17,7 @@ rendering_merge_method = [
 ]
 
 
-def run_merge_method(merge_method, dummy_input_image_data):
+def run_merge_method(merge_method, dummy_input_image_data) -> None:
     all_parts = list(NudeNetDetector.model_classifiers)
     config_data = {
         "render_settings": {"merge_method": merge_method},
@@ -28,10 +28,10 @@ def run_merge_method(merge_method, dummy_input_image_data):
                     [
                         "FEMALE_BREAST_EXPOSED",
                         "FEMALE_BREAST_COVERED",
-                    ]
+                    ],
                 ]
-                if merge_method == "groups" or merge_method == "GrOuPs"
-                else [all_parts]
+                if merge_method in {"groups", "GrOuPs"}
+                else [all_parts],
             },
             "default_part_settings": {
                 "censors": [{"style": "outlined_overlay"}],
@@ -43,16 +43,16 @@ def run_merge_method(merge_method, dummy_input_image_data):
     dummy_input_image_data.update_parts("FEMALE_BREAST_EXPOSED")
     run_image_test(
         dummy_input_image_data,
-        config_data,
+        config=config_data,
         subfolder=merge_method,
         batch_tests=True,
         group_name=os.path.splitext(
-            os.path.basename(inspect.stack()[1].filename)
+            os.path.basename(inspect.stack()[1].filename),
         )[0],
     )
 
 
-def run_reverse_censor(dummy_input_image_data):
+def run_reverse_censor(dummy_input_image_data) -> None:
     all_parts = list(NudeNetDetector.model_classifiers)
     config_data = {
         "censor_settings": {
@@ -62,8 +62,8 @@ def run_reverse_censor(dummy_input_image_data):
                     [
                         "FEMALE_BREAST_EXPOSED",
                         "FEMALE_BREAST_COVERED",
-                    ]
-                ]
+                    ],
+                ],
             },
             "default_part_settings": {
                 "censors": [{"style": "no_censor"}],
@@ -76,18 +76,18 @@ def run_reverse_censor(dummy_input_image_data):
     dummy_input_image_data.update_parts("FEMALE_BREAST_EXPOSED")
     run_image_test(
         dummy_input_image_data,
-        config_data,
+        config=config_data,
         batch_tests=True,
         group_name=os.path.splitext(
-            os.path.basename(inspect.stack()[1].filename)
+            os.path.basename(inspect.stack()[1].filename),
         )[0],
     )
 
 
 @pytest.mark.parametrize("merge_method", rendering_merge_method)
-def test_merge_methods(merge_method, dummy_input_image_data):
+def test_merge_methods(merge_method, dummy_input_image_data) -> None:
     run_merge_method(merge_method, dummy_input_image_data)
 
 
-def test_reverse_censor(dummy_input_image_data):
+def test_reverse_censor(dummy_input_image_data) -> None:
     run_reverse_censor(dummy_input_image_data)

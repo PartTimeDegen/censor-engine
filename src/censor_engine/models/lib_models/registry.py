@@ -26,11 +26,11 @@ class Registry:
 
         return decorator
 
-    def _auto_register(self):
+    def _auto_register(self) -> None:
         module = importlib.import_module(self.package)
         package_dir = Path(module.__file__).parent  # type: ignore
         for _, module_name, is_package in pkgutil.iter_modules(
-            [str(package_dir)]
+            [str(package_dir)],
         ):
             if not is_package:
                 importlib.import_module(f"{self.package}.{module_name}")

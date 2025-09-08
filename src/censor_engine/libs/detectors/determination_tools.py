@@ -68,8 +68,7 @@ class ImageGenreDeterminer(Determiner):
 
         if real >= hentai:
             return self.broad_groups["real"]
-        else:
-            return self.broad_groups["hentai"]
+        return self.broad_groups["hentai"]
 
     def determine_image(self, file_image: Image) -> str:  # type: ignore #FIXME
         """

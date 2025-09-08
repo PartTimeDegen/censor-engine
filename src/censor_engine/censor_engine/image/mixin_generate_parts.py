@@ -2,7 +2,7 @@ from uuid import UUID
 
 from censor_engine.detected_part import Part
 from censor_engine.models.config import Config
-from censor_engine.models.enums import MergeMethod, ShapeType
+from censor_engine.models.enums import ShapeType
 from censor_engine.models.lib_models.detectors import DetectedPartSchema
 from censor_engine.models.structs import Mixin
 
@@ -17,7 +17,7 @@ class MixinGenerateParts(Mixin):
     ) -> list[Part]:
         """
         This function creates the list of Parts for CensorEngine to keep track
-        of. # TODO: Update me to account for split with _detection
+        of. # TODO: Update me to account for split with _detection.
 
         Method:
             1)  It will create an empty list and also find the enabled parts
@@ -71,74 +71,6 @@ class MixinGenerateParts(Mixin):
             part for part in map(add_parts, detected_parts) if part is not None
         ]
 
-    def _merge_parts_if_in_merge_groups(self, parts: list[Part]) -> list[Part]:
-        if not parts:
-            return parts
-
-        def merge_fellow_parts(
-            part: Part,
-            start_index: int,
-            parts: list[Part],
-            merged_indices: set[int],
-            merge_method: MergeMethod,
-        ) -> Part:
-            for index in range(start_index + 1, len(parts)):
-                other_part = parts[index]
-
-                # Valid Part Checks
-                # NOTE: I'm aware this looks weird, technically True=1
-                #       and False=0 so you can do multiplication logic to lock
-                #       the value False if it gets triggered.
-                is_valid_part = True
-
-                if index in merged_indices:
-                    is_valid_part *= False
-
-                match merge_method:
-                    case MergeMethod.GROUPS:
-                        if other_part.get_name() not in part.merge_group:
-                            is_valid_part *= False
-
-                    case MergeMethod.PARTS:
-                        if other_part.get_name() != part.get_name():
-                            is_valid_part *= False
-
-                    case MergeMethod.FULL:
-                        is_valid_part *= True  # For clarity
-
-                if is_valid_part:
-                    part.base_masks.extend(other_part.base_masks)
-                    merged_indices.add(index)
-
-            return part
-
-        # Prep Stuff
-        new_parts: list[Part] = []
-        merged_indices: set[int] = set()
-        merge_method = (
-            parts[0].config.rendering_settings.merge_method
-        )  # Assume parts all have same config
-
-        # Method Cases
-        if merge_method == MergeMethod.NONE:
-            return parts
-
-        # Iterate and Merge Parts
-        for index, part in enumerate(parts):
-            if index in merged_indices:
-                continue
-
-            if part.merge_group:
-                part = merge_fellow_parts(
-                    part, index, parts, merged_indices, merge_method
-                )
-
-                part.compile_base_masks()
-
-            new_parts.append(part)
-
-        return new_parts
-
     def _apply_and_generate_mask_shapes(
         self,
         parts: list[Part],
@@ -149,7 +81,7 @@ class MixinGenerateParts(Mixin):
             # For Simple Shapes
             if not part.is_merged:
                 shape_single = Part.get_shape_class(
-                    part.shape_object.single_shape
+                    part.shape_object.single_shape,
                 )
                 part.mask = shape_single.generate(part, empty_mask)
                 new_parts.append(part)
@@ -161,19 +93,18 @@ class MixinGenerateParts(Mixin):
                     pass
                 case ShapeType.JOINT:
                     part.mask = part.shape_object.generate(part, empty_mask)
-                    pass
 
                 case ShapeType.BAR:
                     if not part.is_merged:
                         # Make Basic Shape
                         shape_single = Part.get_shape_class(
-                            part.shape_object.base_shape
+                            part.shape_object.base_shape,
                         )
                         part.mask = shape_single.generate(part, empty_mask)
 
                     # Make Shape Joint for Bar Basis
                     shape_joint = Part.get_shape_class(
-                        part.shape_object.joint_shape
+                        part.shape_object.joint_shape,
                     )
                     part.mask = shape_joint.generate(part, empty_mask)
 

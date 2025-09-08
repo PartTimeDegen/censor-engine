@@ -1,20 +1,26 @@
+from typing import TYPE_CHECKING
+
 import cv2
 import numpy as np
 
 from censor_engine.detected_part import Part
 from censor_engine.libs.registries import StyleRegistry
 from censor_engine.models.enums import StyleType
-from censor_engine.models.lib_models.styles.base import Style
 from censor_engine.models.structs import Censor, Mixin
 from censor_engine.models.structs.contours import Contour
 from censor_engine.typing import Image, Mask
+
+if TYPE_CHECKING:
+    from censor_engine.models.lib_models.styles.base import Style
 
 styles = StyleRegistry.get_all()
 
 
 def get_contours_from_mask(mask: Mask) -> list[Contour]:
     contours, hierarchy = cv2.findContours(
-        mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+        mask,
+        cv2.RETR_TREE,
+        cv2.CHAIN_APPROX_SIMPLE,
     )
     return [
         Contour(
@@ -112,41 +118,45 @@ class MixinGenerateCensors(Mixin):
                     **additional_args,
                 )
 
-            # === Feather Stuff === #
-
-            # Apply Potential Feather Fade
+            # === Feather (Gaussian) per-object glow ===
             if not part.part_settings.fade_percent:
                 continue
 
-            # Use the first contour for mask and bounding box (adjust as needed)
-            mask_norm = (mask_norm / 255).astype(np.float32)
-            x, y, w, h = part_contours[0].as_bounding_box()
-            fade_percent = np.clip(
-                int(part.part_settings.fade_percent), 0, 100
+            fade_factor = np.clip(
+                part.part_settings.fade_percent / 100.0,
+                0,
+                1,
             )
-            max_dim = max(w, h)
-            feathering_amount = int((fade_percent / 100.0) * max_dim)
-            kernel_size = min(51, max(3, feathering_amount // 2 * 2 + 1))
+            mask_bin = (mask > 0).astype(np.uint8)
+            num_labels, labels = cv2.connectedComponents(mask_bin)
+            output_mask = np.zeros_like(mask, dtype=np.float32)
 
-            mask_norm = cv2.erode(
-                mask_norm,  # type: ignore
-                np.ones((kernel_size, kernel_size), np.uint8),
-                iterations=1,
-            ).astype(float)
-            feathered_mask = cv2.GaussianBlur(
-                mask_norm, (kernel_size, kernel_size), 0
-            )
+            for label_id in range(1, num_labels):
+                obj_mask = (labels == label_id).astype(np.uint8)
+                if obj_mask.sum() == 0:
+                    continue
 
-            feathered_mask = cv2.merge([feathered_mask] * 3)  # type: ignore
+                # Distance to background (edges)
+                dist = cv2.distanceTransform(obj_mask, cv2.DIST_L2, 5)
+                dist_norm = dist / dist.max() if dist.max() > 0 else dist
 
-            feathered_mask = feathered_mask.astype(np.float32)
-            working_image = working_image.astype(np.float32)
-            file_image = file_image.astype(np.float32)
+                # Optional: Gaussian style
+                spread = 3 + fade_factor * 5
+                glow = np.exp(-((1 - dist_norm) ** 6) * spread)
+                # glow = glow * (1 - fade_factor) + fade_factor
 
-            merged_image = (
-                feathered_mask * working_image
-                + (1 - feathered_mask) * file_image
-            )
-            working_image = merged_image.astype(np.uint8)
+                output_mask = np.maximum(output_mask, glow)
+
+            # Convert to 0-255
+            output_mask = np.clip(output_mask * 255, 0, 255).astype(np.uint8)
+
+            # Prepare for blending
+            mask_fade = cv2.merge([output_mask] * 3).astype(np.float32) / 255.0  # type: ignore
+            blended = working_image.astype(
+                np.float32,
+            ) * mask_fade + file_image.astype(np.float32) * (1 - mask_fade)
+            blended = np.clip(blended, 0, 255).astype(np.uint8)
+
+            working_image = blended
 
         return (working_image, force_png)

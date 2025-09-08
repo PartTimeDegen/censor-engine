@@ -9,13 +9,13 @@ from tests.utils import (
 )
 
 
-def test_test_working(dummy_input_image_data):
+def test_test_working(dummy_input_image_data) -> None:
     config = load_config_base_yaml()
 
-    run_image_test(dummy_input_image_data, config)
+    run_image_test(dummy_input_image_data, config=config)
 
 
-def test_image_generator():
+def test_image_generator() -> None:
     ig = ImageGenerator(Path())
     cv2.imwrite("tests/test_data/input_data/example.jpg", ig.make_test_image())
 

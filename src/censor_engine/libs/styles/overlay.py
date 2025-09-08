@@ -83,7 +83,10 @@ class OutlinedOverlay(OverlayStyle):
         softness: int = 0,
     ) -> Image:
         overlay = self._apply_mask_as_overlay(
-            image, mask, Colour(colour_box), alpha
+            image,
+            mask,
+            Colour(colour_box),
+            alpha,
         )
 
         contours_points = [contour.points for contour in contours]

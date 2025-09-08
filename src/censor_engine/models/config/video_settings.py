@@ -20,7 +20,7 @@ class VideoConfig:
         # Type Narrow to Float
         if isinstance(self.frame_difference_threshold, int):
             self.frame_difference_threshold = float(
-                self.frame_difference_threshold
+                self.frame_difference_threshold,
             )
         if isinstance(self.part_frame_hold_seconds, int):
             self.part_frame_hold_seconds = float(self.part_frame_hold_seconds)

@@ -30,14 +30,37 @@ dependencies = [
 pythonpath = ["src"]
 
 [tool.ruff]
+src = ["src"]
+exclude = [
+    "tests",
+    "docs",
+]
 line-length = 79
 lint.extend-select = [
-    "I",
-    "B",
-    "UP",
-    "N",
-    "C4",
-    "SIM",
+    "ALL"
+]
+lint.ignore = [
+    "TD003",
+    "FIX001",
+    "D404",
+    "D205",
+    "D105",
+    "ANN204",
+    "D100",
+    "D401",
+    "D212",
+    "PLR0913",
+    "C901",
+    "D200",
+    "FIX002",
+    "FIX004",
+    "TD001",
+    "TD002",
+    "PGH003",
+    "PGH004",
+    "COM812",
+    "D203",
+    "ARG002", # Explicitly disabled because it interferes with Schemas
 ]
 
 [tool.ruff.format]

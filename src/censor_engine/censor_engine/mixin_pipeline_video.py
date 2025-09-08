@@ -19,7 +19,10 @@ from .video import FrameProcessor, VideoProcessor
 
 class MixinVideoPipeline(Mixin):
     def _make_progress_bar_widgets(
-        self, index_text: str, file_name: str, total_amount: int
+        self,
+        index_text: str,
+        file_name: str,
+        total_amount: int,
     ) -> list:
         return [
             f"{index_text} ",
@@ -37,7 +40,7 @@ class MixinVideoPipeline(Mixin):
             progressbar.GranularBar(),
         ]
 
-    def _video_pipeline(
+    def run_video_pipeline(
         self,
         main_files_path: str,
         indexed_files: list[tuple[int, str, str]],
@@ -48,7 +51,7 @@ class MixinVideoPipeline(Mixin):
         function_display_times: Callable[[], None],
         flags: dict[str, bool],
         path_manager: PathManager,
-        inline_mode: bool,  # TODO Unused until I can figure out what to do for video
+        inline_mode: bool,  # TODO: Utilise  # noqa: FBT001
         _test_detection_output: list[DetectedPartSchema],
     ) -> list[Image]:
         dev_tools = None
@@ -81,7 +84,7 @@ class MixinVideoPipeline(Mixin):
             # Get Frame Capture
             frame_hold = int(
                 config.video_settings.part_frame_hold_seconds
-                * video_processor.get_fps()
+                * video_processor.get_fps(),
             )
 
             frame_processor = FrameProcessor(
@@ -104,14 +107,14 @@ class MixinVideoPipeline(Mixin):
                     )
 
                 # Run Censor Manager
-                censor_manager = ImageProcessor(
+                image_processor = ImageProcessor(
                     file_image=frame,
                     config=config,
                     debug_level=debug_level,
                     dev_tools=dev_tools,
                     _test_detection_output=_test_detection_output,
                 )
-                censor_manager.generate_parts_and_shapes()
+                image_processor.generate_parts_and_shapes()
 
                 # # Apply Stability Stuff
                 """
@@ -122,42 +125,44 @@ class MixinVideoPipeline(Mixin):
                                 to avoid issues where a part doesn't get
                                 detected, thus causing a flickering effect.
 
-                            -   Maintaining the last frame instead of the 
+                            -   Maintaining the last frame instead of the
                                 current if the difference is negligible, this
                                 avoids issues where the the detected areas are
                                 slightly different thus causes the censors to
                                 "spasm".
 
                 """
-                frame_processor.load_parts(censor_manager._image_parts)
+                frame_processor.load_parts(image_processor.get_image_parts())
                 """
                 -   Keep parts (hold them, if -1, always hold)
                 -   check sizes for parts, flag any bad ones
                 -   replace them with the held part
-                -   if the held part is bad, update it to a better one (biggest?)
-                -   
+                -   if the held part is bad, update it to a better one
+                    (biggest?)
+
                 """
 
                 # Apply Quality Filters
                 frame_processor.run()
 
                 # Update the Parts
-                # frame_processor.save_frame()
-                censor_manager._image_parts = frame_processor.retrieve_parts()
+                image_processor.set_image_parts(
+                    frame_processor.retrieve_parts(),
+                )
 
                 # Apply Censors
-                censor_manager.compile_masks()
-                censor_manager.apply_censors()
+                image_processor.compile_masks()
+                image_processor.apply_censors()
 
                 # Save Output
-                file_output = censor_manager.return_output()
+                file_output = image_processor.return_output()
 
                 # # Apply Debug Effects
                 if debug_level > DebugLevels.NONE:
                     video_info = VideoInfo(
                         frame,
                         frame_counter,
-                        censor_manager._image_parts,
+                        image_processor.get_image_parts(),
                         video_processor,
                         frame_processor,
                         debug_level,
@@ -171,9 +176,8 @@ class MixinVideoPipeline(Mixin):
                 video_processor.write_frame(file_output)
 
                 # Debug Show Times
-                in_place_durations.append(censor_manager.get_duration())
+                in_place_durations.append(image_processor.get_duration())
                 function_display_times()
 
             # Spacer
-            print()
-        return []  # TODO Figure a way to implement me
+        return []  # TODO: Figure a way to implement me

@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import cv2
 import numpy as np
 
+from censor_engine.constant import DIM_COLOUR
 from censor_engine.models.structs.colours import Colour
 from censor_engine.typing import Image, Mask
 
@@ -18,10 +19,12 @@ class Contour:
         return box.astype(np.intp)
 
     def as_bounding_box(self) -> tuple[int, int, int, int]:
-        return cv2.boundingRect(self.points)
+        return cv2.boundingRect(self.points)  # type: ignore # Type is correct
 
     def as_mask(
-        self, image_shape: tuple[int, int], mask_thickness: int = -1
+        self,
+        image_shape: tuple[int, int],
+        mask_thickness: int = -1,
     ) -> Mask:
         mask = np.zeros(image_shape, dtype=np.uint8)
         cv2.drawContours(
@@ -38,8 +41,11 @@ class Contour:
         image: Image | Mask,
         thickness: int,
         linetype: int,
-        colour: Colour = Colour(),
+        colour: Colour | None = None,
     ) -> Mask:
+        if not colour:
+            colour = Colour()
+
         return cv2.drawContours(
             image,
             [self.points],
@@ -52,14 +58,20 @@ class Contour:
 
 
 class ContourNormalizer:
-    def __init__(self, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_SIMPLE):
+    def __init__(
+        self,
+        mode: int = cv2.RETR_TREE,
+        method: int = cv2.CHAIN_APPROX_SIMPLE,
+    ) -> None:
         self.mode = mode
         self.method = method
 
     def from_mask(self, binary_mask: np.ndarray) -> list[Contour]:
         # OpenCV findContours returns (contours, hierarchy) in OpenCV 4.x+
         contours, hierarchy = cv2.findContours(
-            binary_mask, self.mode, self.method
+            binary_mask,
+            self.mode,
+            self.method,
         )
 
         if hierarchy is not None:
@@ -68,7 +80,9 @@ class ContourNormalizer:
         normalized_contours = []
         for i, contour in enumerate(contours):
             flat = (
-                contour.squeeze(axis=1) if contour.ndim == 3 else contour
+                contour.squeeze(axis=1)
+                if contour.ndim == DIM_COLOUR
+                else contour
             )  # shape (N, 2)
             norm = Contour(
                 points=flat,
