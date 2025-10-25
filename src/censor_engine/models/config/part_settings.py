@@ -86,7 +86,7 @@ class PartSettingsConfig:
 
 @dataclass(slots=True)
 class MergingConfig:
-    merge_range: float | int = -1.0  # TODO
+    merge_range: float | int = -1.0  # TODO: Implement
     merge_groups: list[list[str]] = field(default_factory=list)
 
     def __post_init__(self):

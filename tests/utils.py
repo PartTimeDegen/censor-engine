@@ -10,6 +10,8 @@ import yaml
 from censor_engine import CensorEngine
 from censor_engine.models.lib_models.detectors import DetectedPartSchema
 from tests.input_image import ImageGenerator
+from tests.input_video import VideoGenerator
+from tests.utils_video import assert_video
 
 
 # Utils
@@ -150,6 +152,22 @@ class ImageFixtureData:
             raise ValueError(msg)
 
 
+@dataclass
+class VideoFixtureData:
+    path: Path
+    generator: VideoGenerator
+    frame_data: list[list[DetectedPartSchema]]
+
+    def update_parts(self, list_parts_enabled: list[str] | str) -> None:
+        for frame in self.frame_data:
+            if isinstance(list_parts_enabled, str):
+                list_parts_enabled = [list_parts_enabled]
+
+            frame = [
+                part for part in frame if part.label in list_parts_enabled
+            ]
+
+
 def run_image_test(
     dummy_image_data: ImageFixtureData,
     *,
@@ -178,5 +196,39 @@ def run_image_test(
         batch_tests=batch_tests,
         group_name=group_name,
         expect_png=expect_png,
+        edge_case=edge_case,
+    )
+
+
+def run_video_test(
+    dummy_video_data: VideoFixtureData,
+    *,
+    config: str | dict[str, Any],
+    subfolder: str | None = None,
+    batch_tests: bool = False,
+    group_name: str | None = None,
+    expect_png: bool = False,
+    edge_case: bool = False,
+    mean_absolute_error: float = 1,
+) -> None:
+    if isinstance(config, str):
+        config = load_config_base_yaml(config)
+
+    output = CensorEngine(
+        base_folder=dummy_video_data.path.parent,
+        config_data=config,
+        _test_mode=True,
+        censor_mode="video",
+        _test_detection_output=dummy_video_data.frame_data
+        if dummy_video_data.frame_data is not None
+        else [],
+    ).start()
+
+    assert_video(
+        dummy_video_data.path,
+        subfolder=subfolder,
+        mean_absolute_error=mean_absolute_error,
+        batch_tests=batch_tests,
+        group_name=group_name,
         edge_case=edge_case,
     )

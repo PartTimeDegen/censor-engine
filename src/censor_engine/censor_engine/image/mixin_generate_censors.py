@@ -17,6 +17,13 @@ styles = StyleRegistry.get_all()
 
 
 def get_contours_from_mask(mask: Mask) -> list[Contour]:
+    """
+    This is a helper function to normalise the contours from a mask and
+    provide them as a Contour object.
+
+    :param Mask mask: Mask
+    :return list[Contour]: List of Contours
+    """
     contours, hierarchy = cv2.findContours(
         mask,
         cv2.RETR_TREE,
@@ -35,14 +42,27 @@ def contours_to_mask(
     contours: list[Contour],
     image_shape: tuple[int, int],
     fill_value: int = 255,
-) -> np.ndarray:
+) -> Mask:
+    """
+    This helper function converts the contours into a Mask.
+
+    :param list[Contour] contours: List of Contours
+    :param tuple[int, int] image_shape: Mask shape
+    :param int fill_value: Value that's the background value, defaults to 255
+    :return Mask: Mask
+    """
     mask = np.zeros(image_shape, dtype=np.uint8)
     pts = [c.points for c in contours]
-    cv2.drawContours(mask, pts, contourIdx=-1, color=fill_value, thickness=-1)
+    cv2.drawContours(mask, pts, contourIdx=-1, color=fill_value, thickness=-1)  # type: ignore
     return mask
 
 
 class MixinGenerateCensors(Mixin):
+    """
+    This Mixin handles the generation of the censors, both normal and reverse.
+
+    """
+
     def _handle_reverse_censor(
         self,
         reverse_censors: list[Censor],
@@ -50,6 +70,18 @@ class MixinGenerateCensors(Mixin):
         parts: list[Part],
         file_image: Image,
     ) -> Image:
+        """
+        This method handles the generation of the reverse censor.
+
+        How the method works, an inverse mask is created then the list of masks
+        is subtracted from the inverse.
+
+        :param list[Censor] reverse_censors: List of censors
+        :param Mask inverse_empty_mask: Mask that's entirely white
+        :param list[Part] parts: List of parts
+        :param Image file_image: Original file image
+        :return Image: Output image
+        """
         # Skip if not Used
         if not reverse_censors:
             return file_image
@@ -80,8 +112,19 @@ class MixinGenerateCensors(Mixin):
     def _apply_censors(
         self,
         parts: list[Part],
-        file_image,
+        file_image: Image,
     ) -> tuple[Image, bool]:
+        """
+        This method handles the censoring of the files.
+
+        The method sorts the part by state and name to ensure overlaps are
+        properly handled, then the method will iterate through the censors.
+
+        :param list[Part] parts: List of parts
+        :param Image file_image: Input image
+        :return tuple[Image, bool]: Output image and a flag for forcing the
+            image to PNG (for transparency)
+        """
         parts = sorted(
             parts,
             key=lambda x: (x.part_settings.state, x.part_name),
@@ -143,7 +186,6 @@ class MixinGenerateCensors(Mixin):
                 # Optional: Gaussian style
                 spread = 3 + fade_factor * 5
                 glow = np.exp(-((1 - dist_norm) ** 6) * spread)
-                # glow = glow * (1 - fade_factor) + fade_factor
 
                 output_mask = np.maximum(output_mask, glow)
 

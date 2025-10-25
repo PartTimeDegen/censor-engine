@@ -1,0 +1,17 @@
+debug_mode: True
+
+# Parts Enabled
+enabled_parts:
+  - "FEMALE_BREAST_EXPOSED"
+
+# Information
+censor_settings:
+  # Fall Back Options as "General" Settings
+  default_part_settings:
+    censors:
+      - style: "overlay"
+        parameters:
+          colour: "BLACK"
+
+    minimum_score: 0.20
+    shape: "box"

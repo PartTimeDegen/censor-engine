@@ -89,15 +89,30 @@ class ImageGenerator:
     seed: int = 69
     parts: list[DetectedPartSchema]
 
-    def __init__(self, input_path: Path):
+    def __init__(
+        self,
+        input_path: Path,
+    ):
         self.input_path = input_path
+        self._create_parts(self._create_parts())
 
+    def _create_parts(
+        self,
+        input_data: list[tuple[str, int, str]] | None = None,
+    ):
+        if isinstance(input_data, list) and not len(input_data):
+            return
         self.parts = []
-        for index, (key, v_row, h_row) in enumerate(VERTICAL_ROWS_AND_DATA):
+
+        if input_data is None:
+            input_data = VERTICAL_ROWS_AND_DATA
+
+        for index, (key, v_row, h_row) in enumerate(input_data):
             circle_size = CUSTOM_CIRCLES.get(key, CIRCLE_SIZE)
             circle_radius = int(circle_size / 2)
+            hori = HORIZONTAL_ROWS[h_row] if isinstance(h_row, str) else h_row
             relbox = (
-                HORIZONTAL_ROWS[h_row] - circle_radius,
+                hori - circle_radius,
                 v_row - circle_radius,
                 circle_size,
                 circle_size,

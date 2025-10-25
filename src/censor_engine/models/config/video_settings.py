@@ -5,8 +5,8 @@ from dataclasses import dataclass, field
 class VideoConfig:
     # Core Settings
     # NOTE: The default "-1" means to use the native FPS
-    censoring_fps: int = -1  # TODO
-    output_fps: int = -1  # TODO
+    censoring_fps: int = -1  # TODO: Implement
+    output_fps: int = -1  # TODO: Implement
 
     # Video Cleaning Settings
     # # Frame Stability Config

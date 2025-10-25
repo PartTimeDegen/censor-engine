@@ -8,6 +8,12 @@ from censor_engine.models.structs import Mixin
 
 
 class MixinGenerateParts(Mixin):
+    """
+    This mixin is used to handle the generation of the parts that are created
+    by the AI models.
+
+    """
+
     def _create_parts(
         self,
         config: Config,
@@ -51,7 +57,8 @@ class MixinGenerateParts(Mixin):
             The structure could be improved but the reason I've used a map()
             instead of list comprehensions is because it's faster.
 
-            :param DetectedPartSchema detect_part: Output from the Detector class method
+            :param DetectedPartSchema detect_part: Output from the Detector
+                class method
             :return Optional[Part]: A Part object (or None)
             """
             if detect_part.label not in config.censor_settings.enabled_parts:
@@ -75,6 +82,31 @@ class MixinGenerateParts(Mixin):
         self,
         parts: list[Part],
     ) -> list[Part]:
+        """
+        This method applies the mask shapes.
+
+        The method will iterate through the parts and find it's determined
+        shape.
+
+        For more advanced shapes like joints and bars, additional passes are
+        required.
+
+        For joints, the part will generate a basic mask of the base_objects
+        (normally ellipses), and that will be used as the input for the joint
+        shape. This is because joints are normally produced with either the
+        cv2 bounding box method or the the fit ellipse method, so it needs
+        something to fit for both of them.
+
+        Bars extend this by performing the requirements to get their joint
+        object (almost entirely a bounding box since it gives the best base),
+        then use that to cast lines to the edge of the image.
+
+        TODO: Move this to it's own mixin at some point.
+        TODO: Update this for custom mask patterns.
+
+        :param list[Part] parts: List of parts
+        :return list[Part]: List of parts with shapes applied.
+        """
         new_parts = []
         for part in parts:
             empty_mask = Part.create_empty_mask(part.image_shape)

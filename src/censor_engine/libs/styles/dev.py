@@ -165,7 +165,7 @@ class Debug(DevStyle):
         # Second loop — draw scaled multi-line text
         for part_obj in part_list:
             colour_obj = Colour(colour_dict[part_obj.get_name()])
-            text = f"{part_obj.part_name}\nSCORE={float(part_obj.score):0.2%}"
+            text = f"{part_obj.part_name}\nSCORE={float(part_obj.score):0.1%}"
 
             box_x = part_obj.relative_box[0]
             box_y = (

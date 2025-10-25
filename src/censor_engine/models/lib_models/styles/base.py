@@ -51,7 +51,7 @@ class Style(ABC, MixinContourMasking, MixinImageBlending):
         mask_thickness: int = -1,
         fade_width: int = 0,
         gradient_mode: Literal["linear", "gaussian"] = "linear",
-        **kwargs,
+        **kwargs,  # noqa: ANN003
     ) -> ProcessedImage:
         processed_image = self.apply_style(
             image,
@@ -78,8 +78,8 @@ class Style(ABC, MixinContourMasking, MixinImageBlending):
         contours: list[Contour],
         part: Part | None,
         thickness: int = -1,
-        *parameters,
-        **kwargs,
+        *parameters,  # noqa: ANN002
+        **kwargs,  # noqa: ANN003
     ) -> ProcessedImage:
         raise NotImplementedError
 

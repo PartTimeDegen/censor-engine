@@ -52,7 +52,7 @@ class MixinVideoPipeline(Mixin):
         flags: dict[str, bool],
         path_manager: PathManager,
         inline_mode: bool,  # TODO: Utilise  # noqa: FBT001
-        _test_detection_output: list[DetectedPartSchema],
+        _test_detection_output: list[list[DetectedPartSchema]],
     ) -> list[Image]:
         dev_tools = None
         max_index = max(f[0] for f in indexed_files)
@@ -106,13 +106,19 @@ class MixinVideoPipeline(Mixin):
                         using_full_output_path=path_manager.get_flag_is_using_full_path(),
                     )
 
+                # Handle missing Test Data
+                if _test_detection_output:
+                    test_frame_data = _test_detection_output[frame_counter]
+                else:
+                    test_frame_data = []
+
                 # Run Censor Manager
                 image_processor = ImageProcessor(
                     file_image=frame,
                     config=config,
                     debug_level=debug_level,
                     dev_tools=dev_tools,
-                    _test_detection_output=_test_detection_output,
+                    _test_detection_output=test_frame_data,
                 )
                 image_processor.generate_parts_and_shapes()
 

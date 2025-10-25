@@ -17,6 +17,7 @@ dependencies = [
     "opencv-stubs>=0.1.0",
     "pillow>=11.3.0",
     "progressbar2>=4.5.0",
+    "pydantic>=2.11.7",
     "pydload>=1.0.9",
     "pyright>=1.1.403",
     "pytest>=8.4.1",
@@ -32,8 +33,11 @@ pythonpath = ["src"]
 [tool.ruff]
 src = ["src"]
 exclude = [
-    "tests",
+    ".venv",
+    "tests/01_unit_tests",
+    "tests/02_integration_tests",
     "docs",
+    "src/censor_engine/libs" # Doesn't need it
 ]
 line-length = 79
 lint.extend-select = [
@@ -60,8 +64,11 @@ lint.ignore = [
     "PGH004",
     "COM812",
     "D203",
+    "D104",
     "ARG002", # Explicitly disabled because it interferes with Schemas
 ]
 
 [tool.ruff.format]
 quote-style = "double" 
+exclude = [] 
+

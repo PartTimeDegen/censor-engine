@@ -1,5 +1,15 @@
 class Colour:
-    value: tuple[int, int, int]  # Value
+    """
+    This is the class that handles the colours used in CensorEngine, such that
+    there's a common interface for them to use.
+
+    By default the values are a BGR tuple, which is what OpenCV uses. The class
+    however accepts RGB values, preset names for basic colours, and also BGR if
+    required.
+
+    """
+
+    value: tuple[int, int, int]  # BGR
 
     def __repr__(self) -> str:
         return f"{self.value} ({self.get_colour(self.value)})"
@@ -13,6 +23,15 @@ class Colour:
         *,
         already_bgr: bool = False,
     ) -> None:
+        """
+        This normalises colours to fit the BGR format, which is the default
+        for OpenCV.
+
+        :param str | tuple[int, int, int] colour_name_or_rgb_value:
+            The preset string or RGB 0-255 values, defaults to "WHITE"
+        :param bool already_bgr: Toggle for BGR values, defaults to False
+        :raises ValueError: If a colour name is wrong
+        """
         if already_bgr and isinstance(
             colour_name_or_rgb_value,
             tuple,
@@ -36,6 +55,18 @@ class Colour:
         return (colour[2], colour[1], colour[0])
 
     def get_colour(self, colour: tuple[int, int, int]) -> str:
+        """
+        This is a helper function that looks up the value of a colour to return
+        the present name. However if the value doesn't exist, it returns an
+        error.
+
+        TODO: Maybe None instead would be better.
+        TODO: If no colour is given, return it's own colour.
+
+        :param tuple[int, int, int] colour: Tuple of the colour.
+        :raises ValueError: Colour not found.
+        :return str: Name of the colour.
+        """
         flipped_value = self._flip_colour(colour)
         for name, val in _colours.items():
             if flipped_value == val:

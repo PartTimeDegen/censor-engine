@@ -25,6 +25,17 @@ class CensorEngine(
     MixinArguments,
     MixinUtils,
 ):
+    """
+    This is the main class of CensorEngine. This handles all the censoring
+    tools and functionality.
+
+    :param MixinImagePipeline: This is the pipeline for Images
+    :param MixinVideoPipeline: This is the pipeline for Videos
+    :param MixinReporting: This is the mixin for reporting and debugging
+    :param MixinArguments: This is the mixin for handling the CLI
+    :param MixinUtils: This is a utils Mixin
+    """
+
     # Information
     uncensored_folder: str | Path | None = None
     censored_folder: str | Path | None = None
@@ -34,7 +45,9 @@ class CensorEngine(
 
     # Test Stuff
     _test_mode: bool = False
-    _test_detection_output: list[DetectedPartSchema] | None = None
+    _test_detection_output: (
+        list[DetectedPartSchema] | list[list[DetectedPartSchema]] | None
+    ) = None
 
     # Debug & Dev Tools
     _debug_level: DebugLevels = DebugLevels.NONE
@@ -56,7 +69,7 @@ class CensorEngine(
         self.base_folder = Path(self.base_folder)
 
         # Handle Config and Arguments
-        arguments: dict[str, Any] = {
+        arguments = {
             "arg_loc": self._arg_loc,
             "debug_level": self._debug_level,
             "config": self.config_data,
@@ -95,11 +108,29 @@ class CensorEngine(
         )
 
     def display_times(self) -> None:
+        """
+        This is used to display the times it took to perform censors.
+
+        Currently unused.
+
+        Used for debugging.
+
+        TODO: Remove and supplant
+        """
         # Reporting
         if self._flags["show_stat_metrics"] and len(self._time_durations) != 0:
             self.display_bulk_stats(self._time_durations)
 
     def start(self) -> list[Image]:
+        """
+        This is the main entrypoint for censorengine.
+
+        TODO: Change the output to a dict or dataclass
+        TODO: Make Inline mode a feature
+        TODO: Import the test detection output thing
+
+        :return list[Image]: List of censored images.
+        """
         # Find Files
         args: dict[str, Any] = {
             "main_files_path": self.base_folder,
@@ -110,16 +141,14 @@ class CensorEngine(
             "function_get_index": self._get_index_text,
             "flags": self._flags,
             "path_manager": self._path_manager,
-            "inline_mode": self._test_mode,  # TODO: This should be a feature
-            "_test_detection_output": self._test_detection_output,  # Need to Improve
+            "inline_mode": self._test_mode,
+            "_test_detection_output": self._test_detection_output,
         }
         video_args = args.copy()
         video_args["function_display_times"] = self.display_times
 
         # What to Censor
-        memory_files: list[
-            Image
-        ] = []  # TODO This should be a dict or class maybe
+        memory_files: list[Image] = []
         if self.censor_mode == "image":
             memory_files.extend(self._image_pipeline(**args))
         elif self.censor_mode == "video":

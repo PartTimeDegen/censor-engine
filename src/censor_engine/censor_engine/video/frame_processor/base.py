@@ -13,8 +13,9 @@ class FrameProcessor(MixinPartPersistence):
     This class handles the processing of the parts between frames, such to
     improve the quality of the output.
 
-    Currently, # TODO
-    # FIXME Make persistence work with parts rather than frame (see name change)
+    # TODO: Continue
+    # FIXME:  Make persistence work with parts rather than frame
+    # (see name change)
 
     """
 
@@ -40,7 +41,9 @@ class FrameProcessor(MixinPartPersistence):
     )
 
     def load_parts(self, parts: list[Part]) -> None:
-        # TODO Too tired to do now, but an approximate area of the box might be worth it, then having a double forloop to go through and find new ones, can optimise after
+        # TODO: Too tired to do now, but an approximate area of the box might
+        # be worth it, then having a double forloop to go through and find new
+        # ones, can optimise after
         frame_parts = [FramePart(part) for part in parts]
         self.current_frame = self.load_parts_from_frame(frame_parts)
 

@@ -6,7 +6,7 @@ from censor_engine.models.structs.censors import Censor
 
 @dataclass(slots=True)
 class RenderingConfig:
-    batch_size: int = 4  # TODO - Multi-threading
+    batch_size: int = 4  # TODO: Multi-threading
     merge_method: MergeMethod = MergeMethod.GROUPS
 
     def __post_init__(self):
@@ -22,7 +22,7 @@ class RenderingConfig:
 
 @dataclass(slots=True)
 class AIConfig:
-    ai_model_downscale_factor: int = 1  # TODO
+    ai_model_downscale_factor: int = 1  # TODO: Implement
 
 
 @dataclass(slots=True)

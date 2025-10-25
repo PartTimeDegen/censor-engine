@@ -11,7 +11,7 @@ files (yet, maybe, might be overkill)
 
 
 enabled_detectors: list[Detector] = [
-    NudeNetDetector(),  # type: ignore # FIXME at some point
+    NudeNetDetector(),  # type: ignore # FIXME: at some point
 ]
 
 enabled_determiners = [

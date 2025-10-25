@@ -1,0 +1,1 @@
+./run.sh --uncensored-location ./video_test/discord --config-location zz_dev.yml -fo -td --debug-level video

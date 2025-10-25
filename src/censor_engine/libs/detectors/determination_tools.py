@@ -70,7 +70,7 @@ class ImageGenreDeterminer(Determiner):
             return self.broad_groups["real"]
         return self.broad_groups["hentai"]
 
-    def determine_image(self, file_image: Image) -> str:  # type: ignore #FIXME
+    def determine_image(self, file_image: Image) -> str:  # type: ignore #FIXME: Implement
         """
         Determines the type of pornographic image in question.
 

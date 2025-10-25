@@ -6,17 +6,25 @@ APPROVED_FORMATS_VIDEO = [".mp4", ".webm"]
 
 
 class MixinUtils(Mixin):
+    """
+    This Mixin is used to hold the misc/utils functions.
+
+    """
+
     def _get_index_text(self, index: int, max_file_index: int) -> str:
         index_percent = index / max_file_index
         leading_spaces = " " * (len(str(max_file_index)) - len(str(index)))
         leading_spaces_pc = " " * (3 - len(str(int(100 * index_percent))))
 
-        return f"{leading_spaces}{index}/{max_file_index} ({leading_spaces_pc}{index_percent:0.1%})"
+        return (
+            f"{leading_spaces}{index}/{max_file_index} "
+            f"({leading_spaces_pc}{index_percent:0.1%})"
+        )
 
     def _find_files(
         self,
         path_manager: PathManager,
-    ):
+    ) -> list[tuple[int, str, str]]:
         approved_formats = set(APPROVED_FORMATS_IMAGE + APPROVED_FORMATS_VIDEO)
         full_files_path = path_manager.get_uncensored_folder()
 
