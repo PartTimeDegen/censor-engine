@@ -195,3 +195,5 @@ libpng.sh
 .ruff_cache
 src/.test_data
 .checkme
+
+tools/*

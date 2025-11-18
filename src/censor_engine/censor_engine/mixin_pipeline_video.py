@@ -63,7 +63,11 @@ class MixinVideoPipeline(Mixin):
 
             # Get Video Capture
             full_file_path = path_manager.get_save_file_path(file_path)
-            video_processor = VideoProcessor(file_path, full_file_path, flags)
+            video_processor = VideoProcessor(
+                file_path,
+                full_file_path,
+                flags,
+            )
 
             # Build Progress Bar
             file_name = (
@@ -138,7 +142,7 @@ class MixinVideoPipeline(Mixin):
                                 "spasm".
 
                 """
-                frame_processor.load_parts(image_processor.get_image_parts())
+                # frame_processor.load_parts(image_processor.get_image_parts())
                 """
                 -   Keep parts (hold them, if -1, always hold)
                 -   check sizes for parts, flag any bad ones
@@ -148,20 +152,20 @@ class MixinVideoPipeline(Mixin):
 
                 """
 
-                # Apply Quality Filters
-                frame_processor.run()
+                # # Apply Quality Filters FIXME: This is losing identical parts, and I reckon that's what causes the persistance memory to be lost
+                # frame_processor.run()
 
-                # Update the Parts
-                image_processor.set_image_parts(
-                    frame_processor.retrieve_parts(),
-                )
+                # # Update the Parts
+                # image_processor.set_image_parts(
+                #     frame_processor.retrieve_parts(),
+                # )
 
                 # Apply Censors
                 image_processor.compile_masks()
                 image_processor.apply_censors()
 
                 # Save Output
-                file_output = image_processor.return_output()
+                file_output: Image = image_processor.return_output()
 
                 # # Apply Debug Effects
                 if debug_level > DebugLevels.NONE:
@@ -185,5 +189,9 @@ class MixinVideoPipeline(Mixin):
                 in_place_durations.append(image_processor.get_duration())
                 function_display_times()
 
-            # Spacer
+                if video_processor.force_stop:
+                    break
+
+            video_processor.close_video()
+
         return []  # TODO: Figure a way to implement me

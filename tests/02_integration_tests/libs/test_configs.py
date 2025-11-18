@@ -22,6 +22,7 @@ expected_error: dict[str, float] = {
     "11_trigger_focus.yml": 3,
     "10_state_approved_triggers.yml": 4,
     "zz_dev.yml": 5,
+    "raw_data.yml": 2.5,
 }
 
 

@@ -1,3 +1,5 @@
+import os
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -35,6 +37,9 @@ class PathManager:
 
     _cache_uncensored_folder: Path | None = field(init=False, default=None)
     _cache_censored_folder: Path | None = field(init=False, default=None)
+
+    # Tools/Binaries
+    ffmpeg_file_path: Path = field(init=False)
 
     def __post_init__(self):
         self._is_using_test_data = self.flags.get("using_test_data", False)
@@ -75,6 +80,36 @@ class PathManager:
 
         if self.test_mode:
             self._censored_folder = self.base_directory
+
+        # FFMPeg for Video
+        self.__get_correct_ffmpeg_binary()
+        self.__mount_ffmpeg()
+
+    def __get_correct_ffmpeg_binary(self) -> None:
+        base_path = Path("tools/ffmpeg")
+        if sys.platform.startswith("win"):
+            self.ffmpeg_file_path = base_path / "ffmpeg.exe"
+        elif sys.platform.startswith("linux") or sys.platform.startswith(
+            "darwin"
+        ):
+            self.ffmpeg_file_path = base_path / "ffmpeg"
+        else:
+            msg = f"Unsupported OS: {sys.platform}"
+            raise RuntimeError(msg)
+
+        if not self.ffmpeg_file_path.exists():
+            msg = f"FFmpeg binary not found at {self.ffmpeg_file_path}"
+            raise FileNotFoundError(msg)
+
+        # Get Full Path
+        repo_root = Path(__file__).resolve().parent.parent.parent
+        self.ffmpeg_file_path = (repo_root / self.ffmpeg_file_path).resolve()
+        self.ffmpeg_file_path.chmod(0o755)
+
+    def __mount_ffmpeg(self):
+        if not os.environ.get("FFMPEG_BINARY"):
+            os.environ["FFMPEG_BINARY"] = str(self.ffmpeg_file_path)
+            print(f"FFmpeg set to: {self.ffmpeg_file_path}")  # noqa: T201
 
     def get_uncensored_folder(self) -> Path:
         if folder := self._cache_uncensored_folder:

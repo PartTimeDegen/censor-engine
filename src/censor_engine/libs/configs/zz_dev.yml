@@ -1,5 +1,5 @@
 censor_settings:
-  enabled_parts: ["FEMALE_BREAST_COVERED", FEMALE_BREAST_EXPOSED]
+  enabled_parts: all
 
   default_part_settings:
     censors:

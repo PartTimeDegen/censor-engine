@@ -32,6 +32,21 @@ class MixinUtils(Mixin):
             msg = f"Path Does Not Exist: {full_files_path}"
             raise TypeError(msg)
 
+        # Singular File Fix
+        if full_files_path.is_file():
+            if full_files_path.suffix.lower() not in approved_formats:
+                msg = "File Doesn't have an approved format"
+                raise TypeError(msg)
+            return [
+                (
+                    1,
+                    str(full_files_path),
+                    "video"
+                    if full_files_path.suffix.lower() in APPROVED_FORMATS_VIDEO
+                    else "image",
+                )
+            ]
+
         # Recursive glob for all files under the folder
         files = [
             f

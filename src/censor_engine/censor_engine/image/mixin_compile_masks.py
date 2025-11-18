@@ -128,7 +128,8 @@ class MixinComponentCompile(Mixin):
         """
         sorted_parts = sorted(
             parts,
-            key=lambda x: (-x.part_settings.state, x.part_name)[::-1],
+            key=lambda x: (-x.part_settings.state.value, x.part_name),
+            reverse=True,
         )
         removed_parts = []  # Track removed parts
 

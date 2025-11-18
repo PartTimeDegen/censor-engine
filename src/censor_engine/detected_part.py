@@ -62,7 +62,7 @@ class Part:
             self.minimum_score = min_score
 
         # # Box
-        self._correct_relative_box_size()
+        self.__correct_relative_box_size()
 
         # # Merge Groups
         for index, group in enumerate(
@@ -104,12 +104,15 @@ class Part:
         self.base_masks = [self.mask]
 
     def __str__(self) -> str:
-        return f"{self.part_name}_{self.part_id}{'_merged' if self.is_merged else ''}"
+        return (
+            f"{self.part_name}_{self.part_id}"
+            f"{'_merged' if self.is_merged else ''}"
+        )
 
     def __repr__(self) -> str:
         return self.part_name
 
-    def _correct_relative_box_size(self) -> None:
+    def __correct_relative_box_size(self) -> None:
         margin_data = self.part_settings.margin
 
         if isinstance(margin_data, float | int):

@@ -1,1 +1,1 @@
-poetry run python src/main.py "$@"
+poetry run env FFMPEG_BINARY="$FFMPEG_BINARY" python src/main.py "$@"

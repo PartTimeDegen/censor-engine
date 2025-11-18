@@ -15,10 +15,10 @@ part_settings = {
     "minimum_score": [
         0.0,
         0,
-        -10,
-        100,
+        # -10,
+        1,
         0.2,
-        1.2,
+        # 1.2,
     ],
     "censors": [
         # Good

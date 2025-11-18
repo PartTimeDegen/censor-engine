@@ -1,29 +1,36 @@
-from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
 
 import yaml
+from pydantic import BaseModel
 
 from censor_engine.libs.configs import get_config_path
 from censor_engine.libs.detectors.box_based_detectors.nude_net import (
     NudeNetDetector,
 )
 
-from .dev_settings import DevConfig
-from .file_settings import FileConfig
-from .image_settings import AIConfig, RenderingConfig, ReverseCensorConfig
-from .part_settings import (
+from .development import DevelopmentConfig
+from .file import FileConfig
+from .image import AIConfig, RenderingConfig, ReverseCensorConfig
+from .part import (
     MergingConfig,
     PartInformationConfig,
     PartSettingsConfig,
 )
-from .video_settings import VideoConfig
+from .video import VideoConfig
 
 
-@dataclass(slots=True)
-class Config:
+class Config(BaseModel):
+    """
+    TODO: Write this.
+
+    :param _type_ BaseModel: _description_
+    :raises FileNotFoundError: _description_
+    :return _type_: _description_
+    """
+
     # File Information
-    dev_settings: DevConfig
+    dev_settings: DevelopmentConfig
     file_settings: FileConfig
 
     # Program Settings
@@ -49,26 +56,23 @@ class Config:
         # Censor Part Information
         enabled_parts = censor_settings.get("enabled_parts", [])
         default_part_settings = censor_settings.get(
-            "default_part_settings",
-            {},
+            "default_part_settings", {}
         )
         reverse_censor_settings = censor_settings.get(
-            "reverse_censor_settings",
-            {},
+            "reverse_censor_settings", {}
         )
         merge_settings = censor_settings.get("merge_settings", {})
 
-        # Shortcuts
+        # Handle "all" shortcut
         if isinstance(enabled_parts, str) and enabled_parts == "all":
-            enabled_parts = list(
-                NudeNetDetector.model_classifiers,
-            )  # HACK: make for more models
+            enabled_parts = list(NudeNetDetector.model_classifiers)
         elif isinstance(enabled_parts, str):
             enabled_parts = [enabled_parts]
 
-        # # Handle Part Data
+        # Handle Part Data
         parts_settings: dict[str, PartSettingsConfig] = {}
         default_settings_object = PartSettingsConfig(**default_part_settings)
+
         for part_name in enabled_parts:
             part_data = censor_settings.get(part_name, {})
 
@@ -78,21 +82,21 @@ class Config:
             ):
                 part_data["censors"] = []
 
-            # Update Part Data
-            if part_data:
-                part_object = replace(default_settings_object, **part_data)
-                part_object.__post_init__()
-            else:
-                part_object = default_settings_object
+            # Merge defaults with overrides and RE-VALIDATE
+            merged = default_settings_object.model_dump()
+            merged.update(part_data)
+
+            part_object = PartSettingsConfig.model_validate(merged)
+
+            # Fix missing name
+            if part_object.name == "MISSING_NAME":
+                part_object.name = part_name
+
             parts_settings[part_name] = part_object
 
-            # Part Corrects
-            if parts_settings[part_name].name == "MISSING_NAME":
-                parts_settings[part_name].name = part_name
-
-        # Compile
+        # Compile into unified dict
         return {
-            "dev_settings": DevConfig(**dev_settings),
+            "dev_settings": DevelopmentConfig(**dev_settings),
             "file_settings": FileConfig(**file_settings),
             "video_settings": VideoConfig(**video_settings),
             "rendering_settings": RenderingConfig(**render_settings),
@@ -104,77 +108,43 @@ class Config:
                 merge_settings=MergingConfig(**merge_settings),
             ),
             "reverse_censor": ReverseCensorConfig(
-                censors=reverse_censor_settings,
+                censors=reverse_censor_settings
             ),
         }
 
     @classmethod
-    def from_yaml(cls, main_file_path, config_path: str) -> "Config":
+    def from_yaml(cls, main_file_path: Path, config_path: str) -> "Config":
         """
-        Loads the YAML file and initializes the Config object.
+        TODO: Write this.
 
-        Example:
-            dev_settings:
-                ...
-
-            file_settings:
-                ...
-
-            ai_settings:
-                ...
-
-            image_settings:
-                ...
-
-            video_settings:
-                ...
-
-            render_settings:
-                ...
-
-            censor_settings:
-                enabled_parts: [PART_A, PART_B, ...]
-
-                merge_settings:
-                    ...
-
-                default_part_settings:
-                    ...
-
-                reverse_censor_settings:
-                    ...
-
-                PART_A:
-                    ...
-
-                PART_B:
-                    ...
-
-
+        :param Path main_file_path: _description_
+        :param str config_path: _description_
+        :raises FileNotFoundError: _description_
+        :return Config: _description_
         """
-        # Get the Full Config Path For Internal Configs
         full_config_path = get_config_path(config_path)
 
-        # If it doesn't Exist, Check for Local Paths
         if not full_config_path.exists():
             full_config_path = Path(main_file_path) / config_path
 
-        # If It still doesn't Exist, It must be Wrong
         if not full_config_path.exists():
             msg = f"Cannot find config at {config_path} or {full_config_path}"
-            raise FileNotFoundError(
-                msg,
-            )
+            raise FileNotFoundError(msg)
 
-        # Load Config File
-        with open(full_config_path) as file:
+        with Path.open(full_config_path) as file:
             config_data = yaml.safe_load(file) or {}
 
-        return cls(**Config._process_dict_data(config_data))
+        return cls(**cls._process_dict_data(config_data))
 
     @classmethod
     def from_dictionary(cls, dict_config: dict[str, Any]) -> "Config":
-        return cls(**Config._process_dict_data(dict_config))
+        """
+        TODO: Write this.
+
+        :param dict[str, Any] dict_config: _description_
+        :return Config: _description_
+        """
+        return cls(**cls._process_dict_data(dict_config))
 
     def _test_recalculate_missing_part_settings(self) -> None:
         existing_parts = self.censor_settings.parts_settings

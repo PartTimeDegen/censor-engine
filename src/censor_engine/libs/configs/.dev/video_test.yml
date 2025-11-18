@@ -1,17 +1,81 @@
-debug_mode: True
+video_settings:
+  frame_difference_threshold: 0.02
+  part_frame_hold_seconds: 0.5
+  persistence_groups:
+    - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
+    - ["BUTTOCKS_COVERED", "BUTTOCKS_EXPOSED"]
 
-# Parts Enabled
-enabled_parts:
-  - "FEMALE_BREAST_EXPOSED"
-
-# Information
 censor_settings:
-  # Fall Back Options as "General" Settings
+  enabled_parts:
+    - "FEMALE_BREAST_EXPOSED"
+    - "FEMALE_BREAST_COVERED"
+    - "BUTTOCKS_EXPOSED"
+    - "BUTTOCKS_COVERED"
+    - "ANUS_EXPOSED"
+    - "ANUS_COVERED"
+    - "FEMALE_GENITALIA_EXPOSED"
+    - "FEMALE_GENITALIA_COVERED"
+
+  # merge_settings:
+  # merge_groups:
+  # - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
+
   default_part_settings:
     censors:
-      - style: "overlay"
-        parameters:
-          colour: "BLACK"
+      [
+        { "style": "outline", parameters: { "colour": "BLACK" } },
+        { "style": "pixelate", parameters: { "factor": 15 } },
+      ]
+    shape: "ellipse"
 
-    minimum_score: 0.20
-    shape: "box"
+  BUTTOCKS_EXPOSED:
+    censors:
+      [
+        { "style": "outline", parameters: { "colour": "WHITE" } },
+        { "style": "pixelate", parameters: { "factor": 15 } },
+      ]
+  BUTTOCKS_COVERED:
+    censors:
+      [
+        { "style": "outline", parameters: { "colour": "GREY" } },
+        { "style": "pixelate", parameters: { "factor": 15 } },
+      ]
+
+  FEMALE_BREAST_EXPOSED:
+    censors:
+      [
+        { "style": "outline", parameters: { "colour": "YELLOW" } },
+        { "style": "pixelate", parameters: { "factor": 15 } },
+      ]
+  FEMALE_BREAST_COVERED:
+    censors:
+      [
+        { "style": "outline", parameters: { "colour": "ORANGE" } },
+        { "style": "pixelate", parameters: { "factor": 15 } },
+      ]
+
+  FEMALE_GENITALIA_EXPOSED:
+    censors:
+      [
+        { "style": "outline", parameters: { "colour": "BLUE" } },
+        { "style": "pixelate", parameters: { "factor": 15 } },
+      ]
+  FEMALE_GENITALIA_COVERED:
+    censors:
+      [
+        { "style": "outline", parameters: { "colour": "PURPLE" } },
+        { "style": "pixelate", parameters: { "factor": 15 } },
+      ]
+
+  ANUS_EXPOSED:
+    censors:
+      [
+        { "style": "outline", parameters: { "colour": "PINK" } },
+        { "style": "pixelate", parameters: { "factor": 15 } },
+      ]
+  ANUS_COVERED:
+    censors:
+      [
+        { "style": "outline", parameters: { "colour": "RED" } },
+        { "style": "pixelate", parameters: { "factor": 15 } },
+      ]
