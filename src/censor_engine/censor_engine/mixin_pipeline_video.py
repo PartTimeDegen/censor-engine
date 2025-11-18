@@ -4,6 +4,7 @@ from pathlib import Path
 
 import progressbar
 
+from censor_engine.models.caching.base import Cache
 from censor_engine.models.config import Config
 from censor_engine.models.lib_models.detectors import DetectedPartSchema
 from censor_engine.models.structs import Mixin
@@ -96,6 +97,14 @@ class MixinVideoPipeline(Mixin):
                 part_frame_hold_frames=frame_hold,
             )
 
+            # Caching
+            cache = Cache(
+                path_manager.get_cache_folder(),
+                path_manager.base_directory,
+                file_path,
+                is_video=True,
+            )
+
             # Iterate through Frames
             for frame_counter, _ in enumerate(progress_bar):
                 # Check Frames
@@ -119,6 +128,10 @@ class MixinVideoPipeline(Mixin):
                 # Run Censor Manager
                 image_processor = ImageProcessor(
                     file_image=frame,
+                    file_name=file_path,
+                    path_manager=path_manager,
+                    cache=cache,
+                    frame_counter=frame_counter,
                     config=config,
                     debug_level=debug_level,
                     dev_tools=dev_tools,
@@ -142,7 +155,7 @@ class MixinVideoPipeline(Mixin):
                                 "spasm".
 
                 """
-                # frame_processor.load_parts(image_processor.get_image_parts())
+                frame_processor.load_parts(image_processor.get_image_parts())
                 """
                 -   Keep parts (hold them, if -1, always hold)
                 -   check sizes for parts, flag any bad ones
@@ -152,13 +165,13 @@ class MixinVideoPipeline(Mixin):
 
                 """
 
-                # # Apply Quality Filters FIXME: This is losing identical parts, and I reckon that's what causes the persistance memory to be lost
-                # frame_processor.run()
+                # Apply Quality Filters FIXME: This is losing identical parts, and I reckon that's what causes the persistance memory to be lost
+                frame_processor.run()
 
-                # # Update the Parts
-                # image_processor.set_image_parts(
-                #     frame_processor.retrieve_parts(),
-                # )
+                # Update the Parts
+                image_processor.set_image_parts(
+                    frame_processor.retrieve_parts(),
+                )
 
                 # Apply Censors
                 image_processor.compile_masks()
@@ -193,5 +206,6 @@ class MixinVideoPipeline(Mixin):
                     break
 
             video_processor.close_video()
+            cache.close()
 
         return []  # TODO: Figure a way to implement me

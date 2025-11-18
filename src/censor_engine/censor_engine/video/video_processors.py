@@ -214,5 +214,7 @@ class VideoProcessor:
         self.__mux_audio_and_video()
 
         # Delete Temps
-        self._temp_video_path.unlink()
-        self._temp_audio_path.unlink()
+        if self._temp_video_path.exists():
+            self._temp_video_path.unlink()
+        if self._temp_audio_path.exists():
+            self._temp_audio_path.unlink()

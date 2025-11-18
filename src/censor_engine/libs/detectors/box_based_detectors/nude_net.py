@@ -48,7 +48,7 @@ class NudeNetDetector(Detector):
                 score=found_part["score"],
                 relative_box=found_part["box"],
             )
-            for index, found_part in enumerate(
+            for _, found_part in enumerate(
                 self.model_object.detect(file_images_or_path),
             )
         ]

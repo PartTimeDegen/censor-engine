@@ -10,8 +10,11 @@ from censor_engine.censor_engine.tools.debugger import (
 from censor_engine.censor_engine.tools.dev_tools import DevTools
 from censor_engine.detected_part import Part
 from censor_engine.libs.detectors import enabled_detectors
+from censor_engine.models.caching import Cache
+from censor_engine.models.caching.caching_schemas import AIOutputData
 from censor_engine.models.config import Config
 from censor_engine.models.lib_models.detectors import DetectedPartSchema
+from censor_engine.paths import PathManager
 from censor_engine.typing import Image
 
 from .mixin_compile_masks import MixinComponentCompile
@@ -52,9 +55,17 @@ class ImageProcessor(
     """
 
     file_image: Image
+    file_name: str
+    path_manager: PathManager
+
     config: Config
+
+    cache: Cache
+    frame_counter: int | None = None
+
     debug_level: DebugLevels = DebugLevels.NONE
     dev_tools: DevTools | None = None
+
     _test_detection_output: list[DetectedPartSchema] | None = None
 
     # Internals
@@ -93,10 +104,11 @@ class ImageProcessor(
             self._detected_parts = self._test_detection_output
             self._debugger.time_stop()
         else:
-            self._detect_parts()
+            self.__detect_parts()
 
     # Post Init Helper Functions
-    def _detect_parts(self) -> None:
+
+    def __detect_parts(self) -> None:
         """
         This function detects the parts using the detector dataclass.
 
@@ -105,15 +117,22 @@ class ImageProcessor(
         using the GPU (or CPU), however it's still a minor improvement.
 
         """
-        with ThreadPoolExecutor() as executor:
-            detected_parts = list(
-                executor.map(
-                    lambda detector: detector.detect_image(self.file_image),
-                    enabled_detectors,
-                ),
-            )
+        if self.cache.check_for_frame(self.frame_counter):
+            all_parts = self.cache.get_frame(self.frame_counter).output_data
+        else:
+            with ThreadPoolExecutor() as executor:
+                detected_parts = list(
+                    executor.map(
+                        lambda detector: detector.detect_image(
+                            self.file_image
+                        ),
+                        enabled_detectors,
+                    ),
+                )
 
-        all_parts = list(itertools.chain(*detected_parts))
+            all_parts = list(itertools.chain(*detected_parts))
+            output = AIOutputData(model_name="nude_net", output_data=all_parts)
+            self.cache.save_frame(self.frame_counter, output)
 
         # Sort and Label ID Based on Position
         all_parts.sort(

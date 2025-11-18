@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from censor_engine.models.config import Config
+from censor_engine.models.config.file import FileConfig
 
 PATH_TEST_DATA = Path(".test_data")
 PATH_SHORTCUT_UNCENSORED = Path()
@@ -28,63 +29,73 @@ class PathManager:
     test_mode: bool
 
     # Internal
-    _is_using_test_data: bool = field(init=False, default=False)
-    _is_using_shortcut: bool = field(init=False, default=False)
-    _is_using_full_output: bool = field(init=False, default=False)
+    # # Flags (hence f)
+    _f_test_data: bool = field(init=False, default=False)
+    _f_shortcut: bool = field(init=False, default=False)
+    _f_full_output: bool = field(init=False, default=False)
 
-    _uncensored_folder: Path = field(init=False)
-    _censored_folder: Path = field(init=False)
+    # # Config Shortcut
+    _conf_file: FileConfig = field(init=False)
 
-    _cache_uncensored_folder: Path | None = field(init=False, default=None)
-    _cache_censored_folder: Path | None = field(init=False, default=None)
+    # # Paths
+    _p_uncen: Path = field(init=False)
+    _p_cen: Path = field(init=False)
+    _p_cache: Path = field(init=False)
 
     # Tools/Binaries
     ffmpeg_file_path: Path = field(init=False)
 
     def __post_init__(self):
-        self._is_using_test_data = self.flags.get("using_test_data", False)
-        self._is_using_shortcut = self.flags.get("_using_shortcut", False)
-        self._is_using_full_output = self.flags.get(
+        # Quality of Life Variable
+        self._conf_file = self.config.file_settings
+
+        self._f_test_data = self.flags.get("using_test_data", False)
+        self._f_shortcut = self.flags.get("_using_shortcut", False)
+        self._f_full_output = self.flags.get(
             "show_full_output_path",
             False,
         )
 
-        if self._is_using_shortcut and self.args_loc:
+        # Handle when Shortcut is Used
+        if self._f_shortcut and self.args_loc:
             self.args_loc = (
-                self.config.file_settings.uncensored_folder
+                self._conf_file.uncensored_folder
                 / self.args_loc.relative_to(PATH_SHORTCUT_UNCENSORED)
             )
 
-        uncensored_folder = (
-            self.args_loc
-            if self.args_loc
-            else self.config.file_settings.uncensored_folder
-        )
-        censored_folder = (
-            self.args_loc
-            if self.args_loc
-            else self.config.file_settings.censored_folder
-        )
+        # Handle if CLI Args Change Loc
+        uncen = self._conf_file.uncensored_folder
+        cen = self._conf_file.censored_folder
+        cache = Path(".cache")
+        if cli_loc := self.args_loc:
+            uncen = cli_loc
+            cen = cli_loc
 
-        if self._is_using_test_data:
+        # Check if using Test Data
+        if self._f_test_data:
             self.base_directory = self.base_directory / PATH_TEST_DATA
-            uncensored_folder = (
-                self.base_directory / "uncensored" / uncensored_folder
-            )
-            censored_folder = (
-                self.base_directory / "censored" / censored_folder
-            )
+            uncen = self.base_directory / "uncensored" / uncen
+            cen = self.base_directory / "censored" / cen
+            cache = self.base_directory / ".cache" / cache
 
-        self._uncensored_folder = uncensored_folder
-        self._censored_folder = censored_folder
+        # Save Paths
+        self._p_uncen = uncen
+        self._p_cen = cen
+        self._p_cache = cen
 
+        # Check if doing Testing
         if self.test_mode:
-            self._censored_folder = self.base_directory
+            self._p_cen = self.base_directory
 
         # FFMPeg for Video
         self.__get_correct_ffmpeg_binary()
         self.__mount_ffmpeg()
 
+        # Create Caching Folder
+        self.__create_cache()
+
+    # Tools
+    # # FFmpeg
     def __get_correct_ffmpeg_binary(self) -> None:
         base_path = Path("tools/ffmpeg")
         if sys.platform.startswith("win"):
@@ -106,49 +117,58 @@ class PathManager:
         self.ffmpeg_file_path = (repo_root / self.ffmpeg_file_path).resolve()
         self.ffmpeg_file_path.chmod(0o755)
 
+    def __download_ffmpeg(self): ...
+
     def __mount_ffmpeg(self):
         if not os.environ.get("FFMPEG_BINARY"):
             os.environ["FFMPEG_BINARY"] = str(self.ffmpeg_file_path)
             print(f"FFmpeg set to: {self.ffmpeg_file_path}")  # noqa: T201
 
-    def get_uncensored_folder(self) -> Path:
-        if folder := self._cache_uncensored_folder:
-            return folder
+    # Caching
+    # # Meta Data
+    def save_cache_meta(self): ...
+    def load_cache_meta(self): ...
 
-        self._cache_uncensored_folder = (
-            self.base_directory / self._uncensored_folder
+    # # Checking Media Hash
+    def get_media_hash(self): ...
+    def compare_media_hash(self): ...
+
+    # # Saving Frame Data
+    def save_cache_frame(self, frame: int): ...
+    def load_cache_frame(self, frame: int): ...
+
+    # # Saving Cache
+    def __create_cache(self):
+        self.get_cache_folder().mkdir(parents=True, exist_ok=True)
+
+    # Public
+    def get_cache_folder(self):
+        return self.base_directory / ".cache"
+
+    def get_file_cache_folder(self, file_name: str):
+        return self.get_cache_folder() / Path(file_name).relative_to(
+            self.base_directory
         )
-        return self._cache_uncensored_folder
+
+    def get_uncensored_folder(self) -> Path:
+        return self.base_directory / self._p_uncen
 
     def get_censored_folder(self) -> Path:
-        if (folder := self._cache_censored_folder) is not None:
-            return folder
-
-        base_dir = self.base_directory
-        base_dir = base_dir / self._censored_folder
-
-        self._cache_censored_folder = (
-            base_dir
-            / base_dir.resolve().relative_to(self._censored_folder.resolve())
-        )
-        return self._cache_censored_folder
+        return self.base_directory / self._p_cen
 
     def get_output_censored_folder(self) -> Path | None:
-        if self._is_using_test_data:
-            return PATH_SHORTCUT_UNCENSORED / self._censored_folder
+        if self._f_test_data:
+            return PATH_SHORTCUT_UNCENSORED / self._p_cen
 
-        if self._is_using_shortcut:
-            return (
-                PATH_SHORTCUT_UNCENSORED
-                / self._censored_folder.relative_to(
-                    self.config.file_settings.censored_folder,
-                )
+        if self._f_shortcut:
+            return PATH_SHORTCUT_UNCENSORED / self._p_cen.relative_to(
+                self._conf_file.censored_folder,
             )
 
         return None
 
     def get_flag_is_using_full_path(self) -> bool:
-        return self._is_using_full_output
+        return self._f_full_output
 
     def get_save_file_path(
         self,
@@ -174,9 +194,9 @@ class PathManager:
 
         # Build list with prefix, original stem, and suffix (skip empty parts)
         parts = [
-            self.config.file_settings.file_prefix,
+            self._conf_file.file_prefix,
             stem,
-            self.config.file_settings.file_suffix,  # FIXME: Dumb AI
+            self._conf_file.file_suffix,  # FIXME: Dumb AI
         ]
         fixed_parts = [part for part in parts if part]
 

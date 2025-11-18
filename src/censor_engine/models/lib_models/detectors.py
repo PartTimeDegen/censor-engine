@@ -1,17 +1,16 @@
 from abc import abstractmethod
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 import gdown  # type: ignore
 import pydload  # type: ignore
+from pydantic import BaseModel, field_validator
 
 # import tensorflow as tf  # type: ignore # NOTE: I can't run this due to my shitty Xeon CPU
 from censor_engine.typing import Image
 
 
-@dataclass(slots=True)
-class DetectedPartSchema:
+class DetectedPartSchema(BaseModel):
     """
     This is the schema expected to be returned by core and customer detectors.
 
@@ -31,6 +30,10 @@ class DetectedPartSchema:
     score: float
     relative_box: tuple[int, int, int, int]  # X, Y, Width, Height
     part_id: int = 0
+
+    @field_validator("relative_box", mode="before")
+    def ensure_tuple(cls, v):
+        return tuple(v)
 
     def set_part_id(self, number: int) -> None:
         self.part_id = number

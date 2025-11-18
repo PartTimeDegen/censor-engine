@@ -11,21 +11,16 @@ class MixinPartPersistence(FrameProcessorUtils):
         part_candidates = []
         for index, dict_value in part_dictionary.items():
             # Conditions
-            is_matching_part_type_merged = (
-                dict_value.part.get_name_and_merged()
-                == frame_value.part.get_name_and_merged()
+            is_matching_part = (
+                dict_value.part.get_name() == frame_value.part.get_name()
             )
 
-            is_matching_merge = (
-                dict_value.part.is_merged == frame_value.part.is_merged
-            )
-
-            if group := frame_value.part.persistence_group_id:
-                is_matching_persistence_group = (
-                    dict_value.part.persistence_group_id == group
-                )
-            else:
-                is_matching_persistence_group = False
+            # if group := frame_value.part.persistence_group_id:
+            #     is_matching_persistence_group = (
+            #         dict_value.part.persistence_group_id == group
+            #     )
+            # else:
+            #     is_matching_persistence_group = False
 
             is_within_approx_region = (
                 dict_value.part.part_area.check_in_approx_region(
@@ -33,20 +28,19 @@ class MixinPartPersistence(FrameProcessorUtils):
                 )
             )
 
-            # Save Index to List
-            is_full_change = (
-                is_matching_merge and is_matching_persistence_group
-            )
-            is_partial_change = not is_matching_merge and (
-                is_within_approx_region and is_matching_persistence_group
-            )
-            is_part = (
-                is_matching_part_type_merged
-                or is_full_change
-                or is_partial_change
+            # # Save Index to List
+            # is_full_change = (
+            #     is_matching_merge and is_matching_persistence_group
+            # )
+            # is_partial_change = not is_matching_merge and (
+            #     is_within_approx_region and is_matching_persistence_group
+            # )
+            is_new_part = (
+                is_matching_part and is_within_approx_region
+                # or is_partial_change
             )
 
-            if is_part:
+            if is_new_part:
                 part_candidates.append(index)
 
         # Return Youngest Part

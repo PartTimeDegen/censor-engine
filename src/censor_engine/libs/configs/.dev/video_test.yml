@@ -1,6 +1,6 @@
 video_settings:
   frame_difference_threshold: 0.02
-  part_frame_hold_seconds: 0.5
+  part_frame_hold_seconds: 2
   persistence_groups:
     - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
     - ["BUTTOCKS_COVERED", "BUTTOCKS_EXPOSED"]

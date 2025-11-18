@@ -100,7 +100,7 @@ class CensorEngine(
 
         # Finalise PathManager
         self._path_manager = PathManager(
-            self.base_folder,
+            self.base_folder,  # type: ignore
             self._config,
             self._flags,
             self._arg_loc,
@@ -144,6 +144,8 @@ class CensorEngine(
             "inline_mode": self._test_mode,
             "_test_detection_output": self._test_detection_output,
         }
+
+        # Video Args
         video_args = args.copy()
         video_args["function_display_times"] = self.display_times
 

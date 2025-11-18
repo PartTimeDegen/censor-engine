@@ -3,6 +3,7 @@ from pathlib import Path
 
 import cv2
 
+from censor_engine.models.caching.base import Cache
 from censor_engine.models.config import Config
 from censor_engine.models.lib_models.detectors import DetectedPartSchema
 from censor_engine.models.structs import Mixin
@@ -26,6 +27,7 @@ class MixinImagePipeline(Mixin):
         flags: dict[str, bool],
         path_manager: PathManager,
         *,
+        frame: int = 0,
         inline_mode: bool = False,
         _test_detection_output: list[DetectedPartSchema] | None = None,
     ) -> list[Image]:
@@ -54,11 +56,22 @@ class MixinImagePipeline(Mixin):
                 )
 
             # Read the File
-            file_image = cv2.imread(file_path)
+            file_image: Image = cv2.imread(file_path)
+
+            # Caching
+            cache = Cache(
+                path_manager.get_cache_folder(),
+                path_manager.base_directory,
+                file_path,
+                is_video=False,
+            )
 
             # Run the Censor Manager
             image_processor = ImageProcessor(
-                file_image=file_image,  # type: ignore
+                file_image=file_image,
+                file_name=file_path,
+                path_manager=path_manager,
+                cache=cache,
                 config=config,
                 debug_level=debug_level,
                 dev_tools=dev_tools,
