@@ -1,6 +1,6 @@
 video_settings:
   frame_difference_threshold: 0.02
-  part_frame_hold_seconds: 2
+  part_frame_hold_seconds: 0.75
   persistence_groups:
     - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
     - ["BUTTOCKS_COVERED", "BUTTOCKS_EXPOSED"]
@@ -16,9 +16,9 @@ censor_settings:
     - "FEMALE_GENITALIA_EXPOSED"
     - "FEMALE_GENITALIA_COVERED"
 
-  # merge_settings:
-  # merge_groups:
-  # - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
+  merge_settings:
+    merge_groups:
+      - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
 
   default_part_settings:
     censors:

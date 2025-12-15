@@ -67,6 +67,9 @@ lint.ignore = [
     "D203",
     "D104",
     "ARG002", # Explicitly disabled because it interferes with Schemas
+    "ANN202", # TODO: Remove after production
+    "D102", # Ditto
+    "D101", # Ditto
 ]
 
 [tool.ruff.format]

@@ -91,10 +91,8 @@ class MixinVideoPipeline(Mixin):
                 config.video_settings.part_frame_hold_seconds
                 * video_processor.get_fps(),
             )
-
-            frame_processor = FrameProcessor(
-                frame_difference_threshold=config.video_settings.frame_difference_threshold,
-                part_frame_hold_frames=frame_hold,
+            fp = FrameProcessor(
+                maximum_miss_frame=frame_hold,
             )
 
             # Caching
@@ -126,7 +124,7 @@ class MixinVideoPipeline(Mixin):
                     test_frame_data = []
 
                 # Run Censor Manager
-                image_processor = ImageProcessor(
+                ip = ImageProcessor(
                     file_image=frame,
                     file_name=file_path,
                     path_manager=path_manager,
@@ -137,7 +135,7 @@ class MixinVideoPipeline(Mixin):
                     dev_tools=dev_tools,
                     _test_detection_output=test_frame_data,
                 )
-                image_processor.generate_parts_and_shapes()
+                ip.generate_parts()
 
                 # # Apply Stability Stuff
                 """
@@ -155,7 +153,9 @@ class MixinVideoPipeline(Mixin):
                                 "spasm".
 
                 """
-                frame_processor.load_parts(image_processor.get_image_parts())
+                found_parts = ip.get_image_parts()
+                fp.tracker.update_tracker(found_parts)
+                ip.set_image_parts(fp.tracker.get_parts())
                 """
                 -   Keep parts (hold them, if -1, always hold)
                 -   check sizes for parts, flag any bad ones
@@ -166,40 +166,41 @@ class MixinVideoPipeline(Mixin):
                 """
 
                 # Apply Quality Filters FIXME: This is losing identical parts, and I reckon that's what causes the persistance memory to be lost
-                frame_processor.run()
+                # frame_processor.run()
 
                 # Update the Parts
-                image_processor.set_image_parts(
-                    frame_processor.retrieve_parts(),
-                )
+                # image_processor.set_image_parts(
+                #     frame_processor.retrieve_parts(),
+                # )
 
                 # Apply Censors
-                image_processor.compile_masks()
-                image_processor.apply_censors()
+                ip.generate_mask_shapes()
+                ip.compile_masks()
+                ip.apply_censors()
 
                 # Save Output
-                file_output: Image = image_processor.return_output()
+                file_output: Image = ip.return_output()
 
                 # # Apply Debug Effects
                 if debug_level > DebugLevels.NONE:
                     video_info = VideoInfo(
                         frame,
                         frame_counter,
-                        image_processor.get_image_parts(),
+                        ip.get_image_parts(),
                         video_processor,
-                        frame_processor,
+                        fp,
                         debug_level,
                     )
                     file_output = video_info.get_debug_info(
                         file_output,
-                        frame_processor,
+                        fp,
                     )
 
                 # Write Frame
                 video_processor.write_frame(file_output)
 
                 # Debug Show Times
-                in_place_durations.append(image_processor.get_duration())
+                in_place_durations.append(ip.get_duration())
                 function_display_times()
 
                 if video_processor.force_stop:

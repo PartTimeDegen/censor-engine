@@ -116,10 +116,17 @@ class VideoInfo:
         output_image,
         frame_processor: FrameProcessor,
     ) -> Image:
+        counter = self._get_counter(
+            self.frame_count,
+            int(
+                self.video_processor.video_capture.get(
+                    cv2.CAP_PROP_FRAME_COUNT
+                )
+            ),
+        )
         info = [
-            f"Frame: {self._get_counter(self.frame_count, int(self.video_processor.video_capture.get(cv2.CAP_PROP_FRAME_COUNT)))}",
+            f"Frame: {counter}",
             f"FPS: {self.video_processor.get_fps()}",
-            # f"Held Counter: {frame_processor.frame_lag_counter} / {frame_processor.part_frame_hold_frames}",
         ]
         return InfoGenerator().generate_info(
             output_image,
@@ -128,46 +135,19 @@ class VideoInfo:
             group_title="Frame Info",
         )
 
-    def _get_part_dictionary(
-        self,
-        output_image,
-        frame_processor: FrameProcessor,
-    ) -> Image:
-        return InfoGenerator().generate_info(
-            output_image,
-            (0, 0, 255),
-            [
-                f"({self._get_counter(part.lifespan_frames, frame_processor.part_frame_hold_frames)}) {index} | {part} (approx%={part.part.part_area.approximate_percent_region:%})"
-                for index, part in frame_processor.part_dictionary.items()
-            ],
-            group_title="Part Dictionary",
-        )
-
-    def _get_shown_part_info(self, output_image, frame_processor) -> Image:
-        return InfoGenerator().generate_info(
-            output_image,
-            (255, 0, 0),
-            [
-                f"{value} ({key})"
-                for key, value in frame_processor.current_frame.items()
-            ],
-            group_title="Shown Parts",
-        )
-
-    def _get_initial_part_info(
-        self,
-        output_image,
-        frame_processor: FrameProcessor,
-    ) -> Image:
-        return InfoGenerator().generate_info(
-            output_image,
-            (255, 0, 255),
-            [
-                f"{value} ({key})"
-                for key, value in frame_processor.loaded_frame.items()
-            ],
-            group_title="Initially Found Parts",
-        )
+    # def _get_initial_part_info(
+    #     self,
+    #     output_image,
+    #     frame_processor: FrameProcessor,
+    # ) -> Image:
+    #     return InfoGenerator().generate_info(
+    #         output_image,
+    #         (255, 0, 255),
+    #         [
+    #             # f"{value}" for value in frame_processor.loaded_frame
+    #         ],
+    #         group_title="Initially Found Parts",
+    #     )
 
     def get_debug_info(
         self,
@@ -177,17 +157,11 @@ class VideoInfo:
         # Frame Information
         output_image = self._get_frame_info(output_image, frame_processor)
 
-        # Part's in held buffer
-        output_image = self._get_part_dictionary(output_image, frame_processor)
-
-        # Shown Parts on Video
-        output_image = self._get_shown_part_info(output_image, frame_processor)
-
         # Initially Found Frame Parts
-        output_image = self._get_initial_part_info(
-            output_image,
-            frame_processor,
-        )
+        # output_image = self._get_initial_part_info(
+        #     output_image,
+        #     frame_processor,
+        # )
 
         InfoGenerator().reset_position()
         return output_image

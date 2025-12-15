@@ -90,7 +90,7 @@ class PartSettingsConfig(BaseModel):
     )
 
     video_part_search_region: float = Field(
-        default=0.2,
+        default=0.75,
         ge=0.0,
         description=(
             "Percentage of the original shape that "

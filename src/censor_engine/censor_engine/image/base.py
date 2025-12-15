@@ -195,16 +195,13 @@ class ImageProcessor(
         """
         return self.file_image
 
-    def generate_parts_and_shapes(self) -> None:
+    def generate_parts(self) -> None:
         """
-        This method handles the generation of the parts and the shapes.
+        This method handles the generation of the parts.
 
         Stages:
             1)  Create parts.
             2)  Filter parts that don't meet the minimum score threshold.
-            3)  Merge parts based on the merge method and merge groups.
-            4)  Apple the shape effects to the mask, handling more advanced
-                parts as well which require more than one pass.
 
         """
         # Create Parts
@@ -222,6 +219,16 @@ class ImageProcessor(
             if part.score >= part.minimum_score
         ]
 
+    def generate_mask_shapes(self) -> None:
+        """
+        This method handles the generation the masks' shapes.
+
+        Stages:
+            1)  Merge parts based on the merge method and merge groups.
+            2)  Apple the shape effects to the mask, handling more advanced
+                parts as well which require more than one pass.
+
+        """
         # Merge Parts
         self._image_parts = self._merge_parts(
             self._image_parts,
@@ -277,7 +284,8 @@ class ImageProcessor(
         pipeline.
 
         """
-        self.generate_parts_and_shapes()
+        self.generate_parts()
+        self.generate_mask_shapes()
         self.compile_masks()
         self.apply_censors()
 
