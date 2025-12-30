@@ -42,7 +42,9 @@ class Colour:
             self.value = self._flip_colour(colour_name_or_rgb_value)
 
         elif isinstance((colour_name_or_rgb_value), str):
-            self.value = self._flip_colour(_colours[colour_name_or_rgb_value])
+            self.value = self._flip_colour(
+                _colours[colour_name_or_rgb_value.upper()]
+            )
 
         else:
             msg = "Bad Colour:"

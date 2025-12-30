@@ -28,5 +28,5 @@ censor_settings:
         },
         { "style": "pixelate", parameters: { "factor": 10 } },
       ]
-    shape: "ellipse"
+    shape: "joint_ellipse" # "ellipse" for pmv, haven't made merge range
     margin: 0.2

@@ -30,7 +30,7 @@ class TrackedPart:
 
 @dataclass(slots=True)
 class Tracker:
-    max_missed: int
+    max_missed: int | None
 
     # Internal
     _next_track_id: int = 0
@@ -63,25 +63,26 @@ class Tracker:
         return tracked_part.part_class == candidate_part.get_name()
 
     # Public Methods
-    def update_tracker(self, list_of_parts: list[Part]):
+    def update_tracker(self, list_of_parts: list[Part]) -> None:
+        # If Disabled
+        if self.max_missed is None:
+            return
+
         # Temp Variables
         updated_indices: list[int] = []
 
         # Iteration
-        print(" === Loop")
-
         # # First Frame Handling
         if self._next_track_id == 0:
             for part in list_of_parts:
-                print(f"{part}")
                 self._tracked_parts.append(
                     TrackedPart(part=part, track_id=self._next_track_id)
                 )
                 self._next_track_id += 1
             return
 
+        # # Frames Onward
         for part in list_of_parts:
-            print(f"{part}")
             is_part_found = False
             addition_indices: list[int] = []
             for index, tracked_part in enumerate(self._tracked_parts):
@@ -109,7 +110,6 @@ class Tracker:
                 if same_part and is_part_found:
                     addition_indices.append(index)
                 if same_part:
-                    print("- Found:", tracked_part)
                     self._tracked_parts[index] = TrackedPart(
                         part=part,
                         track_id=tracked_part.track_id,
@@ -137,8 +137,6 @@ class Tracker:
                     if index not in addition_indices
                 ]
 
-        print("Len:", len(self._tracked_parts))
-
         # Update Misses
         for index, tracked_part in enumerate(self._tracked_parts):
             if index in updated_indices:
@@ -152,9 +150,6 @@ class Tracker:
             for tracked_part in self._tracked_parts
             if tracked_part.misses <= self.max_missed
         ]
-        print(*self._tracked_parts, sep="\n")
-        print(" === Loop")
-        print()
 
     def get_parts(self) -> list[Part]:
         return [tracked_part.part for tracked_part in self._tracked_parts]

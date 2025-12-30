@@ -62,7 +62,6 @@ class ChromaticAberration(NoiseStyle):
 
 @StyleRegistry.register()
 class CentricChromaticAberration(NoiseStyle):
-    style_name: str = "centric_chromatic_aberration"
 
     def apply_style(
         self,

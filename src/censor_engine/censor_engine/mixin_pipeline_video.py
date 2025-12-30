@@ -91,6 +91,7 @@ class MixinVideoPipeline(Mixin):
                 config.video_settings.part_frame_hold_seconds
                 * video_processor.get_fps(),
             )
+            use_persistence = frame_hold > 0
             fp = FrameProcessor(
                 maximum_miss_frame=frame_hold,
             )
@@ -153,9 +154,10 @@ class MixinVideoPipeline(Mixin):
                                 "spasm".
 
                 """
-                found_parts = ip.get_image_parts()
-                fp.tracker.update_tracker(found_parts)
-                ip.set_image_parts(fp.tracker.get_parts())
+                if use_persistence:
+                    found_parts = ip.get_image_parts()
+                    fp.tracker.update_tracker(found_parts)
+                    ip.set_image_parts(fp.tracker.get_parts())
                 """
                 -   Keep parts (hold them, if -1, always hold)
                 -   check sizes for parts, flag any bad ones
