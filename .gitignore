@@ -196,4 +196,5 @@ libpng.sh
 src/.test_data
 .checkme
 
+res/*
 tools/*
