@@ -62,6 +62,7 @@ class ChromaticAberration(NoiseStyle):
 
 @StyleRegistry.register()
 class CentricChromaticAberration(NoiseStyle):
+    # FIXME This doesn't give centric aberration
 
     def apply_style(
         self,

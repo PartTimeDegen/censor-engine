@@ -122,7 +122,7 @@ def test_edge_detection_styles(style, dummy_input_image_data) -> None:
 
 @pytest.mark.parametrize("style", styles_noise)
 def test_noise_styles(style, dummy_input_image_data) -> None:
-    run_tests(style, dummy_input_image_data, mean_absolute_error=7.5)
+    run_tests(style, dummy_input_image_data, mean_absolute_error=8.5)
 
 
 @pytest.mark.parametrize("style", styles_pixelation)

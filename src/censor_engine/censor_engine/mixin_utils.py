@@ -28,6 +28,9 @@ class MixinUtils(Mixin):
         approved_formats = set(APPROVED_FORMATS_IMAGE + APPROVED_FORMATS_VIDEO)
         full_files_path = path_manager.get_uncensored_folder()
 
+        if path_manager.test_mode:
+            return [(1, "config_example.jpg", "preview")]
+
         if not full_files_path.exists():
             msg = f"Path Does Not Exist: {full_files_path}"
             raise TypeError(msg)

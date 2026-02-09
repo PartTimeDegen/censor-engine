@@ -40,7 +40,7 @@ class CensorEngine(
     uncensored_folder: str | Path | None = None
     censored_folder: str | Path | None = None
     base_folder: Path | str = Path(__main__.__file__).resolve().parent
-    censor_mode: str = "auto"
+    censor_mode: str = "auto"  # "preview", "image", "video", "auto"
     config_data: str | dict[str, Any] = "00_default.yml"
 
     # Test Stuff
@@ -93,7 +93,10 @@ class CensorEngine(
             self._config.file_settings.censored_folder = Path(cen_folder)
 
         # Test Stuff
-        if self._test_mode:
+        if self._test_mode or self._flags["example_preview"]:
+            self._test_mode = True
+            self.censor_mode = "preview"
+
             # Paths Fix
             self._config.file_settings.uncensored_folder = Path()
             self._config.file_settings.censored_folder = Path()
@@ -151,7 +154,7 @@ class CensorEngine(
 
         # What to Censor
         memory_files: list[Image] = []
-        if self.censor_mode == "image":
+        if self.censor_mode in {"image", "preview"}:
             memory_files.extend(self._image_pipeline(**args))
         elif self.censor_mode == "video":
             memory_files.extend(self.run_video_pipeline(**video_args))

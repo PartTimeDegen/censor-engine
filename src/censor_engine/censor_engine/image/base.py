@@ -60,7 +60,7 @@ class ImageProcessor(
 
     config: Config
 
-    cache: Cache
+    cache: Cache | None
     frame_counter: int | None = None
 
     debug_level: DebugLevels = DebugLevels.NONE
@@ -117,7 +117,7 @@ class ImageProcessor(
         using the GPU (or CPU), however it's still a minor improvement.
 
         """
-        if self.cache.check_for_frame(self.frame_counter):
+        if self.cache and self.cache.check_for_frame(self.frame_counter):
             all_parts = self.cache.get_frame(self.frame_counter).output_data
         else:
             with ThreadPoolExecutor() as executor:
@@ -132,7 +132,8 @@ class ImageProcessor(
 
             all_parts = list(itertools.chain(*detected_parts))
             output = AIOutputData(model_name="nude_net", output_data=all_parts)
-            self.cache.save_frame(self.frame_counter, output)
+            if self.cache:
+                self.cache.save_frame(self.frame_counter, output)
 
         # Sort and Label ID Based on Position
         all_parts.sort(

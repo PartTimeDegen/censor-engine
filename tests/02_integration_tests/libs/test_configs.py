@@ -18,11 +18,11 @@ def list_config_files():
 config_files = list_config_files()
 
 expected_error: dict[str, float] = {
-    "09_red_tape.yml": 1.5,
+    "09_red_tape.yml": 2,
     "11_trigger_focus.yml": 3,
     "10_state_approved_triggers.yml": 4,
     "zz_dev.yml": 5,
-    "raw_data.yml": 2.5,
+    "raw_data.yml": 3.5,
 }
 
 

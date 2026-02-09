@@ -43,6 +43,7 @@ class MixinArguments(Mixin):
             "dev_tools": "dt",
             "show_full_output_path": "fo",
             "using_test_data": "td",
+            "example_preview": "example",
         }
 
         # Add Args
@@ -79,9 +80,7 @@ class MixinArguments(Mixin):
                 print(f"**Found Debug Level = {output_dict['debug_level']}**")
             except ValueError:
                 msg = f"Invalid DebugLevels value: {debug_word!s}"
-                raise ValueError(
-                    msg,
-                )
+                raise ValueError(msg)
 
         # Handle Handle Flags
         output_dict["flags"] = {key: getattr(args, key) for key in flag_mapper}
