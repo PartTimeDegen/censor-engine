@@ -197,4 +197,5 @@ src/.test_data
 .checkme
 
 res/*
-tools/*
+# DO NOT REMOVE, THE DOWNLOAD IS TOO BIG
+tools/* 
