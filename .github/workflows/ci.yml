@@ -43,7 +43,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: PartTimeDegen/censor-engine-test-data
-          path: ttemp-test-datas
+          path: temp-test-data
 
       - name: Copy test data into tests/
         run: |
