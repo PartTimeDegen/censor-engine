@@ -31,7 +31,7 @@ jobs:
         run: uv pip install -e .
 
       - name: Run Linter
-        run: uv bash lint.sh
+        run: bash lint.sh
 
       - name: Run tests
         run: uv run pytest
