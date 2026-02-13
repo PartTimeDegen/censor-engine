@@ -198,5 +198,5 @@ src/.test_data
 
 res/*
 # DO NOT REMOVE, THE DOWNLOAD IS TOO BIG
-tools/* 
+tools/ffmpeg/*
 !tools/ffmpeg/.gitkeep

@@ -1,10 +1,11 @@
 import os
-import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
 from censor_engine.models.config import Config
 from censor_engine.models.config.file import FileConfig
+
+from .utils import ToolDownloader
 
 PATH_TEST_DATA = Path(".test_data")
 PATH_SHORTCUT_UNCENSORED = Path()
@@ -97,27 +98,27 @@ class PathManager:
     # Tools
     # # FFmpeg
     def __get_correct_ffmpeg_binary(self) -> None:
-        base_path = Path("tools/ffmpeg")
-        if sys.platform.startswith("win"):
-            self.ffmpeg_file_path = base_path / "ffmpeg.exe"
-        elif sys.platform.startswith("linux") or sys.platform.startswith(
-            "darwin"
-        ):
-            self.ffmpeg_file_path = base_path / "ffmpeg"
-        else:
-            msg = f"Unsupported OS: {sys.platform}"
-            raise RuntimeError(msg)
-
-        if not self.ffmpeg_file_path.exists():
-            msg = f"FFmpeg binary not found at {self.ffmpeg_file_path}"
-            raise FileNotFoundError(msg)
+        ffmpeg_dl = ToolDownloader(
+            Path("tools"),
+            "ffmpeg",
+            {
+                "Windows": "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip",
+                "Linux": "https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz",
+                "Darwin": "https://evermeet.cx/ffmpeg/getrelease/zip",
+            },
+            {
+                "Windows": "ffmpeg.exe",
+                "Linux": "ffmpeg",
+                "Darwin": "ffmpeg_mac",
+            },
+        )
+        self.ffmpeg_file_path = ffmpeg_dl.get_tool()
 
         # Get Full Path
-        repo_root = Path(__file__).resolve().parent.parent.parent
+        # TODO: This is dumb
+        repo_root = Path(__file__).resolve().parent.parent.parent.parent
         self.ffmpeg_file_path = (repo_root / self.ffmpeg_file_path).resolve()
         self.ffmpeg_file_path.chmod(0o755)
-
-    def __download_ffmpeg(self): ...
 
     def __mount_ffmpeg(self):
         if not os.environ.get("FFMPEG_BINARY"):
