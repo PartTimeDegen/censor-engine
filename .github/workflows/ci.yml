@@ -39,5 +39,11 @@ jobs:
       - name: Run Mypy
         run: uv run mypy src/censor_engine
 
+      - name: Checkout test data repo into tests/
+        uses: actions/checkout@v4
+        with:
+          repository: PartTimeDegen/censor-engine-test-data
+          path: tests
+
       - name: Run tests
         run: uv run pytest
