@@ -108,7 +108,7 @@ class MixinImagePipeline(Mixin):
             )
 
             # File Save
-            print(new_file_name)
+            print(new_file_name)  # noqa: T201
             cv2.imwrite(new_file_name, file_output)
             if inline_mode:
                 in_memory_files.append(file_output)
@@ -122,7 +122,6 @@ class MixinImagePipeline(Mixin):
                 )[1:]
 
             # Save Duration
-            in_place_durations.append(image_processor.get_duration())
             if flags["pad_individual_items"]:
                 pass
 

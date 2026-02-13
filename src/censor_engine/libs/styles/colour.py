@@ -16,7 +16,7 @@ class Greyscale(ColourStyle):
         mask: Mask,
         contours: list[Contour],
         part: Part,
-        alpha=1,
+        alpha: float = 1,
     ) -> Image:
         # Get Mask
         mask_image = cv2.cvtColor(

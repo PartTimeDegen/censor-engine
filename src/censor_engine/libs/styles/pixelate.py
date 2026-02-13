@@ -16,7 +16,7 @@ class Pixelate(PixelateStyle):
         self,
         image: Image,
         contours: list[Contour],
-        factor,
+        factor: int,
     ):
         bounding_rect = contours[0].as_bounding_box()  # Only Biggest Matters
         _, _, box_width, box_height = bounding_rect
@@ -65,7 +65,7 @@ class Pixelate(PixelateStyle):
         mask: Mask,
         contours: list[Contour],
         part: Part,
-        factor: float = 12,
+        factor: int = 12,
     ) -> Image:
         factors = self._get_distortion_factor(
             image,
@@ -88,7 +88,7 @@ class Pixelate(PixelateStyle):
 
 @StyleRegistry.register()
 class HexagonPixelate(PixelateStyle):
-    def _hexagon_corners(self, center_x, center_y, size):
+    def _hexagon_corners(self, center_x: float, center_y: float, size: float):
         """Compute hexagon vertices around a center using NumPy arrays."""
         w_half = math.sqrt(3) * size / 2
         h_half = size
@@ -104,7 +104,7 @@ class HexagonPixelate(PixelateStyle):
             dtype=np.int32,
         )
 
-    def _hexagonify(self, image, hexagon_size):
+    def _hexagonify(self, image: Image, hexagon_size: float):
         """Apply hexagonal pixelation using NumPy and OpenCV."""
         img_h, img_w = image.shape[:2]
 
@@ -147,7 +147,7 @@ class HexagonPixelate(PixelateStyle):
                     hexagon_size,
                 )
                 cv2.fillPoly(
-                    output,
+                    output,  # type: ignore
                     [hex_corners],
                     color=tuple(map(int, color)),  # type: ignore
                 )
@@ -178,10 +178,11 @@ class Crystallise(PixelateStyle):
         point_density: int = 50,
     ) -> Image:
         blur_image = image.copy()
-        h, w, c = image.shape
+        h, w, _ = image.shape
 
         points = np.vstack(
             [
+                # TODO: Errors are valid, however this looks like tedium to fix
                 np.random.randint(0, w, point_density),
                 np.random.randint(0, h, point_density),
             ],
@@ -209,8 +210,18 @@ class Crystallise(PixelateStyle):
 class HexagonPixelateSoft(HexagonPixelate):
     style_name: str = "hexagon_pixelate_soft"
 
-    def _blend_color(self, center_x, center_y, image, hexagon_size, softness):
-        """Blend the color of a hexagon with its surrounding hexagons for a smoother transition."""
+    def _blend_color(
+        self,
+        center_x: float,
+        center_y: float,
+        image: Image,
+        hexagon_size: float,
+        softness: float,
+    ):
+        """
+        Blend the color of a hexagon with its surrounding hexagons for a
+        smoother transition.
+        """
         w = math.sqrt(3) * hexagon_size
         h = 2 * hexagon_size
 
@@ -229,7 +240,9 @@ class HexagonPixelateSoft(HexagonPixelate):
 
         return np.mean(region, axis=(0, 1), dtype=np.float32)
 
-    def _hexagonify(self, image, hexagon_size, softness=1.0):
+    def _hexagonify(
+        self, image: Image, hexagon_size: float, softness: float = 1.0
+    ):
         """Apply soft hexagonal pixelation with controlled softness."""
         img_h, img_w = image.shape[:2]
 
@@ -261,7 +274,7 @@ class HexagonPixelateSoft(HexagonPixelate):
                     hexagon_size,
                 )
                 cv2.fillPoly(
-                    output,
+                    output,  # type: ignore
                     [hex_corners],
                     color=tuple(map(int, color)),  # type: ignore
                 )

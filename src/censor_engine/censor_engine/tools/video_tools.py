@@ -13,12 +13,18 @@ from censor_engine.typing import Image
 
 class InfoGenerator:
     default_offset: int = 2
-    position: list[int] = [default_offset, default_offset]  # pixels
+    position: list[int] = (
+        default_offset,
+        default_offset,
+    )  # type: ignore # pixels
     longest_column_pxl: int = -1  # pixels
 
     _font: int = cv2.FONT_HERSHEY_TRIPLEX
     _font_scale: int | float = 0.5
     _thickness: int = 1
+
+    def __init__(self):
+        self.position = list(self.position)
 
     def reset_position(self) -> None:
         InfoGenerator.position = [self.default_offset, self.default_offset]
@@ -113,7 +119,7 @@ class VideoInfo:
 
     def _get_frame_info(
         self,
-        output_image,
+        output_image: Image,
         frame_processor: FrameProcessor,
     ) -> Image:
         counter = self._get_counter(

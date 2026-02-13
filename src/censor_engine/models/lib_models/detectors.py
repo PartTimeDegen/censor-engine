@@ -2,11 +2,8 @@ from abc import abstractmethod
 from pathlib import Path
 from typing import Any
 
-import gdown  # type: ignore
-import pydload  # type: ignore
 from pydantic import BaseModel, field_validator
 
-# import tensorflow as tf  # type: ignore # NOTE: I can't run this due to my shitty Xeon CPU
 from censor_engine.typing import Image
 
 
@@ -32,7 +29,7 @@ class DetectedPartSchema(BaseModel):
     part_id: int = 0
 
     @field_validator("relative_box", mode="before")
-    def ensure_tuple(cls, v):
+    def ensure_tuple(cls, v):  # noqa: ANN001, N805
         return tuple(v)
 
     def set_part_id(self, number: int) -> None:
@@ -40,35 +37,13 @@ class DetectedPartSchema(BaseModel):
 
 
 class AIModel:
-    """Handles downloading and loading AI models separately from code packages."""
+    """
+    Handles downloading and loading AI models separately from code packages.
+    """
 
     ai_model_folder_name: str = "~/.ai_models"
     model_path: Path | None = None
     model: Any = None
-
-    def download_model(self, url: str) -> None:
-        home = Path.home()
-        model_folder = home / self.ai_model_folder_name.lstrip("~").lstrip("/")
-        model_folder.mkdir(parents=True, exist_ok=True)
-
-        model_path = model_folder / Path(url).name
-
-        if not model_path.exists():
-            pydload.dload(url, save_to_path=str(model_path), max_time=None)  # type: ignore
-
-        self.model_path = model_path
-
-    def download_google_drive_model(self, url: str) -> None:
-        home = Path.home()
-        model_folder = home / self.ai_model_folder_name.lstrip("~").lstrip("/")
-        model_folder.mkdir(parents=True, exist_ok=True)
-
-        model_path = model_folder / Path(url).name
-
-        if not model_path.exists():
-            gdown.download(url, str(model_path), max_time=None)  # type: ignore
-
-        self.model_path = model_path
 
     def load_model(self) -> None:
         if self.model_path is None:
@@ -77,35 +52,10 @@ class AIModel:
                 msg,
             )
 
-        # ext = self.model_path.suffix.lower().lstrip(".")
-
-        # # PyTorch model loading
-        # if ext == "pt":
-        #     self.model = torch.load(str(self.model_path))
-        #     self.model.eval()
-        # else:
-        #     raise ValueError(f"Unsupported model format: {ext}")
-
-    def predict(self, input_data: Any) -> None:
+    def predict(self, input_data: Any) -> None:  # noqa: ANN401
         if self.model is None:
             msg = "Missing AI model. Please load the model first."
             raise ValueError(msg)
-
-        # if isinstance(self.model, torch.nn.Module):
-        #     with torch.no_grad():
-        #         input_tensor = torch.tensor(input_data, dtype=torch.float32)
-        #         output = self.model(input_tensor)
-        #         return output.numpy()
-        # else:
-        #     raise ValueError("Cannot find supported model type")
-
-    def proceed_model(self, url: str, input_data: Any):
-        if "drive.google" in url:
-            self.download_google_drive_model(url)
-        else:
-            self.download_model(url)
-        self.load_model()
-        return self.predict(input_data)
 
 
 class Detector(AIModel):
@@ -118,7 +68,9 @@ class Detector(AIModel):
     (maybe logging) and what it's producing (Trust me, it's better than having
     to find NudeNet's repo to find the classifiers).
 
-    :raises NotImplementedError: This is just to throw an error to ensure the model devs know they didn't properly implement the method under the correct name
+    :raises NotImplementedError: This is just to throw an error to ensure the
+    model devs know they didn't properly implement the method under the
+    correct name
     """
 
     model_name: str

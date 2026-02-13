@@ -9,6 +9,9 @@ from censor_engine.libs.detectors.box_based_detectors.nude_net import (
 from censor_engine.libs.registries import StyleRegistry
 from censor_engine.models.enums import MergeMethod
 from censor_engine.models.lib_models.styles import DevStyle
+from censor_engine.models.lib_models.styles.sub_variants import (
+    EdgeDetectionStyle,
+)
 from censor_engine.models.structs.colours import Colour, _colours
 from censor_engine.models.structs.contours import Contour
 from censor_engine.typing import Image, Mask
@@ -200,3 +203,49 @@ class Debug(DevStyle):
 
         self.is_done = True
         return image
+
+
+@StyleRegistry.register()
+class DevEdgeDetectionDoubleGaussianPotentialMask(EdgeDetectionStyle):
+    def apply_style(
+        self,
+        image: Image,
+        mask: Mask,
+        contours: list[Contour],
+        part: Part,
+        sigma1: float = 1.0,
+        sigma2: float = 2.0,
+        alpha: float = 1.0,
+        ksize: int = 0,
+    ) -> Image:
+        # Prepare image for better results
+        gray = self.prepare_mask(image)
+
+        # Apply two Gaussian blurs
+        blur1 = cv2.GaussianBlur(gray, (ksize, ksize), sigmaX=sigma1)
+        blur2 = cv2.GaussianBlur(gray, (ksize, ksize), sigmaX=sigma2)
+
+        # Difference of Gaussians
+        dog = cv2.subtract(blur1, blur2)
+
+        # Normalize to full range
+        dog = cv2.normalize(dog, None, 0, 255, cv2.NORM_MINMAX)  # type: ignore
+
+        # Clean image (reuse your existing logic)
+        dog = self.clean_image(dog)
+
+        return dog
+
+        # Blend with original image
+        edge_mask = cv2.addWeighted(dog, alpha, image, 1 - alpha, 0)
+        edge_mask_gray = cv2.cvtColor(edge_mask, cv2.COLOR_BGR2GRAY)
+
+        # Find contours
+        new_contours, _ = cv2.findContours(
+            edge_mask_gray, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+        )
+
+        # Fill them
+        return cv2.drawContours(
+            edge_mask, new_contours, -1, [255, 255, 255], thickness=cv2.FILLED
+        )

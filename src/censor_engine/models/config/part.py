@@ -283,7 +283,7 @@ class PartInformationConfig(BaseModel):
     )
 
     @model_validator(mode="after")  # type: ignore
-    def sync_part_names_with_keys(cls, model: "PartInformationConfig"):  # noqa: ANN201, N805
+    def sync_part_names_with_keys(cls, model: "PartInformationConfig"):  # noqa: N805
         """
         Updates the parts to have their key in the config, as their name
         attribute.

@@ -12,6 +12,14 @@ class ConfigInfo(TypedDict):
 
 
 def get_config_preview(list_of_parts_enabled: list[str] | str) -> ConfigInfo:
+    """
+    This is used to get the preview of the config's current setup.
+
+    TODO: Finish Writing
+
+    :param list[str] | str list_of_parts_enabled: _description_
+    :return ConfigInfo: _description_
+    """
     image_generator = ImageGenerator()
     return ConfigInfo(
         preview=image_generator.make_test_image(),

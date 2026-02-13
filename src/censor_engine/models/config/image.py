@@ -16,7 +16,7 @@ class RenderingConfig(BaseModel):
     merge_method: MergeMethod = Field(default=MergeMethod.GROUPS)
 
     @field_validator("merge_method", mode="before")
-    def validate_merge_method(cls, v):  # noqa: ANN001, ANN201, N805
+    def validate_merge_method(cls, v):  # noqa: ANN001, N805
         """Convert string input to MergeMethod enum if needed."""
         if isinstance(v, str):
             try:
@@ -47,7 +47,7 @@ class ReverseCensorConfig(BaseModel):
     censors: list[Censor] = Field(default_factory=list)
 
     @field_validator("censors", mode="before")
-    def validate_censors(cls, v):  # noqa: ANN001, ANN201, N805
+    def validate_censors(cls, v):  # noqa: ANN001, N805
         """Ensure censors are converted to Censor objects."""
         if not v:
             return []

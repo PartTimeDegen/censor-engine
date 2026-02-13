@@ -1,4 +1,3 @@
-import os
 from dataclasses import dataclass, field
 from itertools import count
 from pathlib import Path
@@ -17,8 +16,8 @@ class DevTools:
     counter: int = field(default_factory=count().__next__, init=False)
 
     def __post_init__(self):
-        if not os.path.exists(".dev"):
-            os.makedirs(".dev")
+        if not Path(".dev").exists():
+            Path(".dev").mkdir(parents=True)
 
     def dev_decompile_masks(
         self,

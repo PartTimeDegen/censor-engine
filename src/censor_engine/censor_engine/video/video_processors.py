@@ -12,7 +12,7 @@ TEMP_AUDIO_NAME = "temp_audio.aac"
 TEMP_VIDEO_NAME = "temp_video"
 
 
-def handle_exit(signum, frame) -> None:
+def handle_exit(signum, frame) -> None:  # noqa: ANN001, ARG001
     """
     This handles the exiting to ensure the video is closed properly.
 
@@ -20,7 +20,9 @@ def handle_exit(signum, frame) -> None:
     :param _type_ frame: _description_
     """
     print(  # noqa: T201
-        "\n*** Stop requested — finishing current frame and muxing partial video. ***"
+        "\n"
+        "*** Stop requested — finishing current frame and muxing partial "
+        "video. ***"
     )
     VideoProcessor.force_stop = True  # type: ignore
 
@@ -109,7 +111,7 @@ class VideoProcessor:
 
         :param str filename: Name of the file, it will determine the extension
         """
-        ext = os.path.splitext(filename)[-1].lower()
+        ext = Path(filename).suffix.lower()
         codec_mapping = {
             ".mp4": "mp4v",  # MPEG-4
             ".avi": "XVID",  # AVI format
@@ -119,79 +121,88 @@ class VideoProcessor:
         }
         return codec_mapping.get(ext, "mp4v")  # Default to 'mp4v' if unknown
 
-    def __extract_audio(self):
-        def has_audio(file_path):
-            cmd = [
-                os.environ.get("FFMPEG_BINARY", "ffmpeg"),
-                "-i",
-                str(file_path),
-                "-hide_banner",
-            ]
-            try:
-                output = subprocess.run(  # noqa: S603
-                    cmd, check=False, capture_output=True, text=True
-                )
-            except Exception:  # noqa: BLE001
-                return False
-            return "Audio:" in output.stderr
+    def __extract_audio(self) -> None:
+        ffmpeg = os.environ.get("FFMPEG_BINARY", "ffmpeg")
 
-        if self._temp_audio_path.exists():
-            self._temp_audio_path.unlink()
-
-        ffmpeg_bin = os.environ.get("FFMPEG_BINARY", "ffmpeg")
+        def has_audio(path: Path) -> bool:
+            p = subprocess.run(  # noqa: S603 # TODO: Check, should be okay
+                [ffmpeg, "-i", str(path)],
+                check=False,
+                stderr=subprocess.PIPE,
+                stdout=subprocess.DEVNULL,
+                text=True,
+            )
+            return "Audio:" in p.stderr
 
         self._video_has_audio = has_audio(self._file_path)
-        if self._video_has_audio:
-            cmd = [
-                ffmpeg_bin,
+        if not self._video_has_audio:
+            return
+
+        is_webm = self._file_path.suffix.lower() == ".webm"
+
+        # Choose audio format
+        if is_webm:
+            self._temp_audio_path = self._folder / f"{TEMP_AUDIO_NAME}.opus"
+            audio_cmd = ["-c:a", "copy"]  # Opus/Vorbis stays intact
+        else:
+            self._temp_audio_path = self._folder / f"{TEMP_AUDIO_NAME}.aac"
+            audio_cmd = ["-c:a", "aac", "-b:a", "128k"]
+
+        subprocess.run(  # noqa: S603 # TODO: Check, should be okay
+            [
+                ffmpeg,
                 "-y",
                 "-i",
                 str(self._file_path),
                 "-vn",
-                "-acodec",
-                "copy",
+                *audio_cmd,
                 str(self._temp_audio_path),
-            ]
-            subprocess.run(  # noqa: S603
-                cmd,
-                check=True,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
+            ],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
 
     def __mux_audio_and_video(self) -> None:
-        """
-        This method handles the merging of audio and video for the final
-        output.
-        """
+        ffmpeg = os.environ.get("FFMPEG_BINARY", "ffmpeg")
+        is_webm = self._final_video_path.suffix.lower() == ".webm"
+
         if self._final_video_path.exists():
             self._final_video_path.unlink()
 
-        ffmpeg_bin = os.environ.get("FFMPEG_BINARY", "ffmpeg")
+        cmd = [
+            ffmpeg,
+            "-y",
+            "-i",
+            str(self._temp_video_path),
+        ]
 
         if self._video_has_audio:
-            cmd = [
-                ffmpeg_bin,
-                "-y",
-                "-i",
-                str(self._temp_video_path),
-                "-i",
-                str(self._temp_audio_path),
-                "-c:v",
-                "copy",  # copy video codec
-                "-c:a",
-                "copy",  # copy audio codec
-                "-shortest",  # stop at the shortest stream
-                str(self._final_video_path),
-            ]
-            subprocess.run(  # noqa: S603
-                cmd,
-                check=True,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
+            cmd += ["-i", str(self._temp_audio_path)]
+
+        # Video
+        if is_webm:
+            cmd += ["-c:v", "libvpx", "-tag:v", "VP80"]
         else:
-            self._temp_video_path.rename(self._final_video_path)
+            cmd += ["-c:v", "copy"]
+
+        # Audio
+        if self._video_has_audio:
+            if is_webm:
+                cmd += ["-c:a", "libopus"]
+            else:
+                cmd += ["-c:a", "copy"]
+
+            cmd += ["-shortest"]
+
+        cmd.append(str(self._final_video_path))
+
+        subprocess.run(  # noqa: S603 # TODO: Check, should be okay
+            cmd,
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
 
     def get_fps(self):
         return self._fps
@@ -205,16 +216,11 @@ class VideoProcessor:
         self.video_writer.write(file_output)
 
     def close_video(self) -> None:
-        """
-        This is used to handle the video releasing.
-
-        """
         self.video_capture.release()
         self.video_writer.release()
         self.__mux_audio_and_video()
 
-        # Delete Temps
         if self._temp_video_path.exists():
             self._temp_video_path.unlink()
-        if self._temp_audio_path.exists():
+        if self._video_has_audio and self._temp_audio_path.exists():
             self._temp_audio_path.unlink()

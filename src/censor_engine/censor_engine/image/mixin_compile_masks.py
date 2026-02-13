@@ -79,7 +79,7 @@ class MixinComponentCompile(Mixin):
                             is_valid_part = False
 
                     case MergeMethod.FULL:
-                        pass  # is_valid_part = is_valid_part
+                        is_valid_part = True
 
                 if is_valid_part:
                     target_part.base_masks.extend(other_part.base_masks)
@@ -103,7 +103,7 @@ class MixinComponentCompile(Mixin):
             if index in merged_indices:
                 continue
 
-            if part.merge_group:
+            if part.merge_group or merge_method == MergeMethod.ALL:
                 part = merge_fellow_parts(  # noqa: PLW2901
                     part,
                     index,
@@ -115,7 +115,6 @@ class MixinComponentCompile(Mixin):
                 part.compile_base_masks()
 
             new_parts.append(part)
-
         return new_parts
 
     def _process_state_logic_for_masks(self, parts: list[Part]) -> list[Part]:  # noqa: PLR0912

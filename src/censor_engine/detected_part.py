@@ -150,7 +150,8 @@ class Part:
     # Public Methods
     # # Naming Methods
     def get_id_name_and_merged(self) -> str:
-        return f"{self.part_id}_{self.part_name}{'_merged' if self.is_merged else ''}"
+        print_merged = "_merged" if self.is_merged else ""
+        return f"{self.part_id}_{self.part_name}{print_merged}"
 
     def get_name_and_merged(self) -> str:
         return f"{self.part_name}{'_merged' if self.is_merged else ''}"
@@ -176,7 +177,7 @@ class Part:
 
     @staticmethod
     def normalise_mask(mask: "Mask") -> "Mask":
-        if len(mask.shape) > 2:
+        if len(mask.shape) > 2:  # noqa: PLR2004
             mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
 
         # # Convert to Type
@@ -199,13 +200,15 @@ class Part:
     @staticmethod
     def create_empty_mask(
         image_shape: tuple[int, int, int],
+        *,
         inverse: bool = False,
-    ):
+    ) -> "Mask":
         """
         This function acts as a factory for empty masks, due to 1) bad copying
         issues, and 2) because it's not a one-liner.
 
-        :param bool inverse: Inverses the mask to make it white on black, not black on white, defaults to False
+        :param bool inverse: Inverses the mask to make it white on black, not
+        black on white, defaults to False
 
         # TODO: Cache this if it's made
 

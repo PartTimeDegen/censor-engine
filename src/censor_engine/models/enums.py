@@ -32,3 +32,4 @@ class MergeMethod(IntEnum):
     GROUPS = 2
     PARTS = 3
     FULL = 4
+    ALL = 5

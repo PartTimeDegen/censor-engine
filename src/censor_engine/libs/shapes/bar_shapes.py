@@ -35,10 +35,11 @@ class Bar(BarShape, _BarInfo):
     # Controls
     deg_angle_snap: int = 1
 
-    def generate(
+    def generate(  # noqa: PLR0912 # TODO: Not wrong, not easy
         self,
         part: "Part",
         empty_mask: "Mask",  # TODO: Update Shapes with same format as Styles
+        *,
         force_horizontal: bool = False,
         force_vertical: bool = False,
         long_direction: bool = False,
@@ -58,7 +59,7 @@ class Bar(BarShape, _BarInfo):
 
         # Fit Ellipse to get Contour Back
         cnt = max(contours, key=cv2.contourArea)
-        if len(cnt) < 5:
+        if len(cnt) < 5:  # noqa: PLR2004
             msg = "Not enough points to fit an ellipse."
             raise ValueError(msg)
 
@@ -134,6 +135,7 @@ class HorizontalBar(Bar):
         self,
         part: "Part",
         empty_mask: "Mask",
+        *,
         force_horizontal: bool = False,
         force_vertical: bool = False,
         long_direction: bool = False,
@@ -148,6 +150,7 @@ class VerticalBar(Bar):
         self,
         part: "Part",
         empty_mask: "Mask",
+        *,
         force_horizontal: bool = False,
         force_vertical: bool = False,
         long_direction: bool = False,
@@ -162,6 +165,7 @@ class LongBar(Bar):
         self,
         part: "Part",
         empty_mask: "Mask",
+        *,
         force_horizontal: bool = False,
         force_vertical: bool = False,
         long_direction: bool = False,
@@ -178,6 +182,7 @@ class EllipseBasedBar(Bar):
         self,
         part: "Part",
         empty_mask: "Mask",
+        *,
         force_horizontal: bool = False,
         force_vertical: bool = False,
         long_direction: bool = False,

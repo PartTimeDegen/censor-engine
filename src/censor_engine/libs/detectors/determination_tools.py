@@ -38,7 +38,7 @@ class ImageGenreDeterminer(Determiner):
         "sexy",
     )
 
-    broad_groups: dict[str, str] = {
+    broad_groups: dict[str, str] = {  # noqa: RUF012 # TODO: Fix when used
         "hentai": "hentai",
         "real": "porn",
     }

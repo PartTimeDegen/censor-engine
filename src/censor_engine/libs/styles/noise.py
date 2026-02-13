@@ -20,6 +20,7 @@ class ChromaticAberration(NoiseStyle):
         mask: Mask,
         contours: list[Contour],
         part: Part,
+        *,
         offset: int = 20,
         angle: int = -45,
     ) -> Image:
@@ -62,7 +63,7 @@ class ChromaticAberration(NoiseStyle):
 
 @StyleRegistry.register()
 class CentricChromaticAberration(NoiseStyle):
-    # FIXME This doesn't give centric aberration
+    # FIXME: This doesn't give centric aberration
 
     def apply_style(
         self,
@@ -70,6 +71,7 @@ class CentricChromaticAberration(NoiseStyle):
         mask: Mask,
         contours: list[Contour],
         part: Part,
+        *,
         offset: int = 20,
         blur: int = 0,
     ) -> Image:
@@ -79,16 +81,17 @@ class CentricChromaticAberration(NoiseStyle):
 
         # Step 1: Get center of contour or fallback to image center
         if contour is not None and len(contour.points) > 0:
-            M = cv2.moments(contour.points)
-            if M["m00"] != 0:
-                cx = int(M["m10"] / M["m00"])
-                cy = int(M["m01"] / M["m00"])
+            m = cv2.moments(contour.points)
+            if m["m00"] != 0:
+                cx = int(m["m10"] / m["m00"])
+                cy = int(m["m01"] / m["m00"])
             else:
                 cx, cy = image.shape[1] // 2, image.shape[0] // 2
         else:
             cx, cy = image.shape[1] // 2, image.shape[0] // 2  # noqa: F841
 
-        # Step 2: Simulate outward shift (could be improved with pixelwise later)
+        # Step 2: Simulate outward shift (could be improved with pixelwise
+        #         later)
         dx_vector = 1.0
         dy_vector = 1.0
         norm = math.hypot(dx_vector, dy_vector)
@@ -101,10 +104,10 @@ class CentricChromaticAberration(NoiseStyle):
             dx = int(offset * (i + 1) * comp_x)
             dy = int(offset * (i + 1) * comp_y)
 
-            M = np.float32([[1, 0, dx], [0, 1, dy]])  # type: ignore
+            m = np.float32([[1, 0, dx], [0, 1, dy]])  # type: ignore
             channels[i] = cv2.warpAffine(
                 channel,
-                M,  # type: ignore
+                m,  # type: ignore
                 (channel.shape[1], channel.shape[0]),
                 borderMode=cv2.BORDER_REFLECT,
             )
@@ -128,6 +131,7 @@ class Noise(NoiseStyle):
         mask: Mask,
         contours: list[Contour],
         part: Part,
+        *,
         alpha: float = 1,
         coloured: bool = True,
         intensity: float = 1,

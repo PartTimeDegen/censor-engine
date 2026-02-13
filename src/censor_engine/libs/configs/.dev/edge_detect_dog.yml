@@ -1,0 +1,31 @@
+video_settings:
+  frame_difference_threshold: 0.02
+  part_frame_hold_seconds: 0.5
+  persistence_groups:
+    - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
+
+render_settings:
+  merge_method: "all"
+
+censor_settings:
+  enabled_parts:
+    - "FEMALE_BREAST_EXPOSED"
+    - "FEMALE_BREAST_COVERED"
+    - "BUTTOCKS_EXPOSED"
+    - "BUTTOCKS_COVERED"
+    - "ANUS_EXPOSED"
+    - "ANUS_COVERED"
+    - "FEMALE_GENITALIA_EXPOSED"
+    - "FEMALE_GENITALIA_COVERED"
+
+  default_part_settings:
+    shape: "block"
+    censors: [
+        { "style": "outline" },
+        # { "style": "dev_edge_detection_double_gaussian_potential_mask" },
+        {
+          "style": "edge_detection_double_gaussian",
+          "parameters": { "multiplier": 2 },
+        },
+      ]
+    margin: 0.5

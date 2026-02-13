@@ -74,7 +74,7 @@ class MixinVideoPipeline(Mixin):
             file_name = (
                 full_file_path
                 if path_manager.get_flag_is_using_full_path()
-                else file_path.split(os.sep)[-1]
+                else file_path.split(os.sep)[-1]  # noqa: PTH206 # TODO: Fix
             )
 
             progress_bar = progressbar.progressbar(
@@ -167,7 +167,9 @@ class MixinVideoPipeline(Mixin):
 
                 """
 
-                # Apply Quality Filters FIXME: This is losing identical parts, and I reckon that's what causes the persistance memory to be lost
+                # Apply Quality Filters
+                # FIXME: This is losing identical parts, and I reckon that's
+                #        what causes the persistence memory to be lost
                 # frame_processor.run()
 
                 # Update the Parts
@@ -200,10 +202,6 @@ class MixinVideoPipeline(Mixin):
 
                 # Write Frame
                 video_processor.write_frame(file_output)
-
-                # Debug Show Times
-                in_place_durations.append(ip.get_duration())
-                function_display_times()
 
                 if video_processor.force_stop:
                     break

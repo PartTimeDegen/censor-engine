@@ -15,6 +15,7 @@ class Painting(StyliseStyle):
         mask: Mask,
         contours: list[Contour],
         part: Part,
+        *,
         sigma_s: int = 60,
         sigma_r: float = 0.45,
     ) -> Image:
@@ -29,7 +30,8 @@ class Pencil(StyliseStyle):
         mask: Mask,
         contours: list[Contour],
         part: Part,
-        coloured=False,
+        *,
+        coloured: bool = False,
         sigma_s: int = 60,
         sigma_r: float = 0.45,
         shade_factor: float = 0.2,

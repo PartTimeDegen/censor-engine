@@ -77,10 +77,13 @@ class MixinArguments(Mixin):
         if debug_word := args.debug_level:
             try:
                 output_dict["debug_level"] = DebugLevels[debug_word.upper()]
-                print(f"**Found Debug Level = {output_dict['debug_level']}**")
+                msg_debug = (
+                    f"**Found Debug Level = {output_dict['debug_level']}**"
+                )
+                print(msg_debug)  # noqa: T201
             except ValueError:
                 msg = f"Invalid DebugLevels value: {debug_word!s}"
-                raise ValueError(msg)
+                raise ValueError(msg)  # noqa: B904
 
         # Handle Handle Flags
         output_dict["flags"] = {key: getattr(args, key) for key in flag_mapper}

@@ -17,7 +17,7 @@ class Registry:
     def register(self) -> Callable:
         """Decorator to register a class."""
 
-        def decorator(cls):
+        def decorator(cls):  # noqa: ANN001
             if not self._loaded:
                 self._auto_register()
             key = self.camel_to_snake(cls.__name__)

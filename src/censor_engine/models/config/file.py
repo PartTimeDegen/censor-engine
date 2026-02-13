@@ -17,7 +17,7 @@ class FileConfig(BaseModel):
 
     # Optional validator for ensuring conversion from str to Path
     @field_validator("uncensored_folder", "censored_folder", mode="before")
-    def ensure_path(cls, v):  # noqa: ANN001, ANN201, N805
+    def ensure_path(cls, v):  # noqa: ANN001, N805
         """
         This ensures the paths are Path.
 

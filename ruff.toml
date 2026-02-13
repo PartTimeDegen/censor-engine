@@ -1,0 +1,49 @@
+src = ["src"]
+exclude = [
+    ".venv",
+    "tests/01_unit_tests",
+    "tests/02_integration_tests",
+    "docs",
+    # "src/censor_engine/libs" # Doesn't need it
+]
+line-length = 79
+lint.extend-select = [
+    "ALL"
+]
+lint.ignore = [
+    "TD003",
+    "FIX001",
+    "D404",
+    "D205",
+    "D105",
+    "ANN204",
+    "D100",
+    "D401",
+    "D212",
+    "PLR0913",
+    "C901",
+    "D200",
+    "FIX002",
+    "FIX004",
+    "TD001",
+    "TD002",
+    "PGH003",
+    "PGH004",
+    "COM812",
+    "D203",
+    "D104",
+    "ARG002", # Explicitly disabled because it interferes with Schemas
+    "ANN202", # TODO: Remove after production
+    "D102", # Ditto
+    "D101", # Ditto
+    "ERA001", # TODO: This is commented out code, probably best to follow at one point
+    # PROD ONLY
+    "ANN201", # Hide until Prod
+    "D107", # Hide until Prod
+    "NPY002", # Valid but effort to fix
+]
+
+[format]
+quote-style = "double" 
+exclude = [] 
+

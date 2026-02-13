@@ -69,5 +69,5 @@ class VideoConfig(BaseModel):
             "I completely forgot what this does, I think it's to merge "
             "lifespans of parts."
         ),
-        # examples=[-1, 3, 5, 10, 15],  # noqa: ERA001
+        # examples=[-1, 3, 5, 10, 15],
     )

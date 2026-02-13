@@ -38,7 +38,7 @@ class JointBox(JointShape):
             lineType=cv2.LINE_AA,
         )
 
-        if len(mask.shape) > 2:
+        if len(mask.shape) > 2:  # noqa: PLR2004
             mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
 
         return mask
@@ -71,7 +71,7 @@ class RoundedJointBox(JointShape):
     def generate(self, part: "Part", empty_mask: "Mask") -> "Mask":
         mask = JointBox().generate(part, empty_mask)
 
-        if len(mask.shape) > 2:
+        if len(mask.shape) > 2:  # noqa: PLR2004
             mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
 
         # Rounding Part
@@ -87,3 +87,193 @@ class RoundedJointBox(JointShape):
             kernel,
             iterations=iterations >> 1,
         )
+
+
+@ShapeRegistry.register()
+class Block(JointShape):
+    base_shape: str = "ellipse"
+    single_shape: str = "box"
+
+    def generate(self, part: "Part", empty_mask: "Mask") -> "Mask":
+        cont_rect = cv2.findContours(
+            image=part.mask,
+            mode=cv2.RETR_TREE,
+            method=cv2.CHAIN_APPROX_SIMPLE,
+        )
+
+        x, y, w, h = cv2.boundingRect(np.vstack(cont_rect[0]))  # type: ignore
+
+        # Define the box points (4 corners)
+        box = np.array(
+            [[x, y], [x + w, y], [x + w, y + h], [x, y + h]], dtype=np.int32
+        )
+
+        mask = cv2.drawContours(
+            image=empty_mask,
+            contours=[box],
+            contourIdx=-1,
+            color=(255, 255, 255),
+            thickness=-1,
+            lineType=cv2.LINE_AA,
+        )
+
+        if len(mask.shape) > 2:  # noqa: PLR2004
+            mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
+
+        return mask
+
+
+@ShapeRegistry.register()
+class CoverBottom(JointShape):
+    base_shape: str = "ellipse"
+    single_shape: str = "box"
+
+    def generate(self, part: "Part", empty_mask: "Mask") -> "Mask":
+        cont_rect = cv2.findContours(
+            image=part.mask,
+            mode=cv2.RETR_TREE,
+            method=cv2.CHAIN_APPROX_SIMPLE,
+        )
+        width, height = empty_mask.shape[:2]
+        _, y, _, _ = cv2.boundingRect(np.vstack(cont_rect[0]))  # type: ignore
+
+        box = np.array(
+            [
+                [0, y],
+                [width, y],
+                [width, height],
+                [0, height],
+            ],
+            dtype=np.int32,
+        )
+
+        mask = cv2.drawContours(
+            image=empty_mask,
+            contours=[box],
+            contourIdx=-1,
+            color=(255, 255, 255),
+            thickness=-1,
+            lineType=cv2.LINE_AA,
+        )
+
+        if len(mask.shape) > 2:  # noqa: PLR2004
+            mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
+
+        return mask
+
+
+@ShapeRegistry.register()
+class CoverTop(JointShape):
+    base_shape: str = "ellipse"
+    single_shape: str = "box"
+
+    def generate(self, part: "Part", empty_mask: "Mask") -> "Mask":
+        cont_rect = cv2.findContours(
+            image=part.mask,
+            mode=cv2.RETR_TREE,
+            method=cv2.CHAIN_APPROX_SIMPLE,
+        )
+        width, _ = empty_mask.shape[:2]
+        _, y, _, h = cv2.boundingRect(np.vstack(cont_rect[0]))  # type: ignore
+
+        box = np.array(
+            [
+                [0, 0],
+                [width, 0],
+                [width, y + h],
+                [0, y + h],
+            ],
+            dtype=np.int32,
+        )
+
+        mask = cv2.drawContours(
+            image=empty_mask,
+            contours=[box],
+            contourIdx=-1,
+            color=(255, 255, 255),
+            thickness=-1,
+            lineType=cv2.LINE_AA,
+        )
+
+        if len(mask.shape) > 2:  # noqa: PLR2004
+            mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
+
+        return mask
+
+
+@ShapeRegistry.register()
+class CoverLeft(JointShape):
+    base_shape: str = "ellipse"
+    single_shape: str = "box"
+
+    def generate(self, part: "Part", empty_mask: "Mask") -> "Mask":
+        cont_rect = cv2.findContours(
+            image=part.mask,
+            mode=cv2.RETR_TREE,
+            method=cv2.CHAIN_APPROX_SIMPLE,
+        )
+        width, height = empty_mask.shape[:2]
+        x, _, _, _ = cv2.boundingRect(np.vstack(cont_rect[0]))  # type: ignore
+
+        box = np.array(
+            [
+                [0, 0],
+                [width - x, 0],
+                [width - x, height],
+                [0, height],
+            ],
+            dtype=np.int32,
+        )
+
+        mask = cv2.drawContours(
+            image=empty_mask,
+            contours=[box],
+            contourIdx=-1,
+            color=(255, 255, 255),
+            thickness=-1,
+            lineType=cv2.LINE_AA,
+        )
+
+        if len(mask.shape) > 2:  # noqa: PLR2004
+            mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
+
+        return mask
+
+
+@ShapeRegistry.register()
+class CoverRight(JointShape):
+    base_shape: str = "ellipse"
+    single_shape: str = "box"
+
+    def generate(self, part: "Part", empty_mask: "Mask") -> "Mask":
+        cont_rect = cv2.findContours(
+            image=part.mask,
+            mode=cv2.RETR_TREE,
+            method=cv2.CHAIN_APPROX_SIMPLE,
+        )
+        width, height = empty_mask.shape[:2]
+        x, _, _, _ = cv2.boundingRect(np.vstack(cont_rect[0]))  # type: ignore
+
+        box = np.array(
+            [
+                [x, 0],
+                [width, 0],
+                [width, height],
+                [x, height],
+            ],
+            dtype=np.int32,
+        )
+
+        mask = cv2.drawContours(
+            image=empty_mask,
+            contours=[box],
+            contourIdx=-1,
+            color=(255, 255, 255),
+            thickness=-1,
+            lineType=cv2.LINE_AA,
+        )
+
+        if len(mask.shape) > 2:  # noqa: PLR2004
+            mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
+
+        return mask

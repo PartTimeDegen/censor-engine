@@ -5,74 +5,25 @@ description = "Censor Engine, Censors 'stuff'"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "fastai>=2.1.10",
     "ffmpeg-python>=0.2.0",
-    "gdown>=5.2.0",
-    "keras>=3.11.1",
-    "mypy>=1.17.1",
     "nudenet>=3.4.2",
     "numpy>=2.3.2",
     "onnxruntime-gpu>=1.22.0",
-    "opencv-python>=4.11.0.86",
     "opencv-python-headless>=4.11.0.86",
-    "opencv-stubs>=0.1.0",
-    "pillow>=11.3.0",
     "progressbar2>=4.5.0",
     "pydantic>=2.11.7",
-    "pydload>=1.0.9",
-    "pyright>=1.1.403",
-    "pytest>=8.4.1",
     "pyyaml>=6.0.2",
-    "ruff>=0.12.7",
-    "torch>=2.8.0",
-    "types-pyyaml>=6.0.12.20250516",
 ]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 
-[tool.ruff]
-src = ["src"]
-exclude = [
-    ".venv",
-    "tests/01_unit_tests",
-    "tests/02_integration_tests",
-    "docs",
-    "src/censor_engine/libs" # Doesn't need it
+[dependency-groups]
+dev = [
+    "mypy>=1.17.1",
+    "opencv-stubs>=0.1.0",
+    "pyright>=1.1.403",
+    "pytest>=8.4.1",
+    "ruff>=0.12.7",
+    "types-pyyaml>=6.0.12.20250516",
 ]
-line-length = 79
-lint.extend-select = [
-    "ALL"
-]
-lint.ignore = [
-    "TD003",
-    "FIX001",
-    "D404",
-    "D205",
-    "D105",
-    "ANN204",
-    "D100",
-    "D401",
-    "D212",
-    "PLR0913",
-    "C901",
-    "D200",
-    "FIX002",
-    "FIX004",
-    "TD001",
-    "TD002",
-    "PGH003",
-    "PGH004",
-    "COM812",
-    "D203",
-    "D104",
-    "ARG002", # Explicitly disabled because it interferes with Schemas
-    "ANN202", # TODO: Remove after production
-    "D102", # Ditto
-    "D101", # Ditto
-]
-
-[tool.ruff.format]
-quote-style = "double" 
-exclude = [] 
-

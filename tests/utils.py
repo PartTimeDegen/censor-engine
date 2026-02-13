@@ -8,15 +8,16 @@ import numpy as np
 import yaml
 
 from censor_engine import CensorEngine
+from censor_engine.censor_engine.tools.config_previewer.example_image import (
+    ImageGenerator,
+)
 from censor_engine.models.lib_models.detectors import DetectedPartSchema
-from tests.input_image import ImageGenerator
-from tests.input_video import VideoGenerator
-from tests.utils_video import assert_video
 
 
 # Utils
 def assert_image(
     output_image: np.ndarray,
+    *,
     mean_absolute_error: float = 10,
     subfolder: str | None = None,
     batch_tests: bool = False,
@@ -24,6 +25,25 @@ def assert_image(
     expect_png: bool = False,
     edge_case: bool = False,
 ) -> None:
+    """
+    This function is used to assess and manage the images for test.
+
+    TODO: Finish writing.
+
+    :param np.ndarray output_image: _description_
+    :param float mean_absolute_error: _description_, defaults to 10
+    :param str | None subfolder: _description_, defaults to None
+    :param bool batch_tests: _description_, defaults to False
+    :param str | None group_name: _description_, defaults to None
+    :param bool expect_png: _description_, defaults to False
+    :param bool edge_case: _description_, defaults to False
+    :raises AssertionError: _description_
+    :raises AssertionError: _description_
+    :raises AssertionError: _description_
+    :raises AssertionError: _description_
+    :raises AssertionError: _description_
+    :return _type_: _description_
+    """
     # Get caller info to name the dump folder by test name
     stack_trace = 3 if batch_tests else 2
     caller = inspect.stack()[stack_trace]
@@ -96,7 +116,8 @@ def assert_image(
     if output_image.shape != expected_image.shape:
         cv2.imwrite(str(output_path), output_image)
         msg = (
-            f"Image shapes differ: {output_image.shape} vs {expected_image.shape}\n"
+            f"Image shapes differ: {output_image.shape} "
+            f"vs {expected_image.shape}\n"
             f"  → Output saved to: {output_path}"
         )
         raise AssertionError(
@@ -126,11 +147,16 @@ def assert_image(
     )
 
 
-def load_config_base_yaml(config: str = "00_default.yml"):
+def load_config_base_yaml(config: str = "00_default.yml") -> Any:  # noqa: ANN401
+    """
+    This function is used to load a custom YAML file for tests.
+
+    :param str config: Config name, defaults to "00_default.yml"
+    """
     base_config_path = (
         Path("src") / "censor_engine" / "libs" / "configs" / config
     )
-    with open(str(base_config_path)) as file:
+    with base_config_path.open() as file:
         return yaml.safe_load(file)
 
 
@@ -152,22 +178,6 @@ class ImageFixtureData:
             raise ValueError(msg)
 
 
-@dataclass
-class VideoFixtureData:
-    path: Path
-    generator: VideoGenerator
-    frame_data: list[list[DetectedPartSchema]]
-
-    def update_parts(self, list_parts_enabled: list[str] | str) -> None:
-        for frame in self.frame_data:
-            if isinstance(list_parts_enabled, str):
-                list_parts_enabled = [list_parts_enabled]
-
-            frame = [
-                part for part in frame if part.label in list_parts_enabled
-            ]
-
-
 def run_image_test(
     dummy_image_data: ImageFixtureData,
     *,
@@ -179,6 +189,20 @@ def run_image_test(
     edge_case: bool = False,
     mean_absolute_error: float = 2.2,  # Weird noise around shapes
 ) -> None:
+    """
+    This function runs the image test.
+
+    TODO: Finish writing.
+
+    :param ImageFixtureData dummy_image_data: _description_
+    :param str | dict[str, Any] config: _description_
+    :param str | None subfolder: _description_, defaults to None
+    :param bool batch_tests: _description_, defaults to False
+    :param str | None group_name: _description_, defaults to None
+    :param bool expect_png: _description_, defaults to False
+    :param bool edge_case: _description_, defaults to False
+    :param float mean_absolute_error: _description_, defaults to 2.2
+    """
     if isinstance(config, str):
         config = load_config_base_yaml(config)
 
@@ -196,39 +220,5 @@ def run_image_test(
         batch_tests=batch_tests,
         group_name=group_name,
         expect_png=expect_png,
-        edge_case=edge_case,
-    )
-
-
-def run_video_test(
-    dummy_video_data: VideoFixtureData,
-    *,
-    config: str | dict[str, Any],
-    subfolder: str | None = None,
-    batch_tests: bool = False,
-    group_name: str | None = None,
-    expect_png: bool = False,
-    edge_case: bool = False,
-    mean_absolute_error: float = 1,
-) -> None:
-    if isinstance(config, str):
-        config = load_config_base_yaml(config)
-
-    output = CensorEngine(
-        base_folder=dummy_video_data.path.parent,
-        config_data=config,
-        _test_mode=True,
-        censor_mode="video",
-        _test_detection_output=dummy_video_data.frame_data
-        if dummy_video_data.frame_data is not None
-        else [],
-    ).start()
-
-    assert_video(
-        dummy_video_data.path,
-        subfolder=subfolder,
-        mean_absolute_error=mean_absolute_error,
-        batch_tests=batch_tests,
-        group_name=group_name,
         edge_case=edge_case,
     )

@@ -77,13 +77,14 @@ class Style(ABC, MixinContourMasking, MixinImageBlending):
         mask: Mask,
         contours: list[Contour],
         part: Part | None,
-        thickness: int = -1,
         *parameters,  # noqa: ANN002
+        thickness: int = -1,
         **kwargs,  # noqa: ANN003
     ) -> ProcessedImage:
         raise NotImplementedError
 
-    def change_linetype(self, enable_aa: bool) -> None:
+    def change_linetype(self, enable_aa: bool) -> None:  # noqa: FBT001
+        # TODO: FBT error needs to be addressed
         if enable_aa:
             self.default_linetype = cv2.LINE_AA
         else:

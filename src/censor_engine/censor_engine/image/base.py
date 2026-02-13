@@ -4,7 +4,6 @@ from dataclasses import dataclass, field
 from uuid import UUID, uuid4
 
 from censor_engine.censor_engine.tools.debugger import (
-    Debugger,
     DebugLevels,
 )
 from censor_engine.censor_engine.tools.dev_tools import DevTools
@@ -86,7 +85,6 @@ class ImageProcessor(
     _file_original_image: Image = field(init=False)
     _file_uuid: UUID = field(init=False)
 
-    _debugger: Debugger = field(init=False)
     _duration: float = field(init=False)
 
     def __post_init__(self):
@@ -95,14 +93,9 @@ class ImageProcessor(
         self._file_uuid = uuid4()
         self._file_original_image = self.file_image.copy()
 
-        # Debug
-        self._debugger = Debugger("Image Processor", level=self.debug_level)
-        self._debugger.display_onnx_info()
-
         # Detect Parts for Image
         if self._test_detection_output:
             self._detected_parts = self._test_detection_output
-            self._debugger.time_stop()
         else:
             self.__detect_parts()
 
@@ -165,7 +158,7 @@ class ImageProcessor(
         """
         if self.dev_tools:
             self.dev_tools.dev_decompile_masks(
-                iter_part if iter_part else self._image_parts,
+                iter_part or self._image_parts,
                 subfolder=subfolder,
             )
 
@@ -314,18 +307,3 @@ class ImageProcessor(
                 final_dict[f"{part.part_name}_{counter}"] = part
 
         return final_dict
-
-    def get_duration(self) -> float:
-        """
-        This is a debug function to get the durations from the debugger to
-        calculate the total duration of the processor.
-
-        Currently not in use. There used to be "wrappers" that would measure
-        the durations but this has been removed since it made the code too
-        noisy to read.
-
-        TODO: Reimplement at some point.
-
-        :return float: The total duration value
-        """
-        return sum([time.duration for time in self._debugger.time_logger])

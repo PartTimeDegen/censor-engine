@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Create venv
+        run: uv venv
+
+      - name: Sync dependencies (including dev)
+        run: uv sync --dev
+
+      - name: Install project in editable mode
+        run: uv pip install -e .
+
+      - name: Run Linter
+        run: uv bash lint.sh
+
+      - name: Run tests
+        run: uv run pytest

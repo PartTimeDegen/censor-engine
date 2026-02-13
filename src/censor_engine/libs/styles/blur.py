@@ -24,7 +24,7 @@ class Blur(BlurStyle):
 
         try:
             blurred_image = cv2.blur(image, (factors[1], factors[1]))
-        except Exception:
+        except Exception:  # noqa: BLE001 # Forgot Error
             blurred_image = cv2.blur(image, (factors[0], factors[0]))
 
         return blurred_image
@@ -50,7 +50,7 @@ class GaussianBlur(BlurStyle):
                 (factors[1], factors[1]),
                 0,
             )
-        except Exception:
+        except Exception:  # noqa: BLE001 # Forgot Error
             blurred_image = cv2.GaussianBlur(
                 image,
                 (factors[0], factors[0]),
@@ -74,7 +74,7 @@ class MedianBlur(BlurStyle):
 
         try:
             blurred_image = cv2.medianBlur(image, factors[1])
-        except Exception:
+        except Exception:  # noqa: BLE001 # Forgot Error
             blurred_image = cv2.medianBlur(image, factors[0])
 
         return blurred_image
@@ -101,7 +101,7 @@ class BilateralBlur(BlurStyle):
                 sigma_colour,
                 sigma_space,
             )
-        except Exception:
+        except Exception:  # noqa: BLE001 # Forgot Error
             blurred_image = cv2.bilateralFilter(
                 image,
                 factors[0],
@@ -122,7 +122,12 @@ class MotionBlur(BlurStyle):
         else:
             type(self).current_angle -= 1
 
-        if type(self).current_angle >= 180 or type(self).current_angle <= -180:
+        horizontal_threshold = 180
+        is_angle = (
+            type(self).current_angle >= horizontal_threshold
+            or type(self).current_angle <= -horizontal_threshold
+        )
+        if is_angle:
             type(self).current_angle = 0
 
     def apply_style(
@@ -155,7 +160,7 @@ class MotionBlur(BlurStyle):
 
         try:
             rotated_kernel = apply_factor_to_kernel(factors[1])
-        except Exception:
+        except Exception:  # noqa: BLE001 # TODO: Forgot what it was lol
             rotated_kernel = apply_factor_to_kernel(factors[0])
 
         # Step 3: Apply the kernel to the image

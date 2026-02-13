@@ -23,4 +23,4 @@ for expected in SRC_ROOT.rglob("expected.jpg"):
     # Copy file
     shutil.copy2(expected, dst_path)
 
-    print(f"Copied: {expected} -> {dst_path}")
+    print(f"Copied: {expected} -> {dst_path}")  # noqa: T201
