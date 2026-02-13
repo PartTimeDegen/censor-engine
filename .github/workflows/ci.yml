@@ -30,8 +30,11 @@ jobs:
       - name: Install project in editable mode
         run: uv pip install -e .
 
-      - name: Run Linter
-        run: bash lint.sh
+      - name: Run Ruff
+        run: uv run ruff check src/censor_engine
+
+      - name: Run Mypy
+        run: uv run mypy src/censor_engine
 
       - name: Run tests
         run: uv run pytest
