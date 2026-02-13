@@ -52,3 +52,8 @@ jobs:
 
       - name: Run tests
         run: uv run pytest
+
+      - name: Count lines
+        run: |
+          sudo apt install -y cloc
+          cloc src tests --exclude-dir=00_test_data,.git
