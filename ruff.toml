@@ -4,6 +4,7 @@ exclude = [
     "tests/01_unit_tests",
     "tests/02_integration_tests",
     "docs",
+    ".github",
     # "src/censor_engine/libs" # Doesn't need it
 ]
 line-length = 79

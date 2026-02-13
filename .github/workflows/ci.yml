@@ -30,6 +30,9 @@ jobs:
       - name: Install project in editable mode
         run: uv pip install -e .
 
+      - name: Ensure FFmpeg
+        run: uv run python scripts/ensure_ffmpeg.py
+
       - name: Run Ruff
         run: uv run ruff check src/censor_engine
 

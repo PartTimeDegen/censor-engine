@@ -84,7 +84,7 @@ class ToolDownloader:
 
         else:
             with tarfile.open(archive, "r:*") as t:
-                for member in t.getmembers():
+                for member in t.getmembers():  # type: ignore
                     fname = Path(member.name).name  # type: ignore
                     if fname in ["ffmpeg", "ffprobe"]:
                         t.extract(member, ffmpeg_dir)
