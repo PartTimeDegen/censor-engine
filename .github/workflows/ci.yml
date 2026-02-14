@@ -7,13 +7,19 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      # Install uv (cross-platform installer)
       - name: Install uv
+        shell: bash
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
           echo "$HOME/.local/bin" >> $GITHUB_PATH
@@ -30,6 +36,7 @@ jobs:
       - name: Install project in editable mode
         run: uv pip install -e .
 
+      # Ensure FFmpeg (your Python script handles OS differences)
       - name: Ensure FFmpeg
         run: uv run python .github/ci_stuff/get_ffmpeg.py
 
@@ -45,7 +52,9 @@ jobs:
           repository: PartTimeDegen/censor-engine-test-data
           path: temp-test-data
 
+      # Cross-platform copy (bash works on all runners)
       - name: Copy test data into tests/
+        shell: bash
         run: |
           mkdir -p tests
           cp -r temp-test-data/00_test_data tests/
@@ -53,7 +62,11 @@ jobs:
       - name: Run tests
         run: uv run pytest
 
-      - name: Count lines
-        run: |
-          sudo apt install -y cloc
-          cloc src tests --exclude-dir=00_test_data,.git
+      # Install cloc only on Linux
+      - name: Install cloc (Linux only)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt install -y cloc
+
+      - name: Count lines (Linux only)
+        if: matrix.os == 'ubuntu-latest'
+        run: cloc src tests --exclude-dir=00_test_data,.git
