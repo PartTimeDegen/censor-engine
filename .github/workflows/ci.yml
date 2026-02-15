@@ -6,12 +6,13 @@ on:
   pull_request:
 
 jobs:
-  test:
+  test-os-lint-and-tests:
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest] # Windows Fails due to test data file name
+      fail-fast: false
 
     steps:
       - name: Checkout repo
