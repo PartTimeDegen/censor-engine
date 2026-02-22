@@ -1,5 +1,6 @@
 import inspect
 import os
+import platform
 
 import pytest
 
@@ -68,15 +69,20 @@ def run_tests(
     dummy_input_image_data,
     expect_png: bool = False,
     mean_absolute_error: float = 6,
+    is_text:bool = False,
 ) -> None:
     all_parts = list(NudeNetDetector.model_classifiers)
+
     merge = "none" if style == "Debug" else "groups"
+    censor_params = {}
+    if is_text and platform.system() == "Linux":
+        censor_params = {"parameters" : {"font": "DejaVu Sans"}}
     config_data = {
         "censor_settings": {
             "enabled_parts": all_parts,
             "merge_settings": {"merge_groups": [all_parts]},
             "default_part_settings": {
-                "censors": [{"style": style}],
+                "censors": [{"style": style, **censor_params}],
             },
         },
         "render_settings": {"merge_method": merge},
@@ -137,7 +143,7 @@ def test_stylisation_styles(style, dummy_input_image_data) -> None:
 
 @pytest.mark.parametrize("style", styles_text)
 def test_text_styles(style, dummy_input_image_data) -> None:
-    run_tests(style, dummy_input_image_data)
+    run_tests(style, dummy_input_image_data, is_text=True)
 
 
 @pytest.mark.parametrize("style", styles_transparency)
