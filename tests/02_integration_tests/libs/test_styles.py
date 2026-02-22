@@ -76,7 +76,7 @@ def run_tests(
     merge = "none" if style == "Debug" else "groups"
     censor_params = {}
     if is_text and platform.system() == "Linux":
-        censor_params = {"parameters" : {"font": "DejaVu Sans"}}
+        censor_params = {"parameters" : {"font": "DejaVuSans"}}
     config_data = {
         "censor_settings": {
             "enabled_parts": all_parts,
