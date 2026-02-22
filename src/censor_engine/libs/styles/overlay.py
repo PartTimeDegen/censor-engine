@@ -82,7 +82,7 @@ class OutlinedOverlay(OverlayStyle):
         alpha: float = 1.0,
         softness: int = 0,
     ) -> Image:
-        Overlay = self._apply_mask_as_overlay(
+        overlay = self._apply_mask_as_overlay(
             image,
             mask,
             Colour(colour_box),
@@ -91,7 +91,7 @@ class OutlinedOverlay(OverlayStyle):
 
         contours_points = [contour.points for contour in contours]
         cv2.drawContours(
-            Overlay,
+            overlay,
             contours_points,
             -1,
             Colour(colour_outline).value,
@@ -101,6 +101,6 @@ class OutlinedOverlay(OverlayStyle):
 
         if softness > 0:
             ksize = max(3, softness * 2 + 1)
-            Overlay = cv2.GaussianBlur(Overlay, (ksize, ksize), 0)
+            overlay = cv2.GaussianBlur(overlay, (ksize, ksize), 0)
 
-        return Overlay
+        return overlay

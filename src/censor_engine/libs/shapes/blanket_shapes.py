@@ -56,7 +56,7 @@ class CoverRight(BlanketShape):
             method=cv2.CHAIN_APPROX_SIMPLE,
         )
         height, width = empty_mask.shape[:2]
-        x, _, w, _ = cv2.boundingRect(np.vstack(cont_rect[0]))  # type: ignore
+        x, _, _, _ = cv2.boundingRect(np.vstack(cont_rect[0]))  # type: ignore
 
         box = np.array(
             [

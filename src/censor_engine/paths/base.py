@@ -219,6 +219,4 @@ class PathManager:
         :param str file_path: _description_
         :return str: _description_
         """
-        print(file_path)
-        print(self.get_uncensored_folder())
         return str(Path(file_path).relative_to(self.get_uncensored_folder()))

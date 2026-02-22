@@ -1,5 +1,6 @@
 
 echo "Running Ruff"
+uv run ruff check src/censor_engine
 uv run ruff check src/censor_engine --statistics
 
 echo ""
