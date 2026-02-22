@@ -31,7 +31,7 @@ Most are from this GIF off censored.booru (not sure on links on this sub, post I
     * Full
     * Cleavage
     * Part Outline
-    * Full length bar
+    * Full length Bar
     * Shading
 * Frame (Box on Puryfi without fill or score/name)
     * Box

@@ -1,1 +1,0 @@
-./run.sh --uncensored-location ./video_fixes/nice --config-location .dev/edge_detect_dog.yml -fo -td

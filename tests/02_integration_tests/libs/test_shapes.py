@@ -23,6 +23,11 @@ shapes_bar = [
     for shape, class_shape in shapes.items()
     if class_shape.shape_type == ShapeType.BAR
 ]
+shapes_blanket = [
+    shape
+    for shape, class_shape in shapes.items()
+    if class_shape.shape_type == ShapeType.BLANKET
+]
 
 
 def run_shape_tests(shape, dummy_input_image_data) -> None:
@@ -34,7 +39,7 @@ def run_shape_tests(shape, dummy_input_image_data) -> None:
             "merge_settings": {"merge_groups": [["FEMALE_BREAST_EXPOSED"]]},
             "default_part_settings": {
                 "censors": [
-                    {"style": "overlay", "parameters": {"colour": "BLACK"}},
+                    {"style": "Overlay", "parameters": {"colour": "BLACK"}},
                 ],
                 "shape": shape,
             },
@@ -67,6 +72,10 @@ def test_joint_shapes(shape, dummy_input_image_data) -> None:
 def test_bar_shapes(shape, dummy_input_image_data) -> None:
     run_shape_tests(shape, dummy_input_image_data)
 
+@pytest.mark.parametrize("shape", shapes_blanket)
+def test_blanket_shapes(shape, dummy_input_image_data) -> None:
+    run_shape_tests(shape, dummy_input_image_data)
+
 
 # Exceptions
 def test_bar_single_object(dummy_input_image_data) -> None:
@@ -77,9 +86,9 @@ def test_bar_single_object(dummy_input_image_data) -> None:
             ],
             "default_part_settings": {
                 "censors": [
-                    {"style": "overlay", "parameters": {"colour": "BLACK"}},
+                    {"style": "Overlay", "parameters": {"colour": "BLACK"}},
                 ],
-                "shape": "bar",
+                "shape": "Bar",
             },
         },
     }

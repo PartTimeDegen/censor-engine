@@ -110,6 +110,14 @@ class MixinGenerateParts(Mixin):
         new_parts = []
         for part in parts:
             empty_mask = Part.create_empty_mask(part.image_shape)
+
+            # Handle Universal Blanket Coverage
+            # TODO: This probably needs to be generalised
+            if part.shape_object.shape_type == ShapeType.BLANKET:
+                part.mask = part.shape_object.generate(part, empty_mask)
+                new_parts.append(part)
+                continue
+
             # For Simple Shapes
             if not part.is_merged:
                 shape_single = Part.get_shape_class(

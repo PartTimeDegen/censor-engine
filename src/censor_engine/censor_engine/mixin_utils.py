@@ -29,7 +29,8 @@ class MixinUtils(Mixin):
         full_files_path = path_manager.get_uncensored_folder()
 
         if path_manager.test_mode:
-            return [(1, "config_example.jpg", "preview")]
+            example_image = full_files_path / "config_example.jpg"
+            return [(1, str(example_image), "preview")]
 
         if not full_files_path.exists():
             msg = f"Path Does Not Exist: {full_files_path}"

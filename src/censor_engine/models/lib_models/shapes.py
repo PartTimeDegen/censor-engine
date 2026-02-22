@@ -30,5 +30,11 @@ class JointShape(Shape):
     shape_type: ShapeType = ShapeType.JOINT
 
 
+class BlanketShape(Shape):
+    single_shape: str = "Box"
+    base_shape: str = "Box"
+    shape_type: ShapeType = ShapeType.BLANKET
+
+
 class BarShape(Shape):
     shape_type: ShapeType = ShapeType.BAR

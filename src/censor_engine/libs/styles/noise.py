@@ -12,7 +12,7 @@ from censor_engine.typing import Image, Mask
 
 @StyleRegistry.register()
 class ChromaticAberration(NoiseStyle):
-    style_name: str = "chromatic_aberration"
+    style_name: str = "ChromaticAberration"
 
     def apply_style(
         self,
@@ -21,12 +21,14 @@ class ChromaticAberration(NoiseStyle):
         contours: list[Contour],
         part: Part,
         *,
-        offset: int = 20,
+        offset: float = 10,  # Percent
         angle: int = -45,
     ) -> Image:
         # Create a copy for the noise effect
         noise_image = image.copy()
-        offset = -offset
+        offset *= 1 / 1000  # Scaler
+        offset *= min(mask.shape[:2])
+        offset = -int(offset)
 
         # Correct angle components for x and y directions
         comp_x = math.cos(math.radians(angle))  # Horizontal shift
@@ -72,11 +74,13 @@ class CentricChromaticAberration(NoiseStyle):
         contours: list[Contour],
         part: Part,
         *,
-        offset: int = 20,
+        offset: float = 10,
         blur: int = 0,
     ) -> Image:
         noise_image = image.copy()
-        offset = -offset
+        offset *= 1 / 1000  # Scaler
+        offset *= min(mask.shape[:2])
+        offset = -int(offset)
         contour = contours[0]  # Get Biggest
 
         # Step 1: Get center of contour or fallback to image center

@@ -1,4 +1,5 @@
 import inspect
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -64,6 +65,7 @@ def assert_image(
     # Base path for image I/O
     dump_path = Path("tests") / "00_test_data" / caller_file.parent / test_name
     if subfolder:
+        subfolder = re.sub(r"[^A-Za-z0-9._-]", "_", subfolder)
         dump_path = dump_path / subfolder
     dump_path.mkdir(parents=True, exist_ok=True)
 

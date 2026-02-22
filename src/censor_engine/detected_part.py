@@ -7,6 +7,7 @@ import numpy as np
 
 from censor_engine.libs.registries import ShapeRegistry
 from censor_engine.models.config import Config, PartSettingsConfig
+from censor_engine.models.enums import MergeMethod
 from censor_engine.models.lib_models.shapes import Shape
 from censor_engine.models.structs.part_areas import PartArea
 
@@ -102,6 +103,12 @@ class Part:
             Part.create_empty_mask(self.image_shape),
         )
         self.base_masks = [self.mask]
+
+        # Checks for Specific Settings
+        merge_method = self.config.rendering_settings.merge_method
+        is_block_merge = merge_method == MergeMethod.ALL
+        if is_block_merge:
+            self.merge_group = self.config.censor_settings.enabled_parts
 
     def __str__(self) -> str:
         return (

@@ -22,7 +22,7 @@ censor_settings:
   default_part_settings:
     censors:
       [
-        { "style": "outline", parameters: { "colour": "BLACK" } },
-        { "style": "hexagon_pixelate", parameters: { "factor": 15 } },
+        { "style": "Outline", parameters: { "colour": "BLACK" } },
+        { "style": "HexagonPixelate", parameters: { "factor": 15 } },
       ]
-    shape: "ellipse"
+    shape: "Ellipse"

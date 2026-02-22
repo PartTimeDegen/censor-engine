@@ -19,6 +19,28 @@ from .tools.dev_tools import DevTools
 
 
 class MixinImagePipeline(Mixin):
+    def __print_output(
+        self,
+        file_name: str,
+        index: int,
+        max_index: int,
+    ) -> str:
+        # Index Component
+        max_index_length = len(str(max_index))
+        str_index = str(index).rjust(max_index_length)
+        indexing_component = f"{str_index}/{max_index}"
+
+        # Spacing Component
+        percent = float(index) / max_index
+        spacing = "" if index == max_index else " "
+        percent_component = f"{spacing}{percent:3.1%}"
+
+        # Text Output
+        text_file = f"Censored: {file_name}"
+
+        final_output = [indexing_component, percent_component, text_file]
+        return " | ".join(final_output)
+
     def _image_pipeline(
         self,
         main_files_path: Path,
@@ -108,7 +130,12 @@ class MixinImagePipeline(Mixin):
             )
 
             # File Save
-            print(new_file_name)  # noqa: T201
+            msg = self.__print_output(
+                path_manager.get_relative_path(file_path),
+                index,
+                max([f[0] for f in indexed_files]),
+            )
+            print(msg)  # noqa: T201
             cv2.imwrite(new_file_name, file_output)
             if inline_mode:
                 in_memory_files.append(file_output)

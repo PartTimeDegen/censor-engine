@@ -1,0 +1,27 @@
+render_settings:
+  merge_method: all
+censor_settings:
+  enabled_parts:
+    - FEMALE_BREAST_EXPOSED
+    - FEMALE_BREAST_COVERED
+    - BUTTOCKS_EXPOSED
+    - BUTTOCKS_COVERED
+    - ANUS_EXPOSED
+    - ANUS_COVERED
+    - FEMALE_GENITALIA_EXPOSED
+    - FEMALE_GENITALIA_COVERED
+
+  merge_settings:
+    merge_groups:
+      - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
+
+  default_part_settings:
+    censors: [
+        { style: ChromaticAberration, parameters: { offset: 3 } },
+        { style: Outline , parameters:{colour: PINK}},
+        { style: DevText },
+        { style: Overlay, parameters: { alpha: 0.2, colour: GREY } },
+        { style: Pixelate, parameters: { factor: 7 } },
+      ]
+    shape: JointBox
+    margin: 0.2

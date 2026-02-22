@@ -70,7 +70,7 @@ def run_tests(
     mean_absolute_error: float = 6,
 ) -> None:
     all_parts = list(NudeNetDetector.model_classifiers)
-    merge = "none" if style == "debug" else "groups"
+    merge = "none" if style == "Debug" else "groups"
     config_data = {
         "censor_settings": {
             "enabled_parts": all_parts,

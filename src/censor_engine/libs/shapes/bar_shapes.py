@@ -28,9 +28,9 @@ class _BarInfo:
 
 @ShapeRegistry.register()
 class Bar(BarShape, _BarInfo):
-    base_shape: str = "ellipse"
-    joint_shape: str = "joint_box"
-    single_shape: str = "bar"
+    base_shape: str = "Ellipse"
+    joint_shape: str = "JointBox"
+    single_shape: str = "Bar"
 
     # Controls
     deg_angle_snap: int = 1
@@ -176,7 +176,7 @@ class LongBar(Bar):
 
 @ShapeRegistry.register()
 class EllipseBasedBar(Bar):
-    joint_shape: str = "joint_ellipse"
+    joint_shape: str = "JointEllipse"
 
     def generate(
         self,

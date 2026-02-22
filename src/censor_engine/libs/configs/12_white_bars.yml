@@ -21,11 +21,11 @@ censor_settings:
 
   default_part_settings:
     censors:
-      - style: "overlay"
+      - style: "Overlay"
         parameters:
           colour: "WHITE"
-    protected_shape: "ellipse"
-    shape: "bar"
+    protected_shape: "Ellipse"
+    shape: "Bar"
     # Censored
   FEMALE_BREAST_EXPOSED:
     state: "protected"
@@ -42,40 +42,40 @@ censor_settings:
   # Revealed
   FACE_FEMALE:
     state: "revealed"
-    shape: "ellipse"
+    shape: "Ellipse"
     margin: 0.6
 
   BELLY_EXPOSED:
     state: "revealed"
-    shape: "ellipse"
+    shape: "Ellipse"
     margin: 0.3
 
   BELLY_COVERED:
     state: "revealed"
-    shape: "ellipse"
+    shape: "Ellipse"
     margin: 0.3
 
   FEET_EXPOSED:
     state: "revealed"
-    shape: "ellipse"
+    shape: "Ellipse"
     margin: 0.3
 
   FEET_COVERED:
     state: "revealed"
-    shape: "ellipse"
+    shape: "Ellipse"
     margin: 0.3
 
   ANUS_COVERED:
     state: "revealed"
-    shape: "ellipse"
+    shape: "Ellipse"
     margin: 0.2
 
   ANUS_EXPOSED:
     state: "revealed"
-    shape: "ellipse"
+    shape: "Ellipse"
     margin: 0.2
 
   MALE_GENITALIA_EXPOSED:
     state: "revealed"
-    shape: "ellipse"
+    shape: "Ellipse"
     margin: 0.3

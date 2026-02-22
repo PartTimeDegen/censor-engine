@@ -85,13 +85,13 @@ class OverlayStyle(Style):
         colour: Colour,
         alpha: float,
     ) -> Image:
-        overlay = image.copy()
+        Overlay = image.copy()
 
         # Create a single-channel boolean mask from any RGB mask channel
         mask_bool = mask[:, :, 0] > 0
 
         if not np.any(mask_bool):
-            return overlay  # Nothing to do if mask is empty
+            return Overlay  # Nothing to do if mask is empty
 
         # Create an array of shape (H, W, 3) with the target color
         color_array = np.full_like(image, colour.value, dtype=image.dtype)
@@ -99,14 +99,14 @@ class OverlayStyle(Style):
         # Alpha blending only on masked region
         if alpha < 1.0:
             # Blend only in masked region
-            overlay[mask_bool] = (
+            Overlay[mask_bool] = (
                 (1 - alpha) * image[mask_bool] + alpha * color_array[mask_bool]
             ).astype(image.dtype)
         else:
             # Hard color replace in masked region
-            overlay[mask_bool] = color_array[mask_bool]
+            Overlay[mask_bool] = color_array[mask_bool]
 
-        return overlay
+        return Overlay
 
 
 class ColourStyle(Style):

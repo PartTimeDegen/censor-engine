@@ -23,18 +23,18 @@ part_settings = {
     "censors": [
         # Good
         [],
-        [{"style": "blur"}],
-        [{"style": "blur", "parameters": {"factor": 20}}],
-        "blur",
+        [{"style": "Blur"}],
+        [{"style": "Blur", "parameters": {"factor": 20}}],
+        "Blur",
         # Bad # TODO: Consider how to check for bad inputs, also if should include in tests
         # "fake censor",
         # [{"style": "fake censor"}],
         # [{"style": "fake censor", "parameters": {"factor": 20}}],
-        # [{"style": "blur", "parameters": {"factor": 20}}],
+        # [{"style": "Blur", "parameters": {"factor": 20}}],
     ],
     "shape": [
         # Good
-        "circle",
+        "Circle",
         # Base
         # "dinosaur",  # TODO: Add to "raises error"
     ],
@@ -72,8 +72,8 @@ def run_base(field, value, dummy_input_image_data, use_part: bool) -> None:
     all_parts = list(NudeNetDetector.model_classifiers)
 
     backup_info = {
-        "censors": [{"style": "outlined_overlay"}],
-        "shape": "joint_box",
+        "censors": [{"style": "OutlinedOverlay"}],
+        "shape": "JointBox",
     }
 
     config_data = {
@@ -94,12 +94,12 @@ def run_base(field, value, dummy_input_image_data, use_part: bool) -> None:
         censor_data["default_part_settings"] = dict(backup_info)
         censor_data["FEMALE_BREAST_EXPOSED"] = {field: value}
         if field != "shape":
-            censor_data["FEMALE_BREAST_EXPOSED"]["shape"] = "joint_box"
+            censor_data["FEMALE_BREAST_EXPOSED"]["shape"] = "JointBox"
     else:
         censor_data["default_part_settings"] = dict(backup_info)
         censor_data["default_part_settings"][field] = value
         if field != "shape":
-            censor_data["default_part_settings"]["shape"] = "joint_box"
+            censor_data["default_part_settings"]["shape"] = "JointBox"
 
     run_image_test(
         dummy_input_image_data,

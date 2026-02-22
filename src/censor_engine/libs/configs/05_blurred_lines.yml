@@ -15,17 +15,17 @@ censor_settings:
 
   default_part_settings:
     censors:
-      - style: "outline"
+      - style: "Outline"
         parameters:
           colour: "BLACK"
           thickness: 1
-      - style: "greyscale"
-      - style: "blur"
+      - style: "Greyscale"
+      - style: "Blur"
         parameters:
           factor: 10
 
     minimum_score: 0.20
-    shape: "bar"
+    shape: "Bar"
 
   ANUS_EXPOSED:
     state: "revealed"

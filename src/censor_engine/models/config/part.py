@@ -36,14 +36,14 @@ class PartSettingsConfig(BaseModel):
         description="List of the censors and their arguments used.",
     )
     shape: str = Field(
-        default="box",
+        default="Box",
         description="Shape used for the part.",
         examples=[
-            "box",
-            "ellipse",
-            "circle",
-            "joint_box",
-            "bar",
+            "Box",
+            "Ellipse",
+            "Circle",
+            "JointBox",
+            "Bar",
         ],  # TODO: Full set
     )
     margin: int | float | dict[str, float] = Field(
@@ -80,7 +80,7 @@ class PartSettingsConfig(BaseModel):
         description=(
             "Shape used to protect the part, default is the part's shape"
         ),
-        examples=["box", "ellipse", "circle"],
+        examples=["Box", "Ellipse", "Circle"],
     )
     fade_percent: float = Field(
         default=0.0,
@@ -187,7 +187,7 @@ class PartSettingsConfig(BaseModel):
         #       to here, so that code is simpler and the formatting isn't
         #       somewhere in God knows where.
 
-        # TODO: Need to write block that handles dict values being below zero.
+        # TODO: Need to write Block that handles dict values being below zero.
 
         :param Any margin_data: Margin Config
         :raises TypeError: Invalid type

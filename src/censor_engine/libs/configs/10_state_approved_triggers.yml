@@ -23,24 +23,24 @@ censor_settings:
 
   default_part_settings:
     state: "revealed"
-    shape: "joint_box"
+    shape: "JointBox"
 
   FEMALE_BREAST_EXPOSED:
     state: "protected"
     censors:
-      - style: "outline"
+      - style: "Outline"
         parameters:
           colour: DARK_RED
-      - style: "overlay"
+      - style: "Overlay"
         parameters:
           colour: "BLACK"
   FEMALE_BREAST_COVERED:
     state: "protected"
     censors:
-      - style: "outline"
+      - style: "Outline"
         parameters:
           colour: DARK_RED
-      - style: "overlay"
+      - style: "Overlay"
         parameters:
           colour: "BLACK"
 
@@ -48,39 +48,39 @@ censor_settings:
     state: "protected"
     margin: -0.3
     censors:
-      - style: "outline"
+      - style: "Outline"
         parameters:
           colour: DARK_RED
-      - style: "overlay"
+      - style: "Overlay"
         parameters:
           colour: "BLACK"
   FEMALE_GENITALIA_COVERED:
     state: "protected"
     margin: -0.3
     censors:
-      - style: "outline"
+      - style: "Outline"
         parameters:
           colour: DARK_RED
-      - style: "overlay"
+      - style: "Overlay"
         parameters:
           colour: "BLACK"
 
   BUTTOCKS_EXPOSED:
     state: "unprotected"
     censors:
-      - style: "outline"
+      - style: "Outline"
         parameters:
           colour: DARK_RED
-      - style: "overlay"
+      - style: "Overlay"
         parameters:
           colour: "BLACK"
   BUTTOCKS_COVERED:
     state: "unprotected"
     censors:
-      - style: "outline"
+      - style: "Outline"
         parameters:
           colour: DARK_RED
-      - style: "overlay"
+      - style: "Overlay"
         parameters:
           colour: "BLACK"
 
@@ -102,13 +102,13 @@ censor_settings:
     margin: 0.2
 
   reverse_censor_settings:
-    - style: "outline"
+    - style: "Outline"
       parameters:
         colour: DARK_RED
         thickness: 2
-    - style: "greyscale"
+    - style: "Greyscale"
       parameters:
         alpha: 0.8
-    - style: "blur"
+    - style: "Blur"
       parameters:
         factor: 8

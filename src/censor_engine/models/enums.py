@@ -11,6 +11,7 @@ class ShapeType(IntEnum):
     BASIC = 1
     JOINT = 2
     BAR = 3
+    BLANKET = 4
 
 
 class StyleType(IntEnum):

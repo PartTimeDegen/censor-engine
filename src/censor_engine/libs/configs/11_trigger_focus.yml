@@ -24,26 +24,26 @@ censor_settings:
       - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
 
   default_part_settings:
-    shape: "bar"
+    shape: "Bar"
 
   FEMALE_BREAST_EXPOSED:
     margin: 0.3
     censors:
-      - style: "outline"
+      - style: "Outline"
         parameters:
           colour: "PINK"
-      - style: "blur"
+      - style: "Blur"
         parameters:
           factor: 20
-      - style: "greyscale"
+      - style: "Greyscale"
 
   FEMALE_GENITALIA_EXPOSED:
     margin: 0.3
     censors:
-      - style: "outline"
+      - style: "Outline"
         parameters:
           colour: "PINK"
-      - style: "blur"
+      - style: "Blur"
         parameters:
           factor: 20
-      - style: "greyscale"
+      - style: "Greyscale"

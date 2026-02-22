@@ -19,12 +19,12 @@ censor_settings:
     - "FEMALE_GENITALIA_COVERED"
 
   default_part_settings:
-    shape: "block"
+    shape: "Block"
     censors: [
-        { "style": "outline" },
+        { "style": "Outline" },
         # { "style": "dev_edge_detection_double_gaussian_potential_mask" },
         {
-          "style": "edge_detection_double_gaussian",
+          "style": "EdgeDetectionDoubleGaussian",
           "parameters": { "multiplier": 2 },
         },
       ]

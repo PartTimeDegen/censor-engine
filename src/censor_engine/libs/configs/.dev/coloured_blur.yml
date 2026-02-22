@@ -23,10 +23,10 @@ censor_settings:
     censors:
       [
         {
-          "style": "centric_chromatic_aberration",
-          parameters: { "offset": 2, "blur": 5 },
+          "style": "CentricChromaticAberration",
+          parameters: { "offset": 2, "Blur": 5 },
         },
-        { "style": "pixelate", parameters: { "factor": 10 } },
+        { "style": "Pixelate", parameters: { "factor": 10 } },
       ]
-    shape: "joint_ellipse" # "ellipse" for pmv, haven't made merge range
+    shape: "JointEllipse" # "Ellipse" for pmv, haven't made merge range
     margin: 0.2

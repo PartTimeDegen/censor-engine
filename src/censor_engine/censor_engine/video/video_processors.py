@@ -27,10 +27,6 @@ def handle_exit(signum, frame) -> None:  # noqa: ANN001, ARG001
     VideoProcessor.force_stop = True  # type: ignore
 
 
-signal.signal(signal.SIGINT, handle_exit)  # Ctrl+C
-signal.signal(signal.SIGTERM, handle_exit)  # kill
-
-
 @dataclass(slots=True)
 class VideoProcessor:
     # Inputs
@@ -104,6 +100,9 @@ class VideoProcessor:
         self.total_frames = int(
             self.video_capture.get(cv2.CAP_PROP_FRAME_COUNT),
         )
+
+        signal.signal(signal.SIGINT, handle_exit)  # Ctrl+C
+        signal.signal(signal.SIGTERM, handle_exit)  # kill
 
     def __get_codec_from_extension(self, filename: str) -> str:
         """

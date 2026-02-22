@@ -20,8 +20,7 @@ class Registry:
         def decorator(cls):  # noqa: ANN001
             if not self._loaded:
                 self._auto_register()
-            key = self.camel_to_snake(cls.__name__)
-            self._registry[key] = cls
+            self._registry[cls.__name__] = cls
             return cls
 
         return decorator

@@ -34,8 +34,8 @@ def run_merge_method(merge_method, dummy_input_image_data) -> None:
                 else [all_parts],
             },
             "default_part_settings": {
-                "censors": [{"style": "outlined_overlay"}],
-                "shape": "joint_box",
+                "censors": [{"style": "OutlinedOverlay"}],
+                "shape": "JointBox",
             },
         },
     }
@@ -66,10 +66,10 @@ def run_reverse_censor(dummy_input_image_data) -> None:
                 ],
             },
             "default_part_settings": {
-                "censors": [{"style": "no_censor"}],
-                "shape": "joint_box",
+                "censors": [{"style": "NoCensor"}],
+                "shape": "JointBox",
             },
-            "reverse_censor_settings": [{"style": "outlined_overlay"}],
+            "reverse_censor_settings": [{"style": "OutlinedOverlay"}],
         },
     }
 

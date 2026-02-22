@@ -6,10 +6,12 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "ffmpeg-python>=0.2.0",
+    "matplotlib>=3.10.8",
     "nudenet>=3.4.2",
     "numpy>=2.3.2",
     "onnxruntime-gpu>=1.22.0",
-    "opencv-python-headless>=4.11.0.86",
+    "opencv-contrib-python>=4.13.0.92",
+    "pillow>=12.1.1",
     "progressbar2>=4.5.0",
     "pydantic>=2.11.7",
     "pyyaml>=6.0.2",

@@ -211,3 +211,14 @@ class PathManager:
         final_path = new_folder / f"{new_file_name}{ext}"
 
         return str(final_path)
+
+    def get_relative_path(self, file_path: str) -> str:
+        """
+        This is used to get the relative path of the file.
+
+        :param str file_path: _description_
+        :return str: _description_
+        """
+        print(file_path)
+        print(self.get_uncensored_folder())
+        return str(Path(file_path).relative_to(self.get_uncensored_folder()))

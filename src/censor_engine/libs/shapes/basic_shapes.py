@@ -12,8 +12,8 @@ from censor_engine.models.lib_models.shapes import Shape
 
 @ShapeRegistry.register()
 class Box(Shape):
-    base_shape: str = "box"
-    single_shape: str = "box"
+    base_shape: str = "Box"
+    single_shape: str = "Box"
 
     def generate(self, part: "Part", empty_mask: "Mask") -> "Mask":
         box = part.part_area.region.get_corners()
@@ -22,8 +22,8 @@ class Box(Shape):
 
 @ShapeRegistry.register()
 class Circle(Shape):
-    base_shape: str = "circle"
-    single_shape: str = "circle"
+    base_shape: str = "Circle"
+    single_shape: str = "Circle"
 
     def generate(self, part: "Part", empty_mask: "Mask") -> "Mask":
         return cv2.circle(
@@ -37,8 +37,8 @@ class Circle(Shape):
 
 @ShapeRegistry.register()
 class Ellipse(Shape):
-    base_shape: str = "ellipse"
-    single_shape: str = "ellipse"
+    base_shape: str = "Ellipse"
+    single_shape: str = "Ellipse"
 
     def generate(self, part: "Part", empty_mask: "Mask") -> "Mask":
         return cv2.ellipse(
@@ -55,8 +55,8 @@ class Ellipse(Shape):
 
 @ShapeRegistry.register()
 class RoundedBox(Shape):
-    base_shape: str = "rounded_box"
-    single_shape: str = "rounded_box"
+    base_shape: str = "RoundedBox"
+    single_shape: str = "RoundedBox"
 
     def generate(self, part: "Part", empty_mask: "Mask") -> "Mask":
         box = part.part_area.region.get_corners()

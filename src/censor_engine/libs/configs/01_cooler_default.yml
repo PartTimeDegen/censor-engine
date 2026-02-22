@@ -15,7 +15,7 @@ censor_settings:
 
   default_part_settings:
     censors:
-      - style: "overlay"
+      - style: "Overlay"
         parameters:
           colour: "BLACK"
-    shape: "joint_box"
+    shape: "JointBox"

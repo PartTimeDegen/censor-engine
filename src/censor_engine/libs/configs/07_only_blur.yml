@@ -16,31 +16,31 @@ censor_settings:
   default_part_settings:
     censors:
       [
-        { "style": "outline", parameters: { "colour": "BLACK" } },
-        { "style": "blur", parameters: { "factor": 5 } },
+        { "style": "Outline", parameters: { "colour": "BLACK" } },
+        { "style": "Blur", parameters: { "factor": 5 } },
       ]
-    shape: "joint_box"
+    shape: "JointBox"
 
   FEMALE_BREAST_EXPOSED:
     margin: 0.3
     state: "protected"
     censors:
-      - style: "outline"
+      - style: "Outline"
         parameters:
           colour: "PINK"
-      - style: "blur"
+      - style: "Blur"
         parameters:
           factor: 20
-      - style: "greyscale"
+      - style: "Greyscale"
 
   FEMALE_GENITALIA_EXPOSED:
     state: "protected"
     margin: 0.3
     censors:
-      - style: "outline"
+      - style: "Outline"
         parameters:
           colour: "PINK"
-      - style: "blur"
+      - style: "Blur"
         parameters:
           factor: 20
-      - style: "greyscale"
+      - style: "Greyscale"
