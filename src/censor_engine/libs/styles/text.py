@@ -149,7 +149,7 @@ class DevText(TextStyle):
         *,
         text: str | list[str] = "Nope!",
         font: str = "arial",
-        font_percent: float = 1,
+        font_percent: float = 1.0,
         colour: tuple[int, int, int] | str = "PINK",
         outline_width: int = 3,
         outline_colour: tuple[int, int, int] | str | None = "WHITE",

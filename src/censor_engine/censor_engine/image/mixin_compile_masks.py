@@ -127,9 +127,10 @@ class MixinComponentCompile(Mixin):
         """
         sorted_parts = sorted(
             parts,
-            key=lambda x: (-x.part_settings.state.value, x.part_name),
+            key=lambda x: (x.part_settings.state.value, x.part_name),
             reverse=True,
         )
+
         removed_parts = []  # Track removed parts
 
         if not sorted_parts:
@@ -138,6 +139,22 @@ class MixinComponentCompile(Mixin):
         # HACK: This is is a patchwork fix, needs to properly be done
         if parts[0].config.rendering_settings.merge_method == MergeMethod.NONE:
             return sorted_parts
+
+        def subtract_masks(target: Part, source: Part) -> None:
+            """
+            Subtract one part's mask from another.
+
+            """
+            target.subtract(source.mask)
+
+        def combine_parts() -> None:
+            """
+            Combine secondary part into primary and remove secondary.
+
+            """
+            primary_part.add(secondary_part.mask)
+            removed_parts.append(secondary_part)
+            parts.remove(secondary_part)
 
         for index, primary_part in enumerate(sorted_parts):
             if primary_part in removed_parts:
@@ -158,22 +175,6 @@ class MixinComponentCompile(Mixin):
                 )
                 same_state = primary_state == secondary_state
                 primary_has_higher_rank = primary_state > secondary_state
-
-                def subtract_masks(target: Part, source: Part) -> None:
-                    """
-                    Subtract one part's mask from another.
-
-                    """
-                    target.subtract(source.mask)
-
-                def combine_parts() -> None:
-                    """
-                    Combine secondary part into primary and remove secondary.
-
-                    """
-                    primary_part.add(secondary_part.mask)  # noqa: B023
-                    removed_parts.append(secondary_part)  # noqa: B023
-                    parts.remove(secondary_part)  # noqa: B023
 
                 # MATCHING: Merge if both parts have the same settings
                 if same_censors and same_state:

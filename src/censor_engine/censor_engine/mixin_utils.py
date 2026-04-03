@@ -1,4 +1,4 @@
-from censor_engine.models.structs import Mixin
+from censor_engine.models.structs import IndexedFile, Mixin
 from censor_engine.paths import PathManager
 
 APPROVED_FORMATS_IMAGE = [".jpg", ".jpeg", ".png", ".webp"]
@@ -24,13 +24,13 @@ class MixinUtils(Mixin):
     def _find_files(
         self,
         path_manager: PathManager,
-    ) -> list[tuple[int, str, str]]:
+    ) -> list[IndexedFile]:
         approved_formats = set(APPROVED_FORMATS_IMAGE + APPROVED_FORMATS_VIDEO)
         full_files_path = path_manager.get_uncensored_folder()
 
         if path_manager.test_mode:
             example_image = full_files_path / "config_example.jpg"
-            return [(1, str(example_image), "preview")]
+            return [IndexedFile(1, str(example_image), "preview")]
 
         if not full_files_path.exists():
             msg = f"Path Does Not Exist: {full_files_path}"
@@ -42,7 +42,7 @@ class MixinUtils(Mixin):
                 msg = "File Doesn't have an approved format"
                 raise TypeError(msg)
             return [
-                (
+                IndexedFile(
                     1,
                     str(full_files_path),
                     "video"
@@ -63,7 +63,7 @@ class MixinUtils(Mixin):
             raise FileNotFoundError(msg)
 
         indexed_files = [
-            (
+            IndexedFile(
                 index,
                 str(file_path),
                 "video"
@@ -78,7 +78,7 @@ class MixinUtils(Mixin):
 
         # Fallback single file case (not common if directory)
         return [
-            (
+            IndexedFile(
                 1,
                 str(full_files_path),
                 "video"

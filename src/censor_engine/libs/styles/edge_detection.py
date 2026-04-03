@@ -26,6 +26,27 @@ class EdgeDetectionCanny(EdgeDetectionStyle):
         threshold: int = 100,
         alpha: float = 1,
     ) -> Image:
+        """
+        This style uses the Canny Edge Detection.
+
+        References:
+            -   https://en.wikipedia.org/wiki/Canny_edge_detector
+
+        :param Image image: Original Image, used to apply the effects.
+        :param Mask mask: Mask of the applied zone.
+        :param list[Contour] contours: List of Contours (Sometimes used)
+        :param Part part: Part of the mask (Sometimes used)
+        :param tuple[int, int] | None tolerances: Tolerances of the lines for
+        post-processing, defaults to None
+        :param float multiplier: Multiplier for post-processing to make the
+        lines stronger, defaults to 1.0
+        :param int threshold: Threshold for the edges, used in post-processing
+        to remove noise, defaults to 100
+        :param float alpha: Alpha of the effect, defaults to 1
+
+        :return Image: Image with effect applied.
+
+        """
         # Prepare Image to get better Results
         mask_image = self.prepare_mask(image)
 
@@ -50,9 +71,30 @@ class EdgeDetectionSobel(EdgeDetectionStyle):
         *,
         tolerances: tuple[int, int] | None = None,
         multiplier: float = 1.0,
-        kernel_size: int = 5,
         alpha: float = 1,
+        kernel_size: int = 5,
     ) -> Image:
+        """
+        This style uses the Canny Edge Detection.
+
+        References:
+            -   https://en.wikipedia.org/wiki/Sobel_operator
+
+        :param Image image: Original Image, used to apply the effects.
+        :param Mask mask: Mask of the applied zone.
+        :param list[Contour] contours: List of Contours (Sometimes used)
+        :param Part part: Part of the mask (Sometimes used)
+        :param tuple[int, int] | None tolerances: Tolerances of the lines for
+        post-processing, defaults to None
+        :param float multiplier: Multiplier for post-processing to make the
+        lines stronger, defaults to 1.0
+        :param int threshold: Threshold for the edges, used in post-processing
+        to remove noise, defaults to 100
+        :param int kernel_size: The kernel size, defaults to 5
+
+        :return Image: Image with effect applied.
+
+        """
         # Prepare Image to get better Results
         mask_image = self.prepare_mask(image)
 
@@ -80,6 +122,26 @@ class EdgeDetectionScharr(EdgeDetectionStyle):
         alpha: float = 1,
         kernel_size: int = 5,
     ) -> Image:
+        """
+        This style uses the Canny Edge Detection.
+
+        References:
+            -   https://en.wikipedia.org/wiki/Sobel_operator
+
+        :param Image image: Original Image, used to apply the effects.
+        :param Mask mask: Mask of the applied zone.
+        :param list[Contour] contours: List of Contours (Sometimes used)
+        :param Part part: Part of the mask (Sometimes used)
+        :param tuple[int, int] | None tolerances: Tolerances of the lines for
+        post-processing, defaults to None
+        :param float multiplier: Multiplier for post-processing to make the
+        lines stronger, defaults to 1.0
+        :param int threshold: Threshold for the edges, used in post-processing
+        to remove noise, defaults to 100
+
+        :return Image: Image with effect applied.
+
+        """
         # Prepare Image to get better Results
         mask_image = self.prepare_mask(image)
 
@@ -110,6 +172,26 @@ class EdgeDetectionLapacian(EdgeDetectionStyle):
         kernel_size: int = 5,
         alpha: float = 1,
     ) -> Image:
+        """
+        This style uses the Canny Edge Detection.
+
+        References:
+            -   https://en.wikipedia.org/wiki/Sobel_operator
+
+        :param Image image: Original Image, used to apply the effects.
+        :param Mask mask: Mask of the applied zone.
+        :param list[Contour] contours: List of Contours (Sometimes used)
+        :param Part part: Part of the mask (Sometimes used)
+        :param tuple[int, int] | None tolerances: Tolerances of the lines for
+        post-processing, defaults to None
+        :param float multiplier: Multiplier for post-processing to make the
+        lines stronger, defaults to 1.0
+        :param int threshold: Threshold for the edges, used in post-processing
+        to remove noise, defaults to 100
+
+        :return Image: Image with effect applied.
+
+        """
         # Prepare Image to get better Results
         mask_image = self.prepare_mask(image)
 
@@ -139,6 +221,24 @@ class EdgeDetectionDoubleGaussian(EdgeDetectionStyle):
         alpha: float = 1.0,
         ksize: int = 0,
     ) -> Image:
+        """
+        This style uses the Difference of Gaussians Detection.
+
+
+        References:
+            -   https://en.wikipedia.org/wiki/Difference_of_Gaussians
+
+
+        :param tuple[int, int] | None tolerances: Tolerances of the lines for
+        post-processing, defaults to None
+        :param float multiplier: Multiplier for post-processing to make the
+        lines stronger, defaults to 1.0
+        :param int threshold: Threshold for the edges, used in post-processing
+        to remove noise, defaults to 100
+
+        :return Image: Image with effect applied.
+
+        """
         # Prepare image for better results
         gray = self.prepare_mask(image)
 
@@ -172,6 +272,25 @@ class EdgeDetectionRoberts(EdgeDetectionStyle):
         multiplier: float = 1.0,
         alpha: float = 1.0,
     ) -> Image:
+        """
+        This style uses the Roberts Cross Detection.
+
+
+        References:
+            -   https://en.wikipedia.org/wiki/Roberts_cross
+
+
+        :param tuple[int, int] | None tolerances: Tolerances of the lines for
+        post-processing, defaults to None
+        :param float multiplier: Multiplier for post-processing to make the
+        lines stronger, defaults to 1.0
+        :param int threshold: Threshold for the edges, used in post-processing
+        to remove noise, defaults to 100
+
+        :return Image: Image with effect applied.
+
+        """
+
         def roberts(img: Image):
             kernelx = np.array([[1, 0], [0, -1]], dtype=np.float32)
             kernely = np.array([[0, 1], [-1, 0]], dtype=np.float32)
@@ -205,6 +324,25 @@ class EdgeDetectionPrewitt(EdgeDetectionStyle):
         multiplier: float = 1.0,
         alpha: float = 1.0,
     ) -> Image:
+        """
+        This style uses the Prewitt Detection.
+
+
+        References:
+            -   https://en.wikipedia.org/wiki/Prewitt_operator
+
+
+        :param tuple[int, int] | None tolerances: Tolerances of the lines for
+        post-processing, defaults to None
+        :param float multiplier: Multiplier for post-processing to make the
+        lines stronger, defaults to 1.0
+        :param int threshold: Threshold for the edges, used in post-processing
+        to remove noise, defaults to 100
+
+        :return Image: Image with effect applied.
+
+        """
+
         def prewitt(img: Image):
             kernelx = np.array(
                 [[1, 0, -1], [1, 0, -1], [1, 0, -1]], dtype=np.float32

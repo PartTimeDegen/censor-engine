@@ -9,7 +9,7 @@ from censor_engine.censor_engine.tools.config_previewer.base import (
 from censor_engine.models.caching.base import Cache
 from censor_engine.models.config import Config
 from censor_engine.models.lib_models.detectors import DetectedPartSchema
-from censor_engine.models.structs import Mixin
+from censor_engine.models.structs import IndexedFile, Mixin
 from censor_engine.paths import PathManager
 from censor_engine.typing import Image
 
@@ -44,10 +44,9 @@ class MixinImagePipeline(Mixin):
     def _image_pipeline(
         self,
         main_files_path: Path,
-        indexed_files: list[tuple[int, str, str]],
+        indexed_files: list[IndexedFile],
         config: Config,
         debug_level: DebugLevels,
-        in_place_durations: list[float],
         function_get_index: Callable[[int, int], str],
         flags: dict[str, bool],
         path_manager: PathManager,
@@ -56,21 +55,28 @@ class MixinImagePipeline(Mixin):
         inline_mode: bool = False,
         _test_detection_output: list[DetectedPartSchema] | None = None,
     ) -> list[Image]:
-        filter_for_imaged = [f for f in indexed_files if f[-1] == "image"]
+        filter_for_imaged = [
+            f for f in indexed_files if f.file_type in {"image", "preview"}
+        ]
         if not path_manager.test_mode and not filter_for_imaged:
             return []
 
-        in_memory_files: list[Image] = []  # Currently Only Test Mode
-        for index, file_path, file_type in indexed_files:
-            # Check it's an Image
-            if file_type not in {"image", "preview"}:
-                continue
+        # Re-index Files
+        re_indexed_files = [
+            IndexedFile(index, index_file.path, index_file.file_type)
+            for index, index_file in enumerate(filter_for_imaged)
+        ]
 
-            # Print that it's Censoring
-            function_get_index(
-                index,
-                max([f[0] for f in indexed_files]),
-            )
+        if not re_indexed_files:
+            msg = "No Files Found:"
+            raise ValueError(msg, indexed_files)
+
+        in_memory_files: list[Image] = []  # Currently Only Test Mode
+        max_index = len(re_indexed_files) - 1
+        for index_file in re_indexed_files:
+            index = index_file.index
+            file_path = index_file.path
+            file_type = index_file.file_type
 
             # Dev Tools
             dev_tools = None
@@ -84,7 +90,7 @@ class MixinImagePipeline(Mixin):
                     )
 
                 # Read the File
-                file_image: Image = cv2.imread(file_path)
+                file_image: Image = cv2.imread(file_path)  # type: ignore
 
                 # Caching
                 cache = Cache(
@@ -133,7 +139,7 @@ class MixinImagePipeline(Mixin):
             msg = self.__print_output(
                 path_manager.get_relative_path(file_path),
                 index,
-                max([f[0] for f in indexed_files]),
+                max_index,
             )
             print(msg)  # noqa: T201
             cv2.imwrite(new_file_name, file_output)

@@ -67,7 +67,7 @@ class VideoProcessor:
         self._ext = self._final_video_path.suffix
 
         self._temp_audio_path = self._folder / TEMP_AUDIO_NAME
-        self._temp_video_path = self._folder / f"{TEMP_VIDEO_NAME}{self._ext}"
+        self._temp_video_path = self._folder / f"{TEMP_VIDEO_NAME}.mp4"
 
         # Get Video
         self.video_capture = cv2.VideoCapture(self.file_path)  # type: ignore
@@ -116,7 +116,7 @@ class VideoProcessor:
             ".avi": "XVID",  # AVI format
             ".mov": "avc1",  # QuickTime
             ".mkv": "X264",  # Matroska
-            ".webm": "VP80",  # WebM format
+            ".webm": "mp4v",  # WebM format
         }
         return codec_mapping.get(ext, "mp4v")  # Default to 'mp4v' if unknown
 
@@ -181,7 +181,20 @@ class VideoProcessor:
 
         # Video
         if is_webm:
-            cmd += ["-c:v", "libvpx", "-tag:v", "VP80"]
+            cmd += [
+                "-c:v",
+                "libvpx-vp9",
+                "-lossless",
+                "1",
+                "-cpu-used",
+                "4",
+                "-row-mt",
+                "1",
+                "-tile-columns",
+                "2",
+                "-frame-parallel",
+                "1",
+            ]
         else:
             cmd += ["-c:v", "copy"]
 

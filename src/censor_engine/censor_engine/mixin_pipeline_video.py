@@ -7,7 +7,7 @@ import progressbar
 from censor_engine.models.caching.base import Cache
 from censor_engine.models.config import Config
 from censor_engine.models.lib_models.detectors import DetectedPartSchema
-from censor_engine.models.structs import Mixin
+from censor_engine.models.structs import IndexedFile, Mixin
 from censor_engine.paths import PathManager
 from censor_engine.typing import Image
 
@@ -44,20 +44,23 @@ class MixinVideoPipeline(Mixin):
     def run_video_pipeline(
         self,
         main_files_path: str,
-        indexed_files: list[tuple[int, str, str]],
+        indexed_files: list[IndexedFile],
         config: Config,
         debug_level: DebugLevels,
-        in_place_durations: list[float],
         function_get_index: Callable[[int, int], str],
-        function_display_times: Callable[[], None],
         flags: dict[str, bool],
         path_manager: PathManager,
         inline_mode: bool,  # TODO: Utilise  # noqa: FBT001
         _test_detection_output: list[list[DetectedPartSchema]],
     ) -> list[Image]:
         dev_tools = None
-        max_index = max(f[0] for f in indexed_files)
-        for index, file_path, file_type in indexed_files:
+        max_index = max(f.index for f in indexed_files)
+
+        for index_file in indexed_files:
+            index = index_file.index
+            file_path = index_file.path
+            file_type = index_file.file_type
+
             # Check it's an Image
             if file_type != "video":
                 continue

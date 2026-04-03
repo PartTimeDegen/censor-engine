@@ -140,7 +140,6 @@ class CensorEngine(
             "indexed_files": self._find_files(self._path_manager),
             "config": self._config,
             "debug_level": self._debug_level,
-            "in_place_durations": self._time_durations,
             "function_get_index": self._get_index_text,
             "flags": self._flags,
             "path_manager": self._path_manager,
@@ -150,7 +149,6 @@ class CensorEngine(
 
         # Video Args
         video_args = args.copy()
-        video_args["function_display_times"] = self.display_times
 
         # What to Censor
         memory_files: list[Image] = []
