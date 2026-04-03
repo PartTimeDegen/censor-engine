@@ -17,8 +17,7 @@ def test_test_working(dummy_input_image_data) -> None:
 
 
 def test_image_generator() -> None:
-    ig = ImageGenerator()
-    cv2.imwrite("example.jpg", ig.make_test_image())
+    ig = ImageGenerator().make_test_image()
 
     assert True
 

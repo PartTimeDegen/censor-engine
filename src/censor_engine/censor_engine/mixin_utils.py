@@ -33,8 +33,7 @@ class MixinUtils(Mixin):
             return [IndexedFile(1, str(example_image), "preview")]
 
         if not full_files_path.exists():
-            msg = f"Path Does Not Exist: {full_files_path}"
-            raise TypeError(msg)
+            full_files_path.mkdir(exist_ok=True)
 
         # Singular File Fix
         if full_files_path.is_file():
