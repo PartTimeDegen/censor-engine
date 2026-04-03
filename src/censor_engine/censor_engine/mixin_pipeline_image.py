@@ -31,6 +31,8 @@ class MixinImagePipeline(Mixin):
         indexing_component = f"{str_index}/{max_index}"
 
         # Spacing Component
+        if max_index == 0:
+            max_index = 1
         percent = float(index) / max_index
         spacing = "" if index == max_index else " "
         percent_component = f"{spacing}{percent:3.1%}"
