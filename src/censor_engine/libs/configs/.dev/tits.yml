@@ -2,8 +2,8 @@
 file_prefix: ""
 file_suffix: ""
 
-uncensored_folder: "00_uncensored"
-censored_folder: "01_censored"
+uncensored_folder: "uncensored"
+censored_folder: "censored"
 
 debug_mode: False
 

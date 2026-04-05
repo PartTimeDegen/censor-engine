@@ -16,4 +16,5 @@ censor_settings:
   default_part_settings:
     censors:
       - style: "Cutout"
+        parameters: { alpha: 0 }
     shape: "Bar"
