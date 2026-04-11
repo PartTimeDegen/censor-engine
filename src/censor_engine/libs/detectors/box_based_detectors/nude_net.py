@@ -1,3 +1,6 @@
+from importlib import resources
+
+import onnxruntime as ort  # type: ignore
 from nudenet import NudeDetector  # type: ignore
 
 from censor_engine.models.lib_models.detectors import (
@@ -5,6 +8,45 @@ from censor_engine.models.lib_models.detectors import (
     Detector,
 )
 from censor_engine.typing import Image
+
+
+class GpuNudeDetector(NudeDetector):
+    """
+    This detector is to enable GPU support for NudeNet, for some reason the dev
+    commented out support and forgot to uncomment it.
+
+    """
+
+    def __init__(self, *, use_gpu: bool = True):
+        # Get the NudeNet Model from Package
+        # NOTE: For some reason he put the entire model in here, oh well it's
+        #       easier for me.
+        model_path = resources.files("nudenet") / "320n.onnx"
+
+        # Check that a GPU Provider is Possible
+        providers = ["CPUExecutionProvider"]
+
+        if (
+            use_gpu
+            and "CUDAExecutionProvider" in ort.get_available_providers()
+        ):
+            providers = ["CUDAExecutionProvider", "CPUExecutionProvider"]
+
+        # Create Session
+        self.onnx_session = ort.InferenceSession(
+            str(model_path), providers=providers
+        )
+        print(f"Using GPU for NudeNet: {self.is_gpu()}")
+
+        # Setup Model as per Nude Net
+        model_inputs = self.onnx_session.get_inputs()
+
+        self.input_width = 320
+        self.input_height = 320
+        self.input_name = model_inputs[0].name
+
+    def is_gpu(self):
+        return "CUDAExecutionProvider" in self.onnx_session.get_providers()
 
 
 class NudeNetDetector(Detector):
@@ -36,7 +78,7 @@ class NudeNetDetector(Detector):
         "MALE_GENITALIA_EXPOSED",
         "MALE_BREAST_EXPOSED",
     )
-    model_object = NudeDetector()
+    model_object = GpuNudeDetector()
 
     def detect_image(
         self,
