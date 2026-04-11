@@ -200,3 +200,6 @@ res/*
 # DO NOT REMOVE, THE DOWNLOAD IS TOO BIG
 tools/ffmpeg/*
 !tools/ffmpeg/.gitkeep
+
+scripts/test_scripts/*
+!scripts/test_scripts/.gitkeep
