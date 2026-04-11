@@ -8,7 +8,7 @@ import cv2
 
 from censor_engine.typing import Image
 
-TEMP_AUDIO_NAME = "temp_audio.aac"
+TEMP_AUDIO_NAME = "temp_audio"
 TEMP_VIDEO_NAME = "temp_video"
 
 
@@ -81,9 +81,7 @@ class VideoProcessor:
         self._width = int(self.video_capture.get(cv2.CAP_PROP_FRAME_WIDTH))
         self._height = int(self.video_capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self._fps = int(self.video_capture.get(cv2.CAP_PROP_FPS))
-        fourcc = cv2.VideoWriter_fourcc(  # type: ignore # Not sure why this isn't working
-            *self.__get_codec_from_extension(self.file_path),
-        )
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
 
         # Create Writer
         self.video_writer = cv2.VideoWriter(

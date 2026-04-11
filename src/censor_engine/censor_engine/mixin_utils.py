@@ -2,7 +2,7 @@ from censor_engine.models.structs import IndexedFile, Mixin
 from censor_engine.paths import PathManager
 
 APPROVED_FORMATS_IMAGE = [".jpg", ".jpeg", ".png", ".webp"]
-APPROVED_FORMATS_VIDEO = [".mp4", ".webm"]
+APPROVED_FORMATS_VIDEO = [".mp4", ".webm", ".mov"]
 
 
 class MixinUtils(Mixin):
