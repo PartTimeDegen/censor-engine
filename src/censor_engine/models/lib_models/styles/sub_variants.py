@@ -124,7 +124,7 @@ class TextStyle(Style):
     style_type: StyleType = StyleType.TEXT
 
     # Structural Helpers
-    def get_font(self, font: str) -> str:
+    def _get_font(self, font: str) -> str:
         fonts = font_manager.findSystemFonts(fontpaths=None, fontext="ttf")
         font_path = None
         for font_name in fonts:
@@ -136,6 +136,8 @@ class TextStyle(Style):
             raise ValueError(msg)
 
         return font
+
+    def get_rotation(self, mask): ...
 
     # Basic Vector Helpers
     def _add_cords(

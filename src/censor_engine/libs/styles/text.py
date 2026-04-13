@@ -44,7 +44,7 @@ class CentreText(TextStyle):
                 image=image,
                 word=word,
                 coords=mask_coords,
-                font=self.get_font(font),
+                font=self._get_font(font),
                 font_percent=font_percent,
                 colour=colour_main,  # type: ignore
                 mask_size=mask_size,
