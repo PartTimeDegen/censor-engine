@@ -181,7 +181,7 @@ class MixinVideoPipeline(Mixin):
                 # )
 
                 # Apply Censors
-                ip.generate_mask_shapes()
+                ip.generate_mask_masks()
                 ip.compile_masks()
                 ip.apply_censors()
 

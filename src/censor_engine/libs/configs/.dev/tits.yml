@@ -53,9 +53,9 @@ censor_settings:
   # Fall Back Options as "General" Settings
   default_part_settings:
     censors:
-      - style: "Overlay"
+      - effect: "Overlay"
         parameters:
           colour: "BLACK"
 
     minimum_score: 0.20
-    shape: "Box"
+    mask: "Box"

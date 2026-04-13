@@ -4,19 +4,19 @@ import cv2
 import numpy as np
 
 from censor_engine.detected_part import Part
-from censor_engine.libs.registries import StyleRegistry
-from censor_engine.models.enums import StyleType
+from censor_engine.libs.registries import EffectRegistry
+from censor_engine.models.enums import EffectType
 from censor_engine.models.structs import Censor, Mixin
 from censor_engine.models.structs.contours import Contour
-from censor_engine.typing import Image, Mask
+from censor_engine.typing import Image, TypeMask
 
 if TYPE_CHECKING:
-    from censor_engine.models.lib_models.styles.base import Style
+    from censor_engine.models.lib_models.effects.base import Effect
 
-styles = StyleRegistry.get_all()
+effects = EffectRegistry.get_all()
 
 
-def get_contours_from_mask(mask: Mask) -> list[Contour]:
+def get_contours_from_mask(mask: TypeMask) -> list[Contour]:
     """
     This is a helper function to normalise the contours from a mask and
     provide them as a Contour object.
@@ -40,18 +40,18 @@ def get_contours_from_mask(mask: Mask) -> list[Contour]:
 
 def contours_to_mask(
     contours: list[Contour],
-    image_shape: tuple[int, int],
+    image_mask: tuple[int, int],
     fill_value: int = 255,
-) -> Mask:
+) -> TypeMask:
     """
     This helper function converts the contours into a Mask.
 
     :param list[Contour] contours: List of Contours
-    :param tuple[int, int] image_shape: Mask shape
+    :param tuple[int, int] image_mask: Mask mask
     :param int fill_value: Value that's the background value, defaults to 255
     :return Mask: Mask
     """
-    mask = np.zeros(image_shape, dtype=np.uint8)
+    mask = np.zeros(image_mask, dtype=np.uint8)
     pts = [c.points for c in contours]
     cv2.drawContours(mask, pts, contourIdx=-1, color=fill_value, thickness=-1)  # type: ignore
     return mask
@@ -66,7 +66,7 @@ class MixinGenerateCensors(Mixin):
     def _handle_reverse_censor(
         self,
         reverse_censors: list[Censor],
-        inverse_empty_mask: Mask,
+        inverse_empty_mask: TypeMask,
         parts: list[Part],
         file_image: Image,
     ) -> Image:
@@ -96,11 +96,11 @@ class MixinGenerateCensors(Mixin):
         mask_norm = cv2.merge([base_mask_reverse] * 3)  # type: ignore
         for censor in reverse_censors[::-1]:
             # Get Censor Object
-            censor_object = styles[censor.style]()
+            censor_object = effects[censor.effect]()
             censor_object.change_linetype(enable_aa=False)
             censor_object.using_reverse_censor = True
 
-            file_image = censor_object.internal_run_style(
+            file_image = censor_object.internal_run_effect(
                 image=file_image,
                 contours=contours,
                 mask=mask_norm.copy(),
@@ -140,7 +140,7 @@ class MixinGenerateCensors(Mixin):
             mask_norm = cv2.merge([mask] * 3)  # type: ignore
 
             for censor in part.part_settings.censors[::-1]:
-                censor_object: Style = styles[censor.style]()
+                censor_object: Effect = effects[censor.effect]()
                 censor_object.change_linetype(enable_aa=True)
                 force_png = censor_object.force_png
 
@@ -148,12 +148,12 @@ class MixinGenerateCensors(Mixin):
                     **censor.parameters,
                     **(
                         {"part_list": parts}
-                        if censor_object.style_type == StyleType.DEV
+                        if censor_object.effect_type == EffectType.DEV
                         else {}
                     ),
                 }
 
-                working_image = censor_object.internal_run_style(
+                working_image = censor_object.internal_run_effect(
                     image=working_image.copy(),
                     contours=part_contours,
                     mask=mask_norm.copy(),
@@ -183,7 +183,7 @@ class MixinGenerateCensors(Mixin):
                 dist = cv2.distanceTransform(obj_mask, cv2.DIST_L2, 5)
                 dist_norm = dist / dist.max() if dist.max() > 0 else dist
 
-                # Optional: Gaussian style
+                # Optional: Gaussian effect
                 spread = 3 + fade_factor * 5
                 glow = np.exp(-((1 - dist_norm) ** 6) * spread)
 

@@ -1,0 +1,13 @@
+video_settings:
+  frame_difference_threshold: 0.00
+  part_frame_hold_seconds: 0.0
+
+censor_settings:
+  enabled_parts: all
+
+  default_part_settings:
+    censors:
+      - effect: Debug
+
+render_settings:
+  merge_method: none

@@ -1,0 +1,28 @@
+video_settings:
+  frame_difference_threshold: 0.02
+  part_frame_hold_seconds: 0.5
+  persistence_groups:
+    - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
+
+censor_settings:
+  enabled_parts:
+    - "FEMALE_BREAST_EXPOSED"
+    - "FEMALE_BREAST_COVERED"
+    - "BUTTOCKS_EXPOSED"
+    - "BUTTOCKS_COVERED"
+    - "ANUS_EXPOSED"
+    - "ANUS_COVERED"
+    - "FEMALE_GENITALIA_EXPOSED"
+    - "FEMALE_GENITALIA_COVERED"
+
+  merge_settings:
+    merge_groups:
+      - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
+
+  default_part_settings:
+    censors:
+      [
+        { "effect": "Outline", parameters: { "colour": "BLACK" } },
+        { "effect": "HexagonPixelate", parameters: { "factor": 15 } },
+      ]
+    mask: "Ellipse"

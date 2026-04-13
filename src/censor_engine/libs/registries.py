@@ -1,5 +1,5 @@
 from censor_engine.models.lib_models.registry import Registry
 
-StyleRegistry = Registry("censor_engine.libs.styles")
-ShapeRegistry = Registry("censor_engine.libs.shapes")
+EffectRegistry = Registry("censor_engine.libs.effects")
+MaskRegistry = Registry("censor_engine.libs.masks")
 DetectorRegistry = Registry("censor_engine.libs.detectors")

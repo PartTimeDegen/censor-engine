@@ -35,9 +35,9 @@ class PartSettingsConfig(BaseModel):
         default_factory=list,
         description="List of the censors and their arguments used.",
     )
-    shape: str = Field(
+    mask: str = Field(
         default="Box",
-        description="Shape used for the part.",
+        description="Mask used for the part.",
         examples=[
             "Box",
             "Ellipse",
@@ -75,10 +75,10 @@ class PartSettingsConfig(BaseModel):
         examples=["unprotected", "revealed", "protected"],
     )
 
-    protected_shape: str | None = Field(
+    protected_mask: str | None = Field(
         default=None,
         description=(
-            "Shape used to protect the part, default is the part's shape"
+            "Mask used to protect the part, default is the part's mask"
         ),
         examples=["Box", "Ellipse", "Circle"],
     )
@@ -93,7 +93,7 @@ class PartSettingsConfig(BaseModel):
         default=0.75,
         ge=0.0,
         description=(
-            "Percentage of the original shape that "
+            "Percentage of the original mask that "
             "the next frame will search for points. "
             "Used for video to maintain censors when part persistence "
             "(holding after existence)."

@@ -5,10 +5,10 @@ from typing import Any
 @dataclass(slots=True)
 class Censor:
     """
-    This is used to make the handling of censors (styles) a bit more easy to
+    This is used to make the handling of censors (effects) a bit more easy to
     process.
 
     """
 
-    style: str
+    effect: str
     parameters: dict[str, Any] = field(default_factory=dict)

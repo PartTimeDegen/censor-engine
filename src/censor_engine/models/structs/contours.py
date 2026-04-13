@@ -5,7 +5,7 @@ import numpy as np
 
 from censor_engine.constant import DIM_COLOUR
 from censor_engine.models.structs.colours import Colour
-from censor_engine.typing import Image, Mask
+from censor_engine.typing import Image, TypeMask
 
 
 @dataclass
@@ -23,10 +23,10 @@ class Contour:
 
     def as_mask(
         self,
-        image_shape: tuple[int, int],
+        image_mask: tuple[int, int],
         mask_thickness: int = -1,
-    ) -> Mask:
-        mask = np.zeros(image_shape, dtype=np.uint8)
+    ) -> TypeMask:
+        mask = np.zeros(image_mask, dtype=np.uint8)
         cv2.drawContours(
             mask,
             [self.points],
@@ -38,11 +38,11 @@ class Contour:
 
     def draw_contour(
         self,
-        image: Image | Mask,
+        image: Image | TypeMask,
         thickness: int,
         linetype: int,
         colour: Colour | None = None,
-    ) -> Mask:
+    ) -> TypeMask:
         if not colour:
             colour = Colour()
 
@@ -75,7 +75,7 @@ class ContourNormalizer:
         )
 
         if hierarchy is not None:
-            hierarchy = hierarchy[0]  # shape (N, 4)
+            hierarchy = hierarchy[0]  # mask (N, 4)
 
         normalized_contours = []
         for i, contour in enumerate(contours):
@@ -83,7 +83,7 @@ class ContourNormalizer:
                 contour.squeeze(axis=1)
                 if contour.ndim == DIM_COLOUR
                 else contour
-            )  # shape (N, 2)
+            )  # mask (N, 2)
             norm = Contour(
                 points=flat,
                 hierarchy=hierarchy[i] if hierarchy is not None else None,
