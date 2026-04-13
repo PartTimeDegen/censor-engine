@@ -1,3 +1,5 @@
+from natsort import natsorted
+
 from censor_engine.models.structs import IndexedFile, Mixin
 from censor_engine.paths import PathManager
 
@@ -51,11 +53,14 @@ class MixinUtils(Mixin):
             ]
 
         # Recursive glob for all files under the folder
-        files = [
-            f
-            for f in full_files_path.rglob("*")
-            if f.is_file() and f.suffix.lower() in approved_formats
-        ]
+        files = natsorted(
+            [
+                f
+                for f in full_files_path.rglob("*")
+                if f.is_file() and f.suffix.lower() in approved_formats
+            ],
+            key=lambda p: p.name,
+        )
 
         if not files:
             msg = f"Empty folder: {full_files_path}"

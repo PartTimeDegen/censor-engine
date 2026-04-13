@@ -1,7 +1,8 @@
-from importlib import resources
+import logging
+from pathlib import Path
 
-import onnxruntime as ort  # type: ignore
-from nudenet import NudeDetector  # type: ignore
+import torch
+from ultralytics import YOLO
 
 from censor_engine.models.lib_models.detectors import (
     DetectedPartSchema,
@@ -9,44 +10,74 @@ from censor_engine.models.lib_models.detectors import (
 )
 from censor_engine.typing import Image
 
+logging.getLogger("ultralytics").setLevel(logging.ERROR)
 
-class GpuNudeDetector(NudeDetector):
-    """
-    This detector is to enable GPU support for NudeNet, for some reason the dev
-    commented out support and forgot to uncomment it.
 
-    """
+class NudeNetModel:
+    model: YOLO
+    device: int | str
+    image_count: int
 
-    def __init__(self, *, use_gpu: bool = True):
-        # Get the NudeNet Model from Package
-        # NOTE: For some reason he put the entire model in here, oh well it's
-        #       easier for me.
-        model_path = resources.files("nudenet") / "320n.onnx"
+    cache_limit: int = 1000
 
-        # Check that a GPU Provider is Possible
-        providers = ["CPUExecutionProvider"]
-
-        if (
-            use_gpu
-            and "CUDAExecutionProvider" in ort.get_available_providers()
-        ):
-            providers = ["CUDAExecutionProvider", "CPUExecutionProvider"]
-
-        # Create Session
-        self.onnx_session = ort.InferenceSession(
-            str(model_path), providers=providers
+    def __init__(self, *, use_bigger_model: bool = False):
+        # Model Check
+        model_exists = Path("tools/models/640m.pt").exists()
+        used_model = (
+            "640m.pt" if use_bigger_model and model_exists else "320n.pt"
         )
-        print(f"Using GPU for NudeNet: {self.is_gpu()}")
+        self.model = YOLO(f"tools/models/{used_model}")
+        print(f"NudeNet model: {used_model}")  # noqa: T201
 
-        # Setup Model as per Nude Net
-        model_inputs = self.onnx_session.get_inputs()
+        # GPU Check
+        self.device = 0 if torch.cuda.is_available() else "cpu"
+        print(f"NudeNet using GPU?: {self.device != 'cpu'}")  # noqa: T201
 
-        self.input_width = 320
-        self.input_height = 320
-        self.input_name = model_inputs[0].name
+        # Cache Fixer
+        self.image_count = 0
 
-    def is_gpu(self):
-        return "CUDAExecutionProvider" in self.onnx_session.get_providers()
+    def detect(self, image_path: str):
+        if self.image_count % self.cache_limit == 0:
+            torch.cuda.empty_cache()
+        else:
+            self.image_count += 1
+
+        with torch.no_grad():
+            results = self.model(
+                image_path, device=self.device, verbose=False
+            )[0]
+        boxes = results.boxes
+
+        # Save Resources if Empty
+        if boxes is None or len(boxes) == 0:
+            return []
+
+        # Move Data to CPU
+        xyxy = boxes.xyxy.cpu()
+        conf = boxes.conf.cpu()
+        cls = boxes.cls.cpu()
+
+        # Convert to Numpy
+        xyxy = xyxy.numpy()
+        conf = conf.numpy()
+        cls = cls.numpy().astype(int)
+
+        names = results.names
+
+        # Build Output
+        return [
+            {
+                "class": names[c],
+                "score": float(s),
+                "box": [
+                    int(x1),
+                    int(y1),
+                    int(x2 - x1),  # width
+                    int(y2 - y1),  # height
+                ],
+            }
+            for (x1, y1, x2, y2), s, c in zip(xyxy, conf, cls, strict=False)
+        ]
 
 
 class NudeNetDetector(Detector):
@@ -78,7 +109,7 @@ class NudeNetDetector(Detector):
         "MALE_GENITALIA_EXPOSED",
         "MALE_BREAST_EXPOSED",
     )
-    model_object = GpuNudeDetector()
+    model_object = NudeNetModel()
 
     def detect_image(
         self,
@@ -100,6 +131,7 @@ class NudeNetDetector(Detector):
         file_images_or_paths: list[str] | list[Image],
         batch_size: int,
     ) -> dict[int, list[DetectedPartSchema]]:
+        raise NotImplementedError("This needs work")  # noqa: EM101
         output = self.model_object.detect_batch(
             file_images_or_paths,
             batch_size,

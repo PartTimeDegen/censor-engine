@@ -7,14 +7,16 @@ requires-python = ">=3.13"
 dependencies = [
     "ffmpeg-python>=0.2.0",
     "matplotlib>=3.10.8",
-    "nudenet>=3.4.2",
+    "natsort>=8.4.0",
     "numpy>=2.3.2",
-    "onnxruntime-gpu>=1.22.0",
     "opencv-contrib-python>=4.13.0.92",
     "pillow>=12.1.1",
     "progressbar2>=4.5.0",
     "pydantic>=2.11.7",
     "pyyaml>=6.0.2",
+    "torch>=2.11.0",
+    "torchvision>=0.26.0",
+    "ultralytics>=8.4.37",
 ]
 
 [tool.pytest.ini_options]
@@ -30,3 +32,18 @@ dev = [
     "ruff>=0.12.7",
     "types-pyyaml>=6.0.12.20250516",
 ]
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cu128" },
+]
+torchvision = [
+    { index = "pytorch-cu128" },
+]
+
+
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
