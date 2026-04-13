@@ -201,5 +201,7 @@ res/*
 tools/ffmpeg/*
 !tools/ffmpeg/.gitkeep
 
+tools/models/640m.pt
+
 scripts/test_scripts/*
 !scripts/test_scripts/.gitkeep
