@@ -1,8 +1,10 @@
+from dataclasses import fields
 from typing import TYPE_CHECKING
 
 import cv2
 import numpy as np
 
+from censor_engine.api.effects import EffectContext
 from censor_engine.detected_part import Part
 from censor_engine.libs.registries import EffectRegistry
 from censor_engine.models.enums import EffectType
@@ -100,12 +102,28 @@ class MixinGenerateCensors(Mixin):
             censor_object.change_linetype(enable_aa=False)
             censor_object.using_reverse_censor = True
 
+            # Handle Fields from EffectContext that All Effects Have
+            param_fields = {field.name for field in fields(EffectContext)}
+            filtered_params = {
+                key: value
+                for key, value in censor.parameters.items()
+                if key in param_fields
+            }
+
             file_image = censor_object.internal_run_effect(
-                image=file_image,
-                contours=contours,
-                mask=mask_norm.copy(),
-                part=None,
-                **censor.parameters,
+                EffectContext(
+                    image=file_image,
+                    contours=contours,
+                    mask=mask_norm.copy(),
+                    part=None,
+                    part_list=[],
+                    **filtered_params,
+                ),
+                **{
+                    key: value
+                    for key, value in censor.parameters.items()
+                    if key not in filtered_params
+                },
             )
         return file_image
 
@@ -125,40 +143,62 @@ class MixinGenerateCensors(Mixin):
         :return tuple[Image, bool]: Output image and a flag for forcing the
             image to PNG (for transparency)
         """
+        # Sort Parts Based on State and Name
         parts = sorted(
             parts,
             key=lambda x: (x.part_settings.state, x.part_name),
         )
+
+        # Iterate through the Censors
         force_png = False
         working_image = file_image.copy()
         for part in parts:
             if not part.part_settings.censors:
                 continue
 
+            # Get Context Stuff from Part to Help Make Censors
             part_contours = get_contours_from_mask(part.mask)
             mask = contours_to_mask(part_contours, working_image.shape[:2])  # type: ignore
             mask_norm = cv2.merge([mask] * 3)  # type: ignore
 
+            # Go Through the Censors of the Part
             for censor in part.part_settings.censors[::-1]:
+                # Process the Censor Effects
                 censor_object: Effect = effects[censor.effect]()
                 censor_object.change_linetype(enable_aa=True)
                 force_png = censor_object.force_png
 
-                additional_args = {
-                    **censor.parameters,
-                    **(
-                        {"part_list": parts}
-                        if censor_object.effect_type == EffectType.DEV
-                        else {}
-                    ),
+                # Special Argument for Dev-type Effects where Full Awareness
+                # is Required
+                parts_list = (
+                    parts
+                    if censor_object.effect_type == EffectType.DEV
+                    else None
+                )
+
+                # Handle Fields from EffectContext that All Effects Have
+                param_fields = {field.name for field in fields(EffectContext)}
+                filtered_params = {
+                    key: value
+                    for key, value in censor.parameters.items()
+                    if key in param_fields
                 }
 
+                # Apply Effect
                 working_image = censor_object.internal_run_effect(
-                    image=working_image.copy(),
-                    contours=part_contours,
-                    mask=mask_norm.copy(),
-                    part=part,
-                    **additional_args,
+                    EffectContext(
+                        image=working_image.copy(),
+                        contours=part_contours,
+                        mask=mask_norm.copy(),
+                        part=part,
+                        part_list=parts_list,
+                        **filtered_params,
+                    ),
+                    **{
+                        key: value
+                        for key, value in censor.parameters.items()
+                        if key not in filtered_params
+                    },
                 )
 
             # === Feather (Gaussian) per-object glow ===

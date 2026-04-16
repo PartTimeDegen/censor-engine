@@ -1,18 +1,15 @@
-from abc import ABC, abstractmethod
-from typing import Literal
-
 import cv2
 
-from censor_engine.detected_part import Part
+from censor_engine.api.effects import EffectContext
+from censor_engine.constant import DIM_COLOUR, DIM_GREY, DIM_RGBA
 from censor_engine.models.enums import EffectType
-from censor_engine.models.structs.contours import Contour
-from censor_engine.typing import Image, ProcessedImage, TypeMask
+from censor_engine.typing import Image, ProcessedImage
 
 from .mixin_contour_masking import MixinContourMasking
 from .mixin_image_blending import MixinImageBlending
 
 
-class Effect(ABC, MixinContourMasking, MixinImageBlending):
+class Effect(MixinContourMasking, MixinImageBlending):
     # Information
     effect_type: EffectType = EffectType.INVALID
 
@@ -23,62 +20,66 @@ class Effect(ABC, MixinContourMasking, MixinImageBlending):
 
     def _merge_processed_to_input_image(
         self,
-        image: Image,
-        mask: TypeMask,
+        effect_context: EffectContext,
+        original_image: Image,
         processed_image: ProcessedImage,
-        fade_width: int = 0,
-        gradient_mode: Literal["linear", "gaussian"] = "linear",
-        mask_thickness: int = -1,
     ) -> ProcessedImage:
-        if fade_width > 0:
+
+        processed_image = cv2.addWeighted(
+            processed_image,
+            effect_context.alpha,
+            original_image,
+            1 - effect_context.alpha,
+            0,
+        )
+
+        if effect_context.fade_width > 0:
             return self.blend_with_fade(
-                image,
+                original_image,
                 processed_image,
-                mask,
-                fade_width,
-                gradient_mode=gradient_mode,
-                mask_thickness=mask_thickness,
+                effect_context.mask,
+                effect_context.fade_width,
+                gradient_mode=effect_context.fade_gradient_mode,
+                mask_thickness=effect_context.mask_thickness,
             )
 
-        return self.apply_hard_mask(image, processed_image, mask)
+        return self.apply_hard_mask(
+            original_image,
+            processed_image,
+            effect_context.mask,
+        )
 
     def internal_run_effect(
         self,
-        image: Image,
-        contours: list[Contour],
-        mask: TypeMask,
-        part: Part | None,  # None is for Reverse Censor
-        mask_thickness: int = -1,
-        fade_width: int = 0,
-        gradient_mode: Literal["linear", "gaussian"] = "linear",
+        effect_context: EffectContext,
         **kwargs,  # noqa: ANN003
     ) -> ProcessedImage:
-        processed_image = self.apply_effect(
-            image,
-            mask,
-            contours,
-            part,
-            **kwargs,
-        )
+        # Apply Core Effect
+        original_image = effect_context.original_image
+        processed_image = self.apply_effect(effect_context, **kwargs)
 
+        if processed_image.shape[2] == DIM_RGBA:
+            if effect_context.shape[2] == DIM_GREY:
+                original_image = cv2.cvtColor(
+                    effect_context.original_image,
+                    cv2.COLOR_GRAY2RGBA,
+                )
+            elif effect_context.shape[2] == DIM_COLOUR:
+                original_image = cv2.cvtColor(
+                    effect_context.original_image,
+                    cv2.COLOR_RGB2RGBA,
+                )
+
+        # Apply Post-processing Effects
         return self._merge_processed_to_input_image(
-            image,
-            mask,
+            effect_context,
+            original_image,
             processed_image,
-            fade_width,
-            gradient_mode,
-            mask_thickness,
         )
 
-    @abstractmethod
     def apply_effect(
         self,
-        image: Image,
-        mask: TypeMask,
-        contours: list[Contour],
-        part: Part | None,
-        *parameters,  # noqa: ANN002
-        thickness: int = -1,
+        effect_context: EffectContext,
         **kwargs,  # noqa: ANN003
     ) -> ProcessedImage:
         raise NotImplementedError

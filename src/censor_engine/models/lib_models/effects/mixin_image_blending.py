@@ -3,7 +3,6 @@ from typing import Literal
 import cv2
 import numpy as np
 
-from censor_engine.constant import DIM_COLOUR, DIM_RGBA, MAX_COLOUR_VALUE
 from censor_engine.models.structs.meta_structs import Mixin
 from censor_engine.typing import Image, TypeMask
 
@@ -51,32 +50,5 @@ class MixinImageBlending(Mixin):
         image_with_effect: Image,
         mask: TypeMask,
     ) -> Image:
-        # Ensure both images have the same number of channels
-        if (
-            image.shape[2] == DIM_COLOUR
-            and image_with_effect.shape[2] == DIM_RGBA
-        ):
-            # Upgrade base image to 4 channels by adding opaque alpha
-            alpha = np.full(image.shape[:2], 255, dtype=np.uint8)
-            image = np.dstack((image, alpha))
-
-        elif (
-            image.shape[2] == DIM_RGBA
-            and image_with_effect.shape[2] == DIM_COLOUR
-        ):
-            # Upgrade effect image to 4 channels by adding opaque alpha
-            alpha = np.full(image_with_effect.shape[:2], 255, dtype=np.uint8)
-            image_with_effect = np.dstack((image_with_effect, alpha))
-
-        # Create a single-channel boolean mask where all 3
-        # channels are 255 (white)
-        single_channel_mask = (
-            np.all(mask == MAX_COLOUR_VALUE, axis=2)
-            if mask.ndim == DIM_COLOUR
-            else mask == MAX_COLOUR_VALUE
-        )
-
-        # Broadcast to mask (H, W, channels)
-        mask_expanded = single_channel_mask[..., None]  # mask (H, W, 1)
-
-        return np.where(mask_expanded, image_with_effect, image)
+        mask_bool = mask[:, :, 0] > 0
+        return np.where(mask_bool[..., None], image_with_effect, image)

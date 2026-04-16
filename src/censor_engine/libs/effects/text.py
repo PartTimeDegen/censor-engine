@@ -4,12 +4,11 @@ from matplotlib import font_manager
 from PIL import Image as PImage
 from PIL import ImageDraw, ImageFont
 
-from censor_engine.detected_part import Part
+from censor_engine.api.effects import EffectContext
 from censor_engine.libs.registries import EffectRegistry
 from censor_engine.models.lib_models.effects import TextEffect
 from censor_engine.models.structs.colours import Colour
-from censor_engine.models.structs.contours import Contour
-from censor_engine.typing import Image, TypeMask
+from censor_engine.typing import Image, ProcessedImage
 
 
 @EffectRegistry.register()
@@ -140,20 +139,16 @@ class DevText(TextEffect):
         )
         return cv2.cvtColor(np.array(img_pil), cv2.COLOR_RGB2BGR)
 
-    def apply_effect(
+    def apply_effect(  # type: ignore
         self,
-        image: Image,
-        mask: TypeMask,
-        contours: list[Contour],
-        part: Part,
-        *,
+        effect_context: EffectContext,
         text: str | list[str] = "Nope!",
         font: str = "arial",
         font_percent: float = 1.0,
         colour: tuple[int, int, int] | str = "PINK",
         outline_width: int = 3,
         outline_colour: tuple[int, int, int] | str | None = "WHITE",
-    ) -> Image:
+    ) -> ProcessedImage:
         colour_main = tuple(Colour(colour).value[::-1])
         if outline_colour is None:
             colour_outline = colour_main
@@ -176,15 +171,15 @@ class DevText(TextEffect):
             raise ValueError(msg)
 
         # Get TypeMask Coords
-        rel_box = contours[0].as_bounding_box()
+        rel_box = effect_context.contours[0].as_bounding_box()
         mask_coords = self._get_middle_coords(rel_box)
 
         # Get Font Size
         _, mask_size = self._convert_rel_box_to_coords_and_size(rel_box)
 
         for word in text:
-            image = self._put_custom_font(
-                image=image,
+            effect_context.image = self._put_custom_font(
+                image=effect_context.image,
                 word=word,
                 coords=mask_coords,
                 font=font,
@@ -195,4 +190,4 @@ class DevText(TextEffect):
                 outline_colour=colour_outline,  # type: ignore
             )
 
-        return image
+        return effect_context.image

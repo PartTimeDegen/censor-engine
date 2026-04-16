@@ -3,31 +3,23 @@ import math
 import cv2
 import numpy as np
 
-from censor_engine.detected_part import Part
+from censor_engine.api.effects import EffectContext
 from censor_engine.libs.registries import EffectRegistry
 from censor_engine.models.lib_models.effects import NoiseEffect
-from censor_engine.models.structs.contours import Contour
-from censor_engine.typing import Image, TypeMask
+from censor_engine.typing import ProcessedImage
 
 
 @EffectRegistry.register()
 class ChromaticAberration(NoiseEffect):
-    effect_name: str = "ChromaticAberration"
-
-    def apply_effect(
+    def apply_effect(  # type: ignore
         self,
-        image: Image,
-        mask: TypeMask,
-        contours: list[Contour],
-        part: Part,
-        *,
+        effect_context: EffectContext,
         offset: float = 10,  # Percent
         angle: int = -45,
-    ) -> Image:
+    ) -> ProcessedImage:
         # Create a copy for the noise effect
-        noise_image = image.copy()
         offset *= 1 / 1000  # Scaler
-        offset *= min(mask.shape[:2])
+        offset *= min(effect_context.shape[:2])
         offset = -int(offset)
 
         # Correct angle components for x and y directions
@@ -35,7 +27,7 @@ class ChromaticAberration(NoiseEffect):
         comp_y = math.sin(math.radians(angle))  # Vertical shift
 
         # Split into B, G, R channels
-        channels = cv2.split(noise_image)
+        channels = cv2.split(effect_context.image)
         channels = list(channels)
 
         # Loop through each color channel (B=0, G=1, R=2)
@@ -67,32 +59,15 @@ class ChromaticAberration(NoiseEffect):
 class CentricChromaticAberration(NoiseEffect):
     # FIXME: This doesn't give centric aberration
 
-    def apply_effect(
+    def apply_effect(  # type: ignore
         self,
-        image: Image,
-        mask: TypeMask,
-        contours: list[Contour],
-        part: Part,
-        *,
+        effect_context: EffectContext,
         offset: float = 10,
         blur: int = 0,
-    ) -> Image:
-        noise_image = image.copy()
+    ) -> ProcessedImage:
         offset *= 1 / 1000  # Scaler
-        offset *= min(mask.shape[:2])
+        offset *= min(effect_context.mask.shape[:2])
         offset = -int(offset)
-        contour = contours[0]  # Get Biggest
-
-        # Step 1: Get center of contour or fallback to image center
-        if contour is not None and len(contour.points) > 0:
-            m = cv2.moments(contour.points)
-            if m["m00"] != 0:
-                cx = int(m["m10"] / m["m00"])
-                cy = int(m["m01"] / m["m00"])
-            else:
-                cx, cy = image.shape[1] // 2, image.shape[0] // 2
-        else:
-            cx, cy = image.shape[1] // 2, image.shape[0] // 2  # noqa: F841
 
         # Step 2: Simulate outward shift (could be improved with pixelwise
         #         later)
@@ -103,7 +78,7 @@ class CentricChromaticAberration(NoiseEffect):
         comp_y = dy_vector / norm
 
         # Step 3: Shift each channel
-        channels = list(cv2.split(noise_image))
+        channels = list(cv2.split(effect_context.image))
         for i, channel in enumerate(channels):
             dx = int(offset * (i + 1) * comp_x)
             dy = int(offset * (i + 1) * comp_y)
@@ -116,36 +91,33 @@ class CentricChromaticAberration(NoiseEffect):
                 borderMode=cv2.BORDER_REFLECT,
             )
 
-        noise_image = cv2.merge(tuple(channels))  # type: ignore
+        effect_context.image = cv2.merge(tuple(channels))  # type: ignore
 
         # Step 4: Optional blur
         if blur > 0:
             ksize = max(1, int(blur) // 2 * 2 + 1)  # Ensure it's odd
-            noise_image = cv2.GaussianBlur(noise_image, (ksize, ksize), 0)
+            effect_context.image = cv2.GaussianBlur(
+                effect_context.image, (ksize, ksize), 0
+            )
 
         # Step 5: TypeMask the result onto the original image
-        return noise_image
+        return effect_context.image
 
 
 @EffectRegistry.register()
 class Noise(NoiseEffect):
-    def apply_effect(
+    def apply_effect(  # type: ignore
         self,
-        image: Image,
-        mask: TypeMask,
-        contours: list[Contour],
-        part: Part,
+        effect_context: EffectContext,
         *,
-        alpha: float = 1,
-        coloured: bool = True,
         intensity: float = 1,
         grain_size: int = 1,
         seed: int = 69,
-    ) -> Image:
+        coloured: bool = True,
+    ) -> ProcessedImage:
         np.random.seed(seed)
-        image.copy()
 
-        h, w, c = image.shape
+        h, w, c = effect_context.shape
 
         noise = np.random.normal(
             0,
@@ -157,17 +129,17 @@ class Noise(NoiseEffect):
         if not coloured:
             noise = cv2.cvtColor(noise, cv2.COLOR_BGR2GRAY)  # type: ignore
             noise = cv2.cvtColor(noise, cv2.COLOR_GRAY2BGR)  # type: ignore
-        return cv2.addWeighted(noise, alpha, image, 1 - alpha, 0)
+        return noise
 
 
 @EffectRegistry.register()
 class DeNoise(NoiseEffect):
-    def apply_effect(
+    def apply_effect(  # type: ignore
         self,
-        image: Image,
-        mask: TypeMask,
-        contours: list[Contour],
-        part: Part,
+        effect_context: EffectContext,
         strength: int = 10,
-    ) -> Image:
-        return cv2.fastNlMeansDenoisingColored(image, h=strength)
+    ) -> ProcessedImage:
+        return cv2.fastNlMeansDenoisingColored(
+            effect_context.image,
+            h=strength,
+        )

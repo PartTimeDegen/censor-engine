@@ -1,11 +1,10 @@
 import cv2
 import numpy as np
 
-from censor_engine.detected_part import Part
+from censor_engine.api.effects import EffectContext
 from censor_engine.libs.registries import EffectRegistry
 from censor_engine.models.lib_models.effects import EdgeDetectionEffect
-from censor_engine.models.structs.contours import Contour
-from censor_engine.typing import Image, TypeMask
+from censor_engine.typing import Image, ProcessedImage
 
 # Edge Detection Effects
 # https://blog.roboflow.com/edge-detection/
@@ -14,18 +13,13 @@ from censor_engine.typing import Image, TypeMask
 
 @EffectRegistry.register()
 class EdgeDetectionCanny(EdgeDetectionEffect):
-    def apply_effect(
+    def apply_effect(  # type: ignore
         self,
-        image: Image,
-        mask: TypeMask,
-        contours: list[Contour],
-        part: Part,
-        *,
+        effect_context: EffectContext,
         tolerances: tuple[int, int] | None = None,
         multiplier: float = 1.0,
         threshold: int = 100,
-        alpha: float = 1,
-    ) -> Image:
+    ) -> ProcessedImage:
         """
         This effect uses the Canny Edge Detection.
 
@@ -48,32 +42,25 @@ class EdgeDetectionCanny(EdgeDetectionEffect):
 
         """
         # Prepare Image to get better Results
-        mask_image = self.prepare_mask(image)
+        mask_image = self.prepare_mask(effect_context.image)
 
         # Get TypeMask
         mask_image = cv2.Canny(mask_image, threshold, threshold)
 
         # Clean Image
         mask_image = self.clean_image(mask_image)
-        mask_image = self.process_lines(mask_image, tolerances, multiplier)
-
-        return cv2.addWeighted(mask_image, alpha, image, 1 - alpha, 0)
+        return self.process_lines(mask_image, tolerances, multiplier)
 
 
 @EffectRegistry.register()
 class EdgeDetectionSobel(EdgeDetectionEffect):
-    def apply_effect(
+    def apply_effect(  # type: ignore
         self,
-        image: Image,
-        mask: TypeMask,
-        contours: list[Contour],
-        part: Part,
-        *,
+        effect_context: EffectContext,
         tolerances: tuple[int, int] | None = None,
         multiplier: float = 1.0,
-        alpha: float = 1,
         kernel_size: int = 5,
-    ) -> Image:
+    ) -> ProcessedImage:
         """
         This effect uses the Canny Edge Detection.
 
@@ -96,32 +83,25 @@ class EdgeDetectionSobel(EdgeDetectionEffect):
 
         """
         # Prepare Image to get better Results
-        mask_image = self.prepare_mask(image)
+        mask_image = self.prepare_mask(effect_context.image)
 
         # Get TypeMask
         mask_image = cv2.Sobel(mask_image, cv2.CV_64F, 1, 1, ksize=kernel_size)
 
         # Clean Image
         mask_image = self.clean_image(mask_image)
-        mask_image = self.process_lines(mask_image, tolerances, multiplier)
-
-        return cv2.addWeighted(mask_image, alpha, image, 1 - alpha, 0)
+        return self.process_lines(mask_image, tolerances, multiplier)
 
 
 @EffectRegistry.register()
 class EdgeDetectionScharr(EdgeDetectionEffect):
-    def apply_effect(
+    def apply_effect(  # type: ignore
         self,
-        image: Image,
-        mask: TypeMask,
-        contours: list[Contour],
-        part: Part,
-        *,
+        effect_context: EffectContext,
         tolerances: tuple[int, int] | None = None,
         multiplier: float = 1.0,
-        alpha: float = 1,
         kernel_size: int = 5,
-    ) -> Image:
+    ) -> ProcessedImage:
         """
         This effect uses the Canny Edge Detection.
 
@@ -143,7 +123,7 @@ class EdgeDetectionScharr(EdgeDetectionEffect):
 
         """
         # Prepare Image to get better Results
-        mask_image = self.prepare_mask(image)
+        mask_image = self.prepare_mask(effect_context.image)
 
         # Get TypeMask
         sobelx = cv2.Sobel(mask_image, cv2.CV_64F, 1, 0, ksize=kernel_size)
@@ -153,25 +133,18 @@ class EdgeDetectionScharr(EdgeDetectionEffect):
 
         # Clean Image
         mask_image = self.clean_image(mask_image)  # type: ignore
-        mask_image = self.process_lines(mask_image, tolerances, multiplier)
-
-        return cv2.addWeighted(mask_image, alpha, image, 1 - alpha, 0)
+        return self.process_lines(mask_image, tolerances, multiplier)
 
 
 @EffectRegistry.register()
 class EdgeDetectionLapacian(EdgeDetectionEffect):
-    def apply_effect(
+    def apply_effect(  # type: ignore
         self,
-        image: Image,
-        mask: TypeMask,
-        contours: list[Contour],
-        part: Part,
-        *,
+        effect_context: EffectContext,
         tolerances: tuple[int, int] | None = None,
         multiplier: float = 1.0,
         kernel_size: int = 5,
-        alpha: float = 1,
-    ) -> Image:
+    ) -> ProcessedImage:
         """
         This effect uses the Canny Edge Detection.
 
@@ -193,34 +166,25 @@ class EdgeDetectionLapacian(EdgeDetectionEffect):
 
         """
         # Prepare Image to get better Results
-        mask_image = self.prepare_mask(image)
+        mask_image = self.prepare_mask(effect_context.image)
 
         # Get TypeMask
         mask_image = cv2.Laplacian(mask_image, cv2.CV_64F, ksize=kernel_size)
 
         # Clean Image
         mask_image = self.clean_image(mask_image)
-        mask_image = self.process_lines(mask_image, tolerances, multiplier)
-
-        return cv2.addWeighted(mask_image, alpha, image, 1 - alpha, 0)
+        return self.process_lines(mask_image, tolerances, multiplier)
 
 
 @EffectRegistry.register()
 class EdgeDetectionDoubleGaussian(EdgeDetectionEffect):
-    def apply_effect(
+    def apply_effect(  # type: ignore
         self,
-        image: Image,
-        mask: TypeMask,
-        contours: list[Contour],
-        part: Part,
-        *,
-        tolerances: tuple[int, int] | None = None,
-        multiplier: float = 1.0,
+        effect_context: EffectContext,
         sigma1: float = 1.0,
         sigma2: float = 2.0,
-        alpha: float = 1.0,
         ksize: int = 0,
-    ) -> Image:
+    ) -> ProcessedImage:
         """
         This effect uses the Difference of Gaussians Detection.
 
@@ -240,7 +204,7 @@ class EdgeDetectionDoubleGaussian(EdgeDetectionEffect):
 
         """
         # Prepare image for better results
-        gray = self.prepare_mask(image)
+        gray = self.prepare_mask(effect_context.image)
 
         # Apply two Gaussian blurs
         blur1 = cv2.GaussianBlur(gray, (ksize, ksize), sigmaX=sigma1)
@@ -253,25 +217,18 @@ class EdgeDetectionDoubleGaussian(EdgeDetectionEffect):
         dog = cv2.normalize(dog, None, 0, 255, cv2.NORM_MINMAX)  # type: ignore
 
         # Clean image (reuse your existing logic)
-        dog = self.clean_image(dog)
-
-        # Blend with original image
-        return cv2.addWeighted(dog, alpha, image, 1 - alpha, 0)
+        return self.clean_image(dog)
 
 
 @EffectRegistry.register()
 class EdgeDetectionRoberts(EdgeDetectionEffect):
-    def apply_effect(
+    def apply_effect(  # type: ignore
         self,
-        image: Image,
-        mask: TypeMask,
-        contours: list[Contour],
-        part: Part,
-        *,
+        effect_context: EffectContext,
         tolerances: tuple[int, int] | None = None,
         multiplier: float = 1.0,
         alpha: float = 1.0,
-    ) -> Image:
+    ) -> ProcessedImage:
         """
         This effect uses the Roberts Cross Detection.
 
@@ -299,31 +256,24 @@ class EdgeDetectionRoberts(EdgeDetectionEffect):
             return cv2.convertScaleAbs(np.sqrt(x**2 + y**2))
 
         # Prepare Image to get better Results
-        mask_image = self.prepare_mask(image)
+        mask_image = self.prepare_mask(effect_context.image)
 
         # Get TypeMask
         mask_image = roberts(mask_image)
 
         # Clean Image
         mask_image = self.clean_image(mask_image)
-        mask_image = self.process_lines(mask_image, tolerances, multiplier)
-
-        return cv2.addWeighted(mask_image, alpha, image, 1 - alpha, 0)
+        return self.process_lines(mask_image, tolerances, multiplier)
 
 
 @EffectRegistry.register()
 class EdgeDetectionPrewitt(EdgeDetectionEffect):
-    def apply_effect(
+    def apply_effect(  # type: ignore
         self,
-        image: Image,
-        mask: TypeMask,
-        contours: list[Contour],
-        part: Part,
-        *,
+        effect_context: EffectContext,
         tolerances: tuple[int, int] | None = None,
         multiplier: float = 1.0,
-        alpha: float = 1.0,
-    ) -> Image:
+    ) -> ProcessedImage:
         """
         This effect uses the Prewitt Detection.
 
@@ -355,13 +305,11 @@ class EdgeDetectionPrewitt(EdgeDetectionEffect):
             return cv2.convertScaleAbs(np.sqrt(x**2 + y**2))
 
         # Prepare Image to get better Results
-        mask_image = self.prepare_mask(image)
+        mask_image = self.prepare_mask(effect_context.image)
 
         # Get TypeMask
         mask_image = prewitt(mask_image)
 
         # Clean Image
         mask_image = self.clean_image(mask_image)
-        mask_image = self.process_lines(mask_image, tolerances, multiplier)
-
-        return cv2.addWeighted(mask_image, alpha, image, 1 - alpha, 0)
+        return self.process_lines(mask_image, tolerances, multiplier)

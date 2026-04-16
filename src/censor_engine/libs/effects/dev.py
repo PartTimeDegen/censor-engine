@@ -2,6 +2,7 @@ from statistics import fmean
 
 import cv2
 
+from censor_engine.api.effects import EffectContext
 from censor_engine.detected_part import Part
 from censor_engine.libs.detectors.box_based_detectors.nude_net import (
     NudeNetDetector,
@@ -14,7 +15,7 @@ from censor_engine.models.lib_models.effects.sub_variants import (
 )
 from censor_engine.models.structs.colours import Colour, _colours
 from censor_engine.models.structs.contours import Contour
-from censor_engine.typing import Image, TypeMask
+from censor_engine.typing import Image, ProcessedImage, TypeMask
 
 # ruff: noqa
 
@@ -133,14 +134,16 @@ def draw_text_below_box(
 class Debug(DevEffect):
     is_done: bool = False
 
-    def apply_effect(
+    def apply_effect(  # type: ignore
         self,
-        image: Image,
-        mask: TypeMask,
-        contours: list[Contour],
-        part: Part,
-        part_list: list[Part],
-    ) -> Image:
+        effect_context: EffectContext,
+    ) -> ProcessedImage:
+        image = effect_context.original_image
+        part = effect_context.part
+        part_list = effect_context.part_list
+        if part is None or part_list is None:
+            return image
+
         if part.config.rendering_settings.merge_method != MergeMethod.NONE:
             msg = "Requires No Merging"
             raise ValueError(msg)
@@ -203,49 +206,3 @@ class Debug(DevEffect):
 
         self.is_done = True
         return image
-
-
-@EffectRegistry.register()
-class DevEdgeDetectionDoubleGaussianPotentialTypeMask(EdgeDetectionEffect):
-    def apply_effect(
-        self,
-        image: Image,
-        mask: TypeMask,
-        contours: list[Contour],
-        part: Part,
-        sigma1: float = 1.0,
-        sigma2: float = 2.0,
-        alpha: float = 1.0,
-        ksize: int = 0,
-    ) -> Image:
-        # Prepare image for better results
-        gray = self.prepare_mask(image)
-
-        # Apply two Gaussian blurs
-        blur1 = cv2.GaussianBlur(gray, (ksize, ksize), sigmaX=sigma1)
-        blur2 = cv2.GaussianBlur(gray, (ksize, ksize), sigmaX=sigma2)
-
-        # Difference of Gaussians
-        dog = cv2.subtract(blur1, blur2)
-
-        # Normalize to full range
-        dog = cv2.normalize(dog, None, 0, 255, cv2.NORM_MINMAX)  # type: ignore
-
-        # Clean image (reuse your existing logic)
-        dog = self.clean_image(dog)
-
-        return dog
-
-        # Blend with original image
-        edge_mask = cv2.addWeighted(dog, alpha, image, 1 - alpha, 0)
-        edge_mask_gray = cv2.cvtColor(edge_mask, cv2.COLOR_BGR2GRAY)
-
-        # Find contours
-        new_contours, _ = cv2.findContours(
-            edge_mask_gray, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
-        )
-
-        # Fill them
-        return cv2.drawContours(
-            edge_mask, new_contours, -1, [255, 255, 255], thickness=cv2.FILLED
-        )

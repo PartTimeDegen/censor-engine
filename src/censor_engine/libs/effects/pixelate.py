@@ -3,11 +3,11 @@ import math
 import cv2
 import numpy as np
 
-from censor_engine.detected_part import Part
+from censor_engine.api.effects import EffectContext
 from censor_engine.libs.registries import EffectRegistry
 from censor_engine.models.lib_models.effects import PixelateEffect
 from censor_engine.models.structs.contours import Contour
-from censor_engine.typing import Image, TypeMask
+from censor_engine.typing import Image, ProcessedImage
 
 
 @EffectRegistry.register()
@@ -59,29 +59,26 @@ class Pixelate(PixelateEffect):
             self.normalise_factor(image, factors[1]),
         )
 
-    def apply_effect(
+    def apply_effect(  # type: ignore
         self,
-        image: Image,
-        mask: TypeMask,
-        contours: list[Contour],
-        part: Part,
+        effect_context: EffectContext,
         factor: int = 12,
-    ) -> Image:
+    ) -> ProcessedImage:
         factors = self._get_distortion_factor(
-            image,
-            contours,
+            effect_context.image,
+            effect_context.contours,
             factor,
         )
 
         # Code Proper
         down_image = cv2.resize(
-            image,
+            effect_context.image,
             factors,  # type: ignore
             interpolation=cv2.INTER_LINEAR,
         )
         return cv2.resize(
             down_image,
-            (image.shape[1], image.shape[0]),
+            (effect_context.shape[1], effect_context.shape[0]),
             interpolation=cv2.INTER_NEAREST,
         )
 
@@ -154,31 +151,24 @@ class HexagonPixelate(PixelateEffect):
 
         return output
 
-    def apply_effect(
+    def apply_effect(  # type: ignore
         self,
-        image: Image,
-        mask: TypeMask,
-        contours: list[Contour],
-        part: Part,
+        effect_context: EffectContext,
         factor: float = 12,
-    ) -> Image:
+    ) -> ProcessedImage:
         """Apply hexagonal pixelation to the image within the given contour."""
-        factor = self.normalise_factor(image, factor)
-        return self._hexagonify(image, factor)
+        factor = self.normalise_factor(effect_context.image, factor)
+        return self._hexagonify(effect_context.image, factor)
 
 
 @EffectRegistry.register()
 class Crystallise(PixelateEffect):
-    def apply_effect(
+    def apply_effect(  # type: ignore
         self,
-        image: Image,
-        mask: TypeMask,
-        contours: list[Contour],
-        part: Part,
+        effect_context: EffectContext,
         point_density: int = 50,
-    ) -> Image:
-        blur_image = image.copy()
-        h, w, _ = image.shape
+    ) -> ProcessedImage:
+        h, w, _ = effect_context.shape
 
         points = np.vstack(
             [
@@ -194,13 +184,13 @@ class Crystallise(PixelateEffect):
 
         triangle_list = subdiv.getTriangleList().astype(np.int32)  # type: ignore
 
-        result = np.zeros_like(blur_image)
+        result = np.zeros_like(effect_context.image)
 
         for t in triangle_list:
             pts = t.reshape(3, 2)
             mask = np.zeros((h, w), dtype=np.uint8)
             cv2.fillConvexPoly(mask, pts, 1)  # type: ignore
-            mean_color = cv2.mean(image, mask=mask)[:3]
+            mean_color = cv2.mean(effect_context.image, mask=mask)[:3]
             cv2.fillConvexPoly(result, pts, mean_color)  # type: ignore
 
         return result
@@ -208,8 +198,6 @@ class Crystallise(PixelateEffect):
 
 @EffectRegistry.register()
 class HexagonPixelateSoft(HexagonPixelate):
-    effect_name: str = "hexagon_pixelate_soft"
-
     def _blend_color(
         self,
         center_x: float,
@@ -286,15 +274,12 @@ class HexagonPixelateSoft(HexagonPixelate):
 
         return output
 
-    def apply_effect(
+    def apply_effect(  # type: ignore
         self,
-        image: Image,
-        mask: TypeMask,
-        contours: list[Contour],
-        part: Part,
+        effect_context: EffectContext,
         factor: float = 12,
         softness: float = 2.0,
-    ) -> Image:
+    ) -> ProcessedImage:
         """
         Apply soft hexagonal pixelation to the image within the given contour.
 
@@ -303,5 +288,5 @@ class HexagonPixelateSoft(HexagonPixelate):
         :param factor: hexagon size
         :param softness: softness amount (default=1.0)
         """
-        factor = self.normalise_factor(image, factor)
-        return self._hexagonify(image, factor, softness)
+        factor = self.normalise_factor(effect_context.image, factor)
+        return self._hexagonify(effect_context.image, factor, softness)

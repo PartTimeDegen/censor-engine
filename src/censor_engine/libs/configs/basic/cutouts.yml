@@ -16,5 +16,5 @@ censor_settings:
   default_part_settings:
     censors:
       - effect: "Cutout"
-        parameters: { alpha: 0 }
+        parameters: { alpha: 1 }
     mask: "Bar"
