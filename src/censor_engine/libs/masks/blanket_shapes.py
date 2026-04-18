@@ -3,23 +3,23 @@ from typing import TYPE_CHECKING
 import cv2
 import numpy as np
 
+from censor_engine.api.masks import MaskContext
 from censor_engine.libs.registries import MaskRegistry
 from censor_engine.models.lib_models.masks import BlanketMask
 
 if TYPE_CHECKING:
-    from censor_engine.detected_part import Part
     from censor_engine.typing import TypeMask
 
 
 @MaskRegistry.register()
 class CoverLeft(BlanketMask):
-    def generate(self, part: "Part", empty_mask: "TypeMask") -> "TypeMask":
+    def generate(self, mask_context: MaskContext) -> "TypeMask":
         cont_rect = cv2.findContours(
-            image=part.mask,
+            image=mask_context.part.mask,
             mode=cv2.RETR_TREE,
             method=cv2.CHAIN_APPROX_SIMPLE,
         )
-        height, _ = empty_mask.shape[:2]
+        height, _ = mask_context.empty_mask.shape[:2]
         x, _, w, _ = cv2.boundingRect(np.vstack(cont_rect[0]))  # type: ignore
 
         box = np.array(
@@ -33,7 +33,7 @@ class CoverLeft(BlanketMask):
         )
 
         mask = cv2.drawContours(
-            image=empty_mask,
+            image=mask_context.empty_mask,
             contours=[box],
             contourIdx=-1,
             color=(255, 255, 255),
@@ -49,13 +49,13 @@ class CoverLeft(BlanketMask):
 
 @MaskRegistry.register()
 class CoverRight(BlanketMask):
-    def generate(self, part: "Part", empty_mask: "TypeMask") -> "TypeMask":
+    def generate(self, mask_context: MaskContext) -> "TypeMask":
         cont_rect = cv2.findContours(
-            image=part.mask,
+            image=mask_context.part.mask,
             mode=cv2.RETR_TREE,
             method=cv2.CHAIN_APPROX_SIMPLE,
         )
-        height, width = empty_mask.shape[:2]
+        height, width = mask_context.empty_mask.shape[:2]
         x, _, _, _ = cv2.boundingRect(np.vstack(cont_rect[0]))  # type: ignore
 
         box = np.array(
@@ -69,7 +69,7 @@ class CoverRight(BlanketMask):
         )
 
         mask = cv2.drawContours(
-            image=empty_mask,
+            image=mask_context.empty_mask,
             contours=[box],
             contourIdx=-1,
             color=(255, 255, 255),
@@ -85,13 +85,13 @@ class CoverRight(BlanketMask):
 
 @MaskRegistry.register()
 class CoverBottom(BlanketMask):
-    def generate(self, part: "Part", empty_mask: "TypeMask") -> "TypeMask":
+    def generate(self, mask_context: MaskContext) -> "TypeMask":
         cont_rect = cv2.findContours(
-            image=part.mask,
+            image=mask_context.part.mask,
             mode=cv2.RETR_TREE,
             method=cv2.CHAIN_APPROX_SIMPLE,
         )
-        height, width = empty_mask.shape[:2]
+        height, width = mask_context.empty_mask.shape[:2]
         _, y, _, _ = cv2.boundingRect(np.vstack(cont_rect[0]))  # type: ignore
 
         box = np.array(
@@ -105,7 +105,7 @@ class CoverBottom(BlanketMask):
         )
 
         mask = cv2.drawContours(
-            image=empty_mask,
+            image=mask_context.empty_mask,
             contours=[box],
             contourIdx=-1,
             color=(255, 255, 255),
@@ -121,13 +121,13 @@ class CoverBottom(BlanketMask):
 
 @MaskRegistry.register()
 class CoverTop(BlanketMask):
-    def generate(self, part: "Part", empty_mask: "TypeMask") -> "TypeMask":
+    def generate(self, mask_context: MaskContext) -> "TypeMask":
         cont_rect = cv2.findContours(
-            image=part.mask,
+            image=mask_context.part.mask,
             mode=cv2.RETR_TREE,
             method=cv2.CHAIN_APPROX_SIMPLE,
         )
-        _, width = empty_mask.shape[:2]
+        _, width = mask_context.empty_mask.shape[:2]
         _, y, _, h = cv2.boundingRect(np.vstack(cont_rect[0]))  # type: ignore
 
         box = np.array(
@@ -141,7 +141,7 @@ class CoverTop(BlanketMask):
         )
 
         mask = cv2.drawContours(
-            image=empty_mask,
+            image=mask_context.empty_mask,
             contours=[box],
             contourIdx=-1,
             color=(255, 255, 255),

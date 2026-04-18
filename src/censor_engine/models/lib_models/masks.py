@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING
 
+from censor_engine.api.masks import MaskContext
 from censor_engine.models.enums import MaskType
 
 if TYPE_CHECKING:
-    from censor_engine.detected_part import Part
     from censor_engine.typing import TypeMask
 
 
@@ -20,8 +20,7 @@ class Mask:
 
     def generate(
         self,
-        part: "Part",
-        empty_mask: "TypeMask",
+        mask_context: MaskContext,
     ) -> "TypeMask":
         raise NotImplementedError
 

@@ -4,10 +4,10 @@ from uuid import UUID, uuid4
 import cv2
 import numpy as np
 
+from censor_engine.api.masks import MaskContext
 from censor_engine.models.lib_models.masks import BarMask
 
 if TYPE_CHECKING:
-    from censor_engine.detected_part import Part
     from censor_engine.typing import TypeMask
 
 from censor_engine.libs.registries import MaskRegistry
@@ -37,24 +37,23 @@ class Bar(BarMask, _BarInfo):
 
     def generate(  # noqa: PLR0912 # TODO: Not wrong, not easy
         self,
-        part: "Part",
-        empty_mask: "TypeMask",  # TODO: Update Masks with same format as Effects
+        mask_context: MaskContext,
         *,
         force_horizontal: bool = False,
         force_vertical: bool = False,
         long_direction: bool = False,
         tight_bar: bool = False,
     ) -> "TypeMask":
-        if not part.is_merged:
+        if not mask_context.part.is_merged:
             force_horizontal = True
         # Find Contours via Joint Ellipse
         contours, _ = cv2.findContours(
-            part.mask,
+            mask_context.part.mask,
             cv2.RETR_EXTERNAL,
             cv2.CHAIN_APPROX_SIMPLE,
         )
         if not contours:
-            msg = f"No contours found in mask: {part.part_name}"
+            msg = f"No contours found in mask: {mask_context.part.part_name}"
             raise ValueError(msg)
 
         # Fit Ellipse to get Contour Back
@@ -99,7 +98,7 @@ class Bar(BarMask, _BarInfo):
             corrected_angle = 90
 
         # Create A Blank Mask And Draw The Rotated Rectangle Bar
-        height, width = part.mask.shape
+        height, width = mask_context.part.mask.shape
 
         bar_length = (
             int(np.hypot(width, height)) * 2
@@ -117,7 +116,7 @@ class Bar(BarMask, _BarInfo):
         rect = (centre, (bar_length, bar_thickness), corrected_angle)
         box = cv2.boxPoints(rect).astype(np.int32)
 
-        mask = empty_mask
+        mask = mask_context.empty_mask
         cv2.fillPoly(mask, [box], 255)  # type: ignore
 
         # Save for Other Parts
@@ -133,45 +132,42 @@ class Bar(BarMask, _BarInfo):
 class HorizontalBar(Bar):
     def generate(
         self,
-        part: "Part",
-        empty_mask: "TypeMask",
+        mask_context: MaskContext,
         *,
         force_horizontal: bool = False,
         force_vertical: bool = False,
         long_direction: bool = False,
         tight_bar: bool = False,
     ) -> "TypeMask":
-        return super().generate(part, empty_mask, force_horizontal=True)
+        return super().generate(mask_context, force_horizontal=True)
 
 
 @MaskRegistry.register()
 class VerticalBar(Bar):
     def generate(
         self,
-        part: "Part",
-        empty_mask: "TypeMask",
+        mask_context: MaskContext,
         *,
         force_horizontal: bool = False,
         force_vertical: bool = False,
         long_direction: bool = False,
         tight_bar: bool = False,
     ) -> "TypeMask":
-        return super().generate(part, empty_mask, force_vertical=True)
+        return super().generate(mask_context, force_vertical=True)
 
 
 @MaskRegistry.register()
 class LongBar(Bar):
     def generate(
         self,
-        part: "Part",
-        empty_mask: "TypeMask",
+        mask_context: MaskContext,
         *,
         force_horizontal: bool = False,
         force_vertical: bool = False,
         long_direction: bool = False,
         tight_bar: bool = False,
     ) -> "TypeMask":
-        return super().generate(part, empty_mask, long_direction=True)
+        return super().generate(mask_context, long_direction=True)
 
 
 @MaskRegistry.register()
@@ -180,12 +176,11 @@ class EllipseBasedBar(Bar):
 
     def generate(
         self,
-        part: "Part",
-        empty_mask: "TypeMask",
+        mask_context: MaskContext,
         *,
         force_horizontal: bool = False,
         force_vertical: bool = False,
         long_direction: bool = False,
         tight_bar: bool = False,
     ) -> "TypeMask":
-        return super().generate(part, empty_mask, tight_bar=True)
+        return super().generate(mask_context, tight_bar=True)

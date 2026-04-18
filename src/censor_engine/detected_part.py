@@ -5,6 +5,7 @@ from uuid import UUID
 import cv2
 import numpy as np
 
+from censor_engine.api.masks import MaskContext
 from censor_engine.libs.registries import MaskRegistry
 from censor_engine.models.config import Config, PartSettingsConfig
 from censor_engine.models.enums import MergeMethod
@@ -99,8 +100,7 @@ class Part:
 
         base_mask = Part.get_mask_class(self.mask_object.base_mask)
         self.mask = base_mask.generate(
-            self,
-            Part.create_empty_mask(self.image_mask),
+            MaskContext(self, Part.create_empty_mask(self.image_mask))
         )
         self.base_masks = [self.mask]
 

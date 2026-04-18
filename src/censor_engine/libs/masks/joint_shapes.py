@@ -3,11 +3,11 @@ from typing import TYPE_CHECKING
 import cv2
 import numpy as np
 
+from censor_engine.api.masks import MaskContext
 from censor_engine.libs.registries import MaskRegistry
 from censor_engine.models.lib_models.masks import JointMask
 
 if TYPE_CHECKING:
-    from censor_engine.detected_part import Part
     from censor_engine.typing import TypeMask
 
 
@@ -16,9 +16,9 @@ class JointBox(JointMask):
     base_mask: str = "Ellipse"
     single_mask: str = "Box"
 
-    def generate(self, part: "Part", empty_mask: "TypeMask") -> "TypeMask":
+    def generate(self, mask_context: MaskContext) -> "TypeMask":
         cont_rect = cv2.findContours(
-            image=part.mask,
+            image=mask_context.part.mask,
             mode=cv2.RETR_TREE,
             method=cv2.CHAIN_APPROX_SIMPLE,
         )
@@ -30,7 +30,7 @@ class JointBox(JointMask):
         box = box.astype(np.int32)
 
         mask = cv2.drawContours(
-            image=empty_mask,
+            image=mask_context.empty_mask,
             contours=[box],
             contourIdx=-1,
             color=(255, 255, 255),
@@ -49,9 +49,9 @@ class JointEllipse(JointMask):
     base_mask: str = "Ellipse"
     single_mask: str = "Ellipse"
 
-    def generate(self, part: "Part", empty_mask: "TypeMask") -> "TypeMask":
+    def generate(self, mask_context: MaskContext) -> "TypeMask":
         cont_rect = cv2.findContours(
-            image=part.mask,
+            image=mask_context.part.mask,
             mode=cv2.RETR_TREE,
             method=cv2.CHAIN_APPROX_SIMPLE,
         )
@@ -60,7 +60,9 @@ class JointEllipse(JointMask):
         cont_flat = np.vstack(cont_rect[0]).squeeze()
         mask_ellipse = cv2.fitEllipse(cont_flat)
 
-        return cv2.ellipse(empty_mask, mask_ellipse, (255, 255, 255), -1)  # type: ignore
+        return cv2.ellipse(
+            mask_context.empty_mask, mask_ellipse, (255, 255, 255), -1
+        )  # type: ignore
 
 
 @MaskRegistry.register()
@@ -68,8 +70,8 @@ class RoundedJointBox(JointMask):
     base_mask: str = "Ellipse"
     single_mask: str = "RoundedBox"
 
-    def generate(self, part: "Part", empty_mask: "TypeMask") -> "TypeMask":
-        mask = JointBox().generate(part, empty_mask)
+    def generate(self, mask_context: MaskContext) -> "TypeMask":
+        mask = JointBox().generate(mask_context)
 
         if len(mask.shape) > 2:  # noqa: PLR2004
             mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
@@ -94,9 +96,9 @@ class Block(JointMask):
     base_mask: str = "Ellipse"
     single_mask: str = "Box"
 
-    def generate(self, part: "Part", empty_mask: "TypeMask") -> "TypeMask":
+    def generate(self, mask_context: MaskContext) -> "TypeMask":
         cont_rect = cv2.findContours(
-            image=part.mask,
+            image=mask_context.part.mask,
             mode=cv2.RETR_TREE,
             method=cv2.CHAIN_APPROX_SIMPLE,
         )
@@ -109,7 +111,7 @@ class Block(JointMask):
         )
 
         mask = cv2.drawContours(
-            image=empty_mask,
+            image=mask_context.empty_mask,
             contours=[box],
             contourIdx=-1,
             color=(255, 255, 255),
