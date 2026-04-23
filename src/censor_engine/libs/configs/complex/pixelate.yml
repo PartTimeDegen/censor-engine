@@ -2,7 +2,7 @@ video_settings:
   frame_difference_threshold: 0.02
   part_frame_hold_seconds: 0.5
   persistence_groups:
-    - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
+    - [ "FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED" ]
 
 censor_settings:
   enabled_parts:
@@ -17,7 +17,7 @@ censor_settings:
 
   merge_settings:
     merge_groups:
-      - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
+      - [ "FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED" ]
 
   default_part_settings:
     censors:
@@ -25,4 +25,4 @@ censor_settings:
         { "effect": "Outline", parameters: { "colour": "BLACK" } },
         { "effect": "HexagonPixelate", parameters: { "factor": 15 } },
       ]
-    mask: "Ellipse"
+    mask: "HorizontalBar"

@@ -60,6 +60,7 @@ class Bar(BarMask, _BarInfo):
         cnt = max(contours, key=cv2.contourArea)
         if len(cnt) < 5:  # noqa: PLR2004
             msg = "Not enough points to fit an ellipse."
+            return mask_context.empty_mask
             raise ValueError(msg)
 
         if tight_bar:

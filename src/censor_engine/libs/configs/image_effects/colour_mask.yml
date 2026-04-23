@@ -1,0 +1,6 @@
+censor_settings:
+  reverse_censor_settings:
+    - effect: "ColourMask"
+      parameters:
+        hsv_lower_limit: (140, 64, 64)
+        hsv_upper_limit: (40, 255, 255)

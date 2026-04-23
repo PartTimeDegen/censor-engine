@@ -143,3 +143,22 @@ class DeNoise(NoiseEffect):
             effect_context.image,
             h=strength,
         )
+
+
+# @EffectRegistry.register()
+# class Glitch(NoiseEffect):
+#     def apply_effect(  # type: ignore
+#         self,
+#         effect_context: EffectContext,
+#         strength: int = 10,
+#     ) -> ProcessedImage:
+#         b, g, r = cv2.split(effect_context.image)
+
+#         rows, cols = b.shape
+
+#         M = np.float32([[1, 0, strength], [0, 1, 0]])
+
+#         r_shifted = cv2.warpAffine(r, M, (cols, rows))
+#         b_shifted = cv2.warpAffine(b, M, (cols, rows))
+
+#         return cv2.merge([b_shifted, g, r_shifted])

@@ -1,0 +1,5 @@
+censor_settings:
+  reverse_censor_settings:
+    - effect: "Posterise"
+      parameters:
+        levels: 8
