@@ -3,7 +3,7 @@ import os
 
 import pytest
 
-from censor_engine.libs.detectors.box_based_detectors.nude_net import (
+from censor_engine.libs.detectors.bbox_detectors.nude_net import (
     NudeNetDetector,
 )
 from tests.utils import run_image_test

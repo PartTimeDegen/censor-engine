@@ -5,7 +5,7 @@ import yaml
 from pydantic import BaseModel
 
 from censor_engine.libs.configs import get_config_path
-from censor_engine.libs.detectors.box_based_detectors.nude_net import (
+from censor_engine.libs.detectors.bbox_detectors.nude_net import (
     NudeNetDetector,
 )
 

@@ -4,7 +4,7 @@ import cv2
 
 from censor_engine.api.effects import EffectContext
 from censor_engine.detected_part import Part
-from censor_engine.libs.detectors.box_based_detectors.nude_net import (
+from censor_engine.libs.detectors.bbox_detectors.nude_net import (
     NudeNetDetector,
 )
 from censor_engine.libs.registries import EffectRegistry

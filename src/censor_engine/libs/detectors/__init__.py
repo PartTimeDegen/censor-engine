@@ -1,6 +1,6 @@
 from censor_engine.models.lib_models.detectors import Detector
 
-from .box_based_detectors.nude_net import NudeNetDetector
+from .bbox_detectors.nude_net import NudeNetDetector
 from .determination_tools import ImageGenreDeterminer
 
 """
