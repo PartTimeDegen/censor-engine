@@ -1,0 +1,31 @@
+censor_settings:
+  enabled_parts:
+    - "FEMALE_BREAST_EXPOSED"
+    - "FEMALE_BREAST_COVERED"
+    - "BUTTOCKS_EXPOSED"
+    - "BUTTOCKS_COVERED"
+    - "ANUS_EXPOSED"
+    - "ANUS_COVERED"
+    - "FEMALE_GENITALIA_EXPOSED"
+    - "FEMALE_GENITALIA_COVERED"
+
+  merge_settings:
+    merge_groups:
+      - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
+
+  default_part_settings:
+    censors:
+      - effect: "Outline"
+        parameters:
+          colour: "BLACK"
+          thickness: 1
+      - effect: "Greyscale"
+      - effect: "Blur"
+        parameters:
+          factor: 10
+
+    minimum_score: 0.20
+    mask: "Bar"
+
+  ANUS_EXPOSED:
+    state: "revealed"

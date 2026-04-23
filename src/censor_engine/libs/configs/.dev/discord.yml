@@ -23,10 +23,10 @@ censor_settings:
     censors:
       [
         {
-          "style": "CentricChromaticAberration",
+          "effect": "CentricChromaticAberration",
           parameters: { "offset": 2, "Blur": 5 },
         },
-        { "style": "Pixelate", parameters: { "factor": 10 } },
+        { "effect": "Pixelate", parameters: { "factor": 10 } },
       ]
-    shape: "Ellipse"
+    mask: "Ellipse"
     margin: 0.2

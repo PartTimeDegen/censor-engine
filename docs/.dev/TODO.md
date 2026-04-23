@@ -23,7 +23,7 @@ Body Parts (Both genders, both covered and exposed):
     * Torso
     * Shoulders
 
-Censor Styles:
+Censor Effects:
 
 Most are from this GIF off censored.booru (not sure on links on this sub, post ID is 33937), if not Puryfi
 

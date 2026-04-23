@@ -1,8 +1,9 @@
 from uuid import UUID
 
+from censor_engine.api.masks import MaskContext
 from censor_engine.detected_part import Part
 from censor_engine.models.config import Config
-from censor_engine.models.enums import ShapeType
+from censor_engine.models.enums import MaskType
 from censor_engine.models.lib_models.detectors import DetectedPartSchema
 from censor_engine.models.structs import Mixin
 
@@ -19,7 +20,7 @@ class MixinGenerateParts(Mixin):
         config: Config,
         file_uuid: UUID,
         detected_parts: list[DetectedPartSchema],
-        shape: tuple[int, int, int],
+        mask: tuple[int, int, int],
     ) -> list[Part]:
         """
         This function creates the list of Parts for CensorEngine to keep track
@@ -71,29 +72,29 @@ class MixinGenerateParts(Mixin):
                 relative_box=detect_part.relative_box,
                 config=config,
                 file_uuid=file_uuid,
-                image_shape=shape,
+                image_mask=mask,
             )
 
         return [
             part for part in map(add_parts, detected_parts) if part is not None
         ]
 
-    def _apply_and_generate_mask_shapes(
+    def _apply_and_generate_mask_masks(
         self,
         parts: list[Part],
     ) -> list[Part]:
         """
-        This method applies the mask shapes.
+        This method applies the mask masks.
 
         The method will iterate through the parts and find it's determined
-        shape.
+        mask.
 
-        For more advanced shapes like joints and bars, additional passes are
+        For more advanced masks like joints and bars, additional passes are
         required.
 
         For joints, the part will generate a basic mask of the base_objects
         (normally ellipses), and that will be used as the input for the joint
-        shape. This is because joints are normally produced with either the
+        mask. This is because joints are normally produced with either the
         cv2 bounding box method or the the fit ellipse method, so it needs
         something to fit for both of them.
 
@@ -105,51 +106,55 @@ class MixinGenerateParts(Mixin):
         TODO: Update this for custom mask patterns.
 
         :param list[Part] parts: List of parts
-        :return list[Part]: List of parts with shapes applied.
+        :return list[Part]: List of parts with masks applied.
         """
+        if len(parts) == 0:
+            return []
+
         new_parts = []
+        empty_mask = Part.create_empty_mask(parts[0].image_mask)
         for part in parts:
-            empty_mask = Part.create_empty_mask(part.image_shape)
+            mask_context = MaskContext(part=part, empty_mask=empty_mask)
 
             # Handle Universal Blanket Coverage
             # TODO: This probably needs to be generalised
-            if part.shape_object.shape_type == ShapeType.BLANKET:
-                part.mask = part.shape_object.generate(part, empty_mask)
+            if part.mask_object.mask_type == MaskType.BLANKET:
+                part.mask = part.mask_object.generate(mask_context)
                 new_parts.append(part)
                 continue
 
-            # For Simple Shapes
+            # For Simple Masks
             if not part.is_merged:
-                shape_single = Part.get_shape_class(
-                    part.shape_object.single_shape,
+                mask_single = Part.get_mask_class(
+                    part.mask_object.single_mask,
                 )
-                part.mask = shape_single.generate(part, empty_mask)
+                part.mask = mask_single.generate(mask_context)
                 new_parts.append(part)
                 continue
 
-            # For Advanced Shapes
-            match part.shape_object.shape_type:
-                case ShapeType.BASIC:
+            # For Advanced Masks
+            match part.mask_object.mask_type:
+                case MaskType.BASIC:
                     pass
-                case ShapeType.JOINT:
-                    part.mask = part.shape_object.generate(part, empty_mask)
+                case MaskType.JOINT:
+                    part.mask = part.mask_object.generate(mask_context)
 
-                case ShapeType.BAR:
+                case MaskType.BAR:
                     if not part.is_merged:
-                        # Make Basic Shape
-                        shape_single = Part.get_shape_class(
-                            part.shape_object.base_shape,
+                        # Make Basic Mask
+                        mask_single = Part.get_mask_class(
+                            part.mask_object.base_mask,
                         )
-                        part.mask = shape_single.generate(part, empty_mask)
+                        part.mask = mask_single.generate(mask_context)
 
-                    # Make Shape Joint for Bar Basis
-                    shape_joint = Part.get_shape_class(
-                        part.shape_object.joint_shape,
+                    # Make Mask Joint for Bar Basis
+                    mask_joint = Part.get_mask_class(
+                        part.mask_object.joint_mask,
                     )
-                    part.mask = shape_joint.generate(part, empty_mask)
+                    part.mask = mask_joint.generate(mask_context)
 
                     # Generate Bar
-                    part.mask = part.shape_object.generate(part, empty_mask)
+                    part.mask = part.mask_object.generate(mask_context)
 
             new_parts.append(part)
 

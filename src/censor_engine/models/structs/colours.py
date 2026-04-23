@@ -110,6 +110,7 @@ _colours = {
     "BABY_PURPLE": (202, 155, 247),
     "BABY_BROWN": (197, 167, 122),
     # Light Colours
+    "LIGHT_GREY": (196, 196, 196),
     "LIGHT_RED": (250, 160, 160),
     "LIGHT_PINK": (255, 182, 193),
     "LIGHT_BLUE": (173, 216, 230),
@@ -119,6 +120,7 @@ _colours = {
     "LIGHT_PURPLE": (203, 195, 227),
     "LIGHT_BROWN": (193, 154, 107),
     # Dark Colours
+    "DARK_GREY": (64, 64, 64),
     "DARK_RED": (128, 0, 0),  # Maroon
     "DARK_PINK": (170, 51, 106),
     "DARK_BLUE": (0, 0, 128),  # Navy Blue

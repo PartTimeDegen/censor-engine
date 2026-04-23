@@ -1,3 +1,3 @@
-- test holes in other shapes
+- test holes in other masks
 - docs
 - readmet

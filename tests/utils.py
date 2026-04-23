@@ -114,11 +114,11 @@ def assert_image(
             msg,
         )
 
-    # Check shape
+    # Check mask
     if output_image.shape != expected_image.shape:
         cv2.imwrite(str(output_path), output_image)
         msg = (
-            f"Image shapes differ: {output_image.shape} "
+            f"Image masks differ: {output_image.shape} "
             f"vs {expected_image.shape}\n"
             f"  → Output saved to: {output_path}"
         )
@@ -149,11 +149,11 @@ def assert_image(
     )
 
 
-def load_config_base_yaml(config: str = "00_default.yml") -> Any:  # noqa: ANN401
+def load_config_base_yaml(config: str = "basic/default.yml") -> Any:  # noqa: ANN401
     """
     This function is used to load a custom YAML file for tests.
 
-    :param str config: Config name, defaults to "00_default.yml"
+    :param str config: Config name, defaults to "basic/default.yml"
     """
     base_config_path = (
         Path("src") / "censor_engine" / "libs" / "configs" / config
@@ -189,7 +189,7 @@ def run_image_test(
     group_name: str | None = None,
     expect_png: bool = False,
     edge_case: bool = False,
-    mean_absolute_error: float = 2.2,  # Weird noise around shapes
+    mean_absolute_error: float = 2.2,  # Weird noise around masks
 ) -> None:
     """
     This function runs the image test.

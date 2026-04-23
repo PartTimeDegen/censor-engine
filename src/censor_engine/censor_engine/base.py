@@ -41,7 +41,7 @@ class CensorEngine(
     censored_folder: str | Path | None = None
     base_folder: Path | str = Path(__main__.__file__).resolve().parent
     censor_mode: str = "auto"  # "preview", "image", "video", "auto"
-    config_data: str | dict[str, Any] = "00_default.yml"
+    config_data: str | dict[str, Any] = "basic/default.yml"
 
     # Test Stuff
     _test_mode: bool = False

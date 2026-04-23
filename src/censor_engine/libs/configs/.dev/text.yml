@@ -17,11 +17,11 @@ censor_settings:
 
   default_part_settings:
     censors: [
-        { style: ChromaticAberration, parameters: { offset: 3 } },
-        { style: Outline , parameters:{colour: PINK}},
-        { style: DevText },
-        { style: Overlay, parameters: { alpha: 0.2, colour: GREY } },
-        { style: Pixelate, parameters: { factor: 7 } },
+        { effect: ChromaticAberration, parameters: { offset: 3 } },
+        { effect: Outline , parameters:{colour: PINK}},
+        { effect: DevText },
+        { effect: Overlay, parameters: { alpha: 0.2, colour: GREY } },
+        { effect: Pixelate, parameters: { factor: 7 } },
       ]
-    shape: JointBox
+    mask: JointBox
     margin: 0.2

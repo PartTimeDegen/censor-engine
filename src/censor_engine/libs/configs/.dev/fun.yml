@@ -23,41 +23,44 @@ censor_settings:
     censors:
       [
         {
-          "style": "Outline",
+          "effect": "Outline",
           parameters: { "colour": "BLACK", "softness": 0 },
         },
-        { "style": "GaussianBlur", parameters: { "factor": 5 } },
+        { "effect": "GaussianBlur", parameters: { "factor": 5 } },
       ]
-    # censors: [ { "style": "hexagon_pixelate_soft" } ]
-    shape: "Circle"
+    # censors: [ { "effect": "hexagon_pixelate_soft" } ]
+    mask: "Circle"
     video_part_search_region: 0.2
 
   FEMALE_BREAST_EXPOSED:
     censors:
       [
-        { "style": "Outline", parameters: { "colour": "RED", "softness": 0 } },
-        { "style": "GaussianBlur", parameters: { "factor": 5 } },
+        { "effect": "Outline", parameters: { "colour": "RED", "softness": 0 } },
+        { "effect": "GaussianBlur", parameters: { "factor": 5 } },
       ]
   FEMALE_BREAST_COVERED:
     censors:
       [
-        { "style": "Outline", parameters: { "colour": "BLUE", "softness": 0 } },
-        { "style": "GaussianBlur", parameters: { "factor": 5 } },
+        {
+          "effect": "Outline",
+          parameters: { "colour": "BLUE", "softness": 0 },
+        },
+        { "effect": "GaussianBlur", parameters: { "factor": 5 } },
       ]
 
   ANUS_EXPOSED:
     state: "revealed"
-    shape: "Ellipse"
+    mask: "Ellipse"
     margin: 0.4
   ANUS_COVERED:
     state: "revealed"
-    shape: "Ellipse"
+    mask: "Ellipse"
     margin: 0.4
   FEMALE_GENITALIA_EXPOSED:
     state: "protected"
-    shape: "Ellipse"
+    mask: "Ellipse"
     margin: -0.1
   FEMALE_GENITALIA_COVERED:
     state: "protected"
-    shape: "Ellipse"
+    mask: "Ellipse"
     margin: -0.1

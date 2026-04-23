@@ -23,22 +23,22 @@ part_settings = {
     "censors": [
         # Good
         [],
-        [{"style": "Blur"}],
-        [{"style": "Blur", "parameters": {"factor": 20}}],
+        [{"effect": "Blur"}],
+        [{"effect": "Blur", "parameters": {"factor": 20}}],
         "Blur",
         # Bad # TODO: Consider how to check for bad inputs, also if should include in tests
         # "fake censor",
-        # [{"style": "fake censor"}],
-        # [{"style": "fake censor", "parameters": {"factor": 20}}],
-        # [{"style": "Blur", "parameters": {"factor": 20}}],
+        # [{"effect": "fake censor"}],
+        # [{"effect": "fake censor", "parameters": {"factor": 20}}],
+        # [{"effect": "Blur", "parameters": {"factor": 20}}],
     ],
-    "shape": [
+    "mask": [
         # Good
         "Circle",
         # Base
         # "dinosaur",  # TODO: Add to "raises error"
     ],
-    # "protected_shape": [ # TODO: Needs own tests
+    # "protected_mask": [ # TODO: Needs own tests
     #     PartState.UNPROTECTED,
     #     PartState.PROTECTED,
     #     PartState.REVEALED,
@@ -72,8 +72,8 @@ def run_base(field, value, dummy_input_image_data, use_part: bool) -> None:
     all_parts = list(NudeNetDetector.model_classifiers)
 
     backup_info = {
-        "censors": [{"style": "OutlinedOverlay"}],
-        "shape": "JointBox",
+        "censors": [{"effect": "OutlinedOverlay"}],
+        "mask": "JointBox",
     }
 
     config_data = {
@@ -93,13 +93,13 @@ def run_base(field, value, dummy_input_image_data, use_part: bool) -> None:
     if use_part:
         censor_data["default_part_settings"] = dict(backup_info)
         censor_data["FEMALE_BREAST_EXPOSED"] = {field: value}
-        if field != "shape":
-            censor_data["FEMALE_BREAST_EXPOSED"]["shape"] = "JointBox"
+        if field != "mask":
+            censor_data["FEMALE_BREAST_EXPOSED"]["mask"] = "JointBox"
     else:
         censor_data["default_part_settings"] = dict(backup_info)
         censor_data["default_part_settings"][field] = value
-        if field != "shape":
-            censor_data["default_part_settings"]["shape"] = "JointBox"
+        if field != "mask":
+            censor_data["default_part_settings"]["mask"] = "JointBox"
 
     run_image_test(
         dummy_input_image_data,

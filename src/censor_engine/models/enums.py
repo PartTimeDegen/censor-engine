@@ -7,14 +7,14 @@ class PartState(IntEnum):
     PROTECTED = 3
 
 
-class ShapeType(IntEnum):
+class MaskType(IntEnum):
     BASIC = 1
     JOINT = 2
     BAR = 3
     BLANKET = 4
 
 
-class StyleType(IntEnum):
+class EffectType(IntEnum):
     INVALID = 0
     BLUR = 1
     OVERLAY = 2

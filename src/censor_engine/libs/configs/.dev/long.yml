@@ -20,24 +20,24 @@ censor_settings:
   default_part_settings:
     censors:
       [
-        { "style": "Outline", parameters: { "colour": "BLACK" } },
-        { "style": "Blur" },
+        { "effect": "Outline", parameters: { "colour": "BLACK" } },
+        { "effect": "Blur" },
       ]
-    shape: "JointEllipse"
+    mask: "JointEllipse"
 
   ANUS_EXPOSED:
     state: "revealed"
-    shape: "Ellipse"
+    mask: "Ellipse"
     margin: 0.4
   ANUS_COVERED:
     state: "revealed"
-    shape: "Ellipse"
+    mask: "Ellipse"
     margin: 0.4
   FEMALE_GENITALIA_EXPOSED:
     state: "protected"
-    shape: "Ellipse"
+    mask: "Ellipse"
     margin: -0.1
   FEMALE_GENITALIA_COVERED:
     state: "protected"
-    shape: "Ellipse"
+    mask: "Ellipse"
     margin: -0.1

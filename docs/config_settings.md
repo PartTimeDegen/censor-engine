@@ -78,7 +78,7 @@ This section refers to settings that appear in both `defaults` and *part_setting
 
 #### 2.8.1. `censors`
 
-Censors are the the styles used for censoring.
+Censors are the the effects used for censoring.
 
 The general format for them is:
 

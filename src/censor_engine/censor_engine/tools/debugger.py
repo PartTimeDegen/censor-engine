@@ -15,9 +15,9 @@ class DebugLevels(IntEnum):
         -   Censor Part Info
         -   Config Info
     -   ADVANCED:
-        -   Shape IDs
+        -   Mask IDs
         -   Merge IDs
-        -   Used Censors and Styles
+        -   Used Censors and Effects
     -   FULL:
         -   Mask Breakdowns.
 

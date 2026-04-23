@@ -1,0 +1,79 @@
+video_settings:
+  frame_difference_threshold: 0.02
+  part_frame_hold_seconds: 0.5
+  persistence_groups:
+    - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
+
+censor_settings:
+  enabled_parts:
+    - "FACE_FEMALE"
+    - "FEMALE_BREAST_EXPOSED"
+    - "FEMALE_BREAST_COVERED"
+    - "BELLY_EXPOSED"
+    - "BELLY_COVERED"
+    - "BUTTOCKS_EXPOSED"
+    - "BUTTOCKS_COVERED"
+    - "ANUS_EXPOSED"
+    - "ANUS_COVERED"
+    - "FEMALE_GENITALIA_EXPOSED"
+    - "FEMALE_GENITALIA_COVERED"
+    - "FEET_EXPOSED"
+    - "FEET_COVERED"
+    - "MALE_GENITALIA_EXPOSED"
+
+  merge_settings:
+    merge_groups:
+      - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
+
+  default_part_settings:
+    censors:
+      - effect: "Outline"
+        parameters:
+          colour: "BLACK"
+          thickness: 1
+
+      - effect: "Overlay"
+        parameters:
+          colour: "BURGUNDY"
+    protected_mask: "Ellipse"
+    mask: "Bar"
+
+  FACE_FEMALE:
+    state: "revealed"
+    mask: "Ellipse"
+    margin: 0.6
+
+  BELLY_EXPOSED:
+    state: "revealed"
+    mask: "Ellipse"
+    margin: 0.3
+
+  BELLY_COVERED:
+    state: "revealed"
+    mask: "Ellipse"
+    margin: 0.3
+
+  FEET_EXPOSED:
+    state: "revealed"
+    mask: "Ellipse"
+    margin: 0.3
+
+  FEET_COVERED:
+    state: "revealed"
+    mask: "Ellipse"
+    margin: 0.3
+
+  ANUS_COVERED:
+    state: "revealed"
+    mask: "Ellipse"
+    margin: 0.2
+
+  ANUS_EXPOSED:
+    state: "revealed"
+    mask: "Ellipse"
+    margin: 0.2
+
+  MALE_GENITALIA_EXPOSED:
+    state: "revealed"
+    mask: "Ellipse"
+    margin: 0.3

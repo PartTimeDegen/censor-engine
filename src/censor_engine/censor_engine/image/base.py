@@ -213,13 +213,13 @@ class ImageProcessor(
             if part.score >= part.minimum_score
         ]
 
-    def generate_mask_shapes(self) -> None:
+    def generate_mask_masks(self) -> None:
         """
-        This method handles the generation the masks' shapes.
+        This method handles the generation the masks' masks.
 
         Stages:
             1)  Merge parts based on the merge method and merge groups.
-            2)  Apple the shape effects to the mask, handling more advanced
+            2)  Apple the mask effects to the mask, handling more advanced
                 parts as well which require more than one pass.
 
         """
@@ -229,7 +229,7 @@ class ImageProcessor(
         )
 
         # Handle More Advanced Parts (i.e., Bars and Joints)
-        self._image_parts = self._apply_and_generate_mask_shapes(
+        self._image_parts = self._apply_and_generate_mask_masks(
             self._image_parts,
         )
 
@@ -279,7 +279,7 @@ class ImageProcessor(
 
         """
         self.generate_parts()
-        self.generate_mask_shapes()
+        self.generate_mask_masks()
         self.compile_masks()
         self.apply_censors()
 

@@ -5,14 +5,15 @@ from uuid import UUID
 import cv2
 import numpy as np
 
-from censor_engine.libs.registries import ShapeRegistry
+from censor_engine.api.masks import MaskContext
+from censor_engine.libs.registries import MaskRegistry
 from censor_engine.models.config import Config, PartSettingsConfig
 from censor_engine.models.enums import MergeMethod
-from censor_engine.models.lib_models.shapes import Shape
+from censor_engine.models.lib_models.masks import Mask
 from censor_engine.models.structs.part_areas import PartArea
 
 if TYPE_CHECKING:
-    from censor_engine.typing import Mask
+    from censor_engine.typing import TypeMask
 
 
 @dataclass(slots=True)
@@ -25,7 +26,7 @@ class Part:
     config: Config
 
     file_uuid: UUID
-    image_shape: tuple[int, int, ...]  # type: ignore
+    image_mask: tuple[int, int, ...]  # type: ignore
 
     # Internal
     # # Found
@@ -42,14 +43,14 @@ class Part:
     merge_group: list[str] = field(default_factory=list, init=False)
     persistence_group: list[str] = field(default_factory=list, init=False)
 
-    shape_name: str = field(default="NOT_SET", init=False)
-    shape_object: Shape = field(default_factory=Shape, init=False)
-    protected_shape_object: Shape = field(default_factory=Shape, init=False)
+    mask_name: str = field(default="NOT_SET", init=False)
+    mask_object: Mask = field(default_factory=Mask, init=False)
+    protected_mask_object: Mask = field(default_factory=Mask, init=False)
 
     # # Masks
-    mask: "Mask" = field(init=False)
-    original_mask: "Mask" = field(init=False)
-    base_masks: list["Mask"] = field(default_factory=list, init=False)
+    mask: "TypeMask" = field(init=False)
+    original_mask: "TypeMask" = field(init=False)
+    base_masks: list["TypeMask"] = field(default_factory=list, init=False)
 
     def __post_init__(self):
         # Connect Settings
@@ -82,25 +83,24 @@ class Part:
                 self.persistence_group = group
                 self.persistence_group_id = index
 
-        # Determine Shape
-        self.shape_object = Part.get_shape_class(self.part_settings.shape)
-        self.shape_name = self.shape_object.shape_name
+        # Determine Mask
+        self.mask_object = Part.get_mask_class(self.part_settings.mask)
+        self.mask_name = self.mask_object.mask_name
 
-        # Determine Protected Shape
-        if protected_part_shape := self.part_settings.protected_shape:
-            protected_shape = Part.get_shape_class(protected_part_shape)
+        # Determine Protected Mask
+        if protected_part_mask := self.part_settings.protected_mask:
+            protected_mask = Part.get_mask_class(protected_part_mask)
         else:
-            protected_part_shape = self.part_settings.shape
-            protected_shape = Part.get_shape_class(protected_part_shape)
-        self.protected_shape_object = protected_shape
+            protected_part_mask = self.part_settings.mask
+            protected_mask = Part.get_mask_class(protected_part_mask)
+        self.protected_mask_object = protected_mask
 
         # Generate Masks
-        self.original_mask = Part.create_empty_mask(self.image_shape)
+        self.original_mask = Part.create_empty_mask(self.image_mask)
 
-        base_shape = Part.get_shape_class(self.shape_object.base_shape)
-        self.mask = base_shape.generate(
-            self,
-            Part.create_empty_mask(self.image_shape),
+        base_mask = Part.get_mask_class(self.mask_object.base_mask)
+        self.mask = base_mask.generate(
+            MaskContext(self, Part.create_empty_mask(self.image_mask))
         )
         self.base_masks = [self.mask]
 
@@ -151,7 +151,7 @@ class Part:
         self.part_area = PartArea(
             new_relative_box,
             self.part_settings.video_part_search_region,
-            self.image_shape[:2],
+            self.image_mask[:2],
         )
 
     # Public Methods
@@ -176,14 +176,14 @@ class Part:
 
         self.is_merged = True
 
-    def add(self, mask: "Mask") -> None:
+    def add(self, mask: "TypeMask") -> None:
         self.mask = cv2.add(self.mask, mask)
 
-    def subtract(self, mask: "Mask") -> None:
+    def subtract(self, mask: "TypeMask") -> None:
         self.mask = cv2.subtract(self.mask, mask)
 
     @staticmethod
-    def normalise_mask(mask: "Mask") -> "Mask":
+    def normalise_mask(mask: "TypeMask") -> "TypeMask":
         if len(mask.shape) > 2:  # noqa: PLR2004
             mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
 
@@ -194,22 +194,22 @@ class Part:
         return mask
 
     @staticmethod
-    def get_shape_class(shape: str) -> Shape:
-        shapes = ShapeRegistry.get_all()
-        if shape not in shapes:
-            msg = f"Shape {shape} does not Exist! {[shapes.keys()]}"
+    def get_mask_class(mask: str) -> Mask:
+        masks = MaskRegistry.get_all()
+        if mask not in masks:
+            msg = f"Mask {mask} does not Exist! {[masks.keys()]}"
             raise ValueError(
                 msg,
             )
 
-        return shapes[shape]()
+        return masks[mask]()
 
     @staticmethod
     def create_empty_mask(
-        image_shape: tuple[int, int, int],
+        image_mask: tuple[int, int, int],
         *,
         inverse: bool = False,
-    ) -> "Mask":
+    ) -> "TypeMask":
         """
         This function acts as a factory for empty masks, due to 1) bad copying
         issues, and 2) because it's not a one-liner.
@@ -222,6 +222,6 @@ class Part:
         """
         if inverse:
             return Part.normalise_mask(
-                np.ones(image_shape, dtype=np.uint8) * 255,  # type: ignore
+                np.ones(image_mask, dtype=np.uint8) * 255,  # type: ignore
             )
-        return Part.normalise_mask(np.zeros(image_shape, dtype=np.uint8))
+        return Part.normalise_mask(np.zeros(image_mask, dtype=np.uint8))
