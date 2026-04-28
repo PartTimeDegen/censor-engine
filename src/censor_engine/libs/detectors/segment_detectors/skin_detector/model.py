@@ -188,6 +188,8 @@ class BodyDetectorModel:
         masks = masks.detach().cpu().numpy()
         scores = model_outputs.iou_scores[0].detach().cpu().numpy()
 
+        # Normalise
+
     # ======== #
     # Pipeline #
     # ======== #
