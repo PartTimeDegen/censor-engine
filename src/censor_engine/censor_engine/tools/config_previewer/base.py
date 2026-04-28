@@ -1,6 +1,8 @@
 from typing import TypedDict
 
-from censor_engine.models.lib_models.detectors import DetectedPartSchema
+from censor_engine.models.lib_models.detectors.api import (
+    DetectedPartSchema,
+)
 from censor_engine.typing import Image
 
 from .example_image import ImageGenerator

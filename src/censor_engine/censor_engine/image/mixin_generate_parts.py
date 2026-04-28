@@ -4,7 +4,9 @@ from censor_engine.api.masks import MaskContext
 from censor_engine.detected_part import Part
 from censor_engine.models.config import Config
 from censor_engine.models.enums import MaskType
-from censor_engine.models.lib_models.detectors import DetectedPartSchema
+from censor_engine.models.lib_models.detectors.api import (
+    DetectedPartSchema,
+)
 from censor_engine.models.structs import Mixin
 
 

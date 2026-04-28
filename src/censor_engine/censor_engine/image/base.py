@@ -12,7 +12,9 @@ from censor_engine.libs.detectors import enabled_detectors
 from censor_engine.models.caching import Cache
 from censor_engine.models.caching.caching_schemas import AIOutputData
 from censor_engine.models.config import Config
-from censor_engine.models.lib_models.detectors import DetectedPartSchema
+from censor_engine.models.lib_models.detectors.api import (
+    DetectedPartSchema,
+)
 from censor_engine.paths import PathManager
 from censor_engine.typing import Image
 

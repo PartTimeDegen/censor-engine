@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 
-from censor_engine.models.lib_models.detectors import DetectedPartSchema
+from censor_engine.models.lib_models.detectors.api import (
+    DetectedPartSchema,
+)
 
 """
 This holds the schemas for the caching mechanism

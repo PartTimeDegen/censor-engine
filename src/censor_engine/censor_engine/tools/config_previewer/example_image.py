@@ -1,7 +1,9 @@
 import cv2
 import numpy as np
 
-from censor_engine.models.lib_models.detectors import DetectedPartSchema
+from censor_engine.models.lib_models.detectors.api import (
+    DetectedPartSchema,
+)
 from censor_engine.typing import Image
 
 HORIZONTAL_ROWS = {

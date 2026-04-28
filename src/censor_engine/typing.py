@@ -1,4 +1,7 @@
+from typing import Annotated
+
 import numpy as np
+from numpy.typing import NDArray
 
 # Information:
 # You probably noticed there's three types for the same thing, it's to make
@@ -12,3 +15,4 @@ type TypeMask = np.ndarray
 type TypeEmptyMask = np.ndarray
 type Image = np.ndarray
 type ProcessedImage = np.ndarray
+BBox = Annotated[NDArray[np.float32], (4,)]

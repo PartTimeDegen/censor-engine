@@ -5,6 +5,7 @@ description = "Censor Engine, Censors 'stuff'"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "accelerate>=1.13.0",
     "ffmpeg-python>=0.2.0",
     "matplotlib>=3.10.8",
     "natsort>=8.4.0",
@@ -16,7 +17,9 @@ dependencies = [
     "pyyaml>=6.0.2",
     "torch>=2.11.0",
     "torchvision>=0.26.0",
+    "transformers>=5.6.2",
     "ultralytics>=8.4.37",
+    "yolo>=0.3.1",
 ]
 
 [tool.pytest.ini_options]

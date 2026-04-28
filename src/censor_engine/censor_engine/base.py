@@ -4,7 +4,9 @@ from typing import Any
 
 import __main__
 from censor_engine.models.config import Config
-from censor_engine.models.lib_models.detectors import DetectedPartSchema
+from censor_engine.models.lib_models.detectors.api import (
+    DetectedPartSchema,
+)
 from censor_engine.paths import PathManager
 from censor_engine.typing import Image
 
