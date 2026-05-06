@@ -8,7 +8,7 @@ from censor_engine.libs.registries import MaskRegistry
 from censor_engine.models.lib_models.masks import JointMask
 
 if TYPE_CHECKING:
-    from censor_engine.typing import TypeMask
+    from censor_engine.typing import Mask
 
 
 @MaskRegistry.register()
@@ -16,7 +16,7 @@ class JointBox(JointMask):
     base_mask: str = "Ellipse"
     single_mask: str = "Box"
 
-    def generate(self, mask_context: MaskContext) -> "TypeMask":
+    def generate(self, mask_context: MaskContext) -> "Mask":
         cont_rect = cv2.findContours(
             image=mask_context.part.mask,
             mode=cv2.RETR_TREE,
@@ -49,7 +49,7 @@ class JointEllipse(JointMask):
     base_mask: str = "Ellipse"
     single_mask: str = "Ellipse"
 
-    def generate(self, mask_context: MaskContext) -> "TypeMask":
+    def generate(self, mask_context: MaskContext) -> "Mask":
         cont_rect = cv2.findContours(
             image=mask_context.part.mask,
             mode=cv2.RETR_TREE,
@@ -70,7 +70,7 @@ class RoundedJointBox(JointMask):
     base_mask: str = "Ellipse"
     single_mask: str = "RoundedBox"
 
-    def generate(self, mask_context: MaskContext) -> "TypeMask":
+    def generate(self, mask_context: MaskContext) -> "Mask":
         mask = JointBox().generate(mask_context)
 
         if len(mask.shape) > 2:  # noqa: PLR2004
@@ -96,7 +96,7 @@ class Block(JointMask):
     base_mask: str = "Ellipse"
     single_mask: str = "Box"
 
-    def generate(self, mask_context: MaskContext) -> "TypeMask":
+    def generate(self, mask_context: MaskContext) -> "Mask":
         cont_rect = cv2.findContours(
             image=mask_context.part.mask,
             mode=cv2.RETR_TREE,

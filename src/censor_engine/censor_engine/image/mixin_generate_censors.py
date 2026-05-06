@@ -10,7 +10,7 @@ from censor_engine.libs.registries import EffectRegistry
 from censor_engine.models.enums import EffectType
 from censor_engine.models.structs import Censor, Mixin
 from censor_engine.models.structs.contours import Contour
-from censor_engine.typing import Image, TypeMask
+from censor_engine.typing import Image, Mask
 
 if TYPE_CHECKING:
     from censor_engine.models.lib_models.effects.base import Effect
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 effects = EffectRegistry.get_all()
 
 
-def get_contours_from_mask(mask: TypeMask) -> list[Contour]:
+def get_contours_from_mask(mask: Mask) -> list[Contour]:
     """
     This is a helper function to normalise the contours from a mask and
     provide them as a Contour object.
@@ -44,7 +44,7 @@ def contours_to_mask(
     contours: list[Contour],
     image_mask: tuple[int, int],
     fill_value: int = 255,
-) -> TypeMask:
+) -> Mask:
     """
     This helper function converts the contours into a Mask.
 
@@ -68,7 +68,7 @@ class MixinGenerateCensors(Mixin):
     def _handle_reverse_censor(
         self,
         reverse_censors: list[Censor],
-        inverse_empty_mask: TypeMask,
+        inverse_empty_mask: Mask,
         parts: list[Part],
         file_image: Image,
     ) -> Image:

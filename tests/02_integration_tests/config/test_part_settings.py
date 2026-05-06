@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from censor_engine.libs.detectors.bbox_detectors.nude_net import (
+from censor_engine.libs.detectors.detector_interfaces.nude_net import (
     NudeNetDetector,
 )
 

@@ -1,20 +1,30 @@
 from abc import ABC, abstractmethod
-from enum import Enum, auto
 
+import numpy as np
 from pydantic import BaseModel
 
+from censor_engine.models.lib_models.detectors.ai_models import AIModel
 from censor_engine.typing import Image
 
 
-class ModelType(Enum):
-    bbox = auto()
-    segment = auto()
-    information = auto()
-    depth = auto()
-
-
 class DetectedPartSchema(BaseModel):
+    model_config = {
+        "arbitrary_types_allowed": True,
+        "json_encoders": {
+            np.ndarray: lambda v: v.tolist(),
+        },
+    }
+
+    # Internal
     part_id: int = 0
+
+    # Meta
+    label: str | None = None
+    score: float | None = None
+
+    # Data Used for Information
+    bbox: np.ndarray | None = None  # XYXY
+    masks: list[np.ndarray] | None = None
 
     def set_part_id(self, number: int) -> None:
         self.part_id = number
@@ -37,19 +47,27 @@ class Detector(ABC):
 
     model_name: str
     model_classifiers: tuple[str, ...]
-    model_type: ModelType
+    model_requirements: list | None  # Detectors
+
+    model_object: AIModel
+    model_loaded: bool = False
 
     @abstractmethod
     def detect_image(
         self,
-        file_images_or_path: str,
+        image: Image,
     ) -> list:
         raise NotImplementedError
 
-    @abstractmethod
-    def detect_batch(
-        self,
-        file_images_or_paths: list[str] | list[Image],
-        batch_size: int,
-    ) -> dict[int, list]:
-        raise NotImplementedError
+    # @abstractmethod
+    # def detect_batch(
+    #     self,
+    #     images: list[Image],
+    #     batch_size: int,
+    # ) -> dict[int, list]:
+    #     raise NotImplementedError
+
+    def turn_on_model(self):
+        if not self.model_loaded:
+            self.model_object.initiate_model()
+            self.model_loaded = True

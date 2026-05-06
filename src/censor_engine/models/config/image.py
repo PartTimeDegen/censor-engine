@@ -27,17 +27,6 @@ class RenderingConfig(BaseModel):
         return v
 
 
-class AIConfig(BaseModel):
-    """
-    This is used for the AI model, just stuff to config it.
-
-    # TODO: ai_model_downscale_factor
-
-    """
-
-    ai_model_downscale_factor: int = 1
-
-
 class ReverseCensorConfig(BaseModel):
     """
     This is used for the reverse censor part of the code.

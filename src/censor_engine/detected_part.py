@@ -13,7 +13,7 @@ from censor_engine.models.lib_models.masks import Mask
 from censor_engine.models.structs.part_areas import PartArea
 
 if TYPE_CHECKING:
-    from censor_engine.typing import TypeMask
+    from censor_engine.typing import Mask
 
 
 @dataclass(slots=True)
@@ -22,8 +22,8 @@ class Part:
     part_name: str
     part_id: int
     score: float
-    relative_box: tuple[int, int, int, int]  # x, y, width, height
     config: Config
+    bbox: tuple[int, int, int, int]
 
     file_uuid: UUID
     image_mask: tuple[int, int, ...]  # type: ignore
@@ -38,6 +38,9 @@ class Part:
     persistence_group_id: int | None = None
 
     # # Generated
+    relative_box: tuple[int, int, int, int] = field(
+        init=False
+    )  # x, y, width, height
     part_area: PartArea = field(init=False)
     minimum_score: float = field(init=False, default=0.0)
     merge_group: list[str] = field(default_factory=list, init=False)
@@ -48,9 +51,9 @@ class Part:
     protected_mask_object: Mask = field(default_factory=Mask, init=False)
 
     # # Masks
-    mask: "TypeMask" = field(init=False)
-    original_mask: "TypeMask" = field(init=False)
-    base_masks: list["TypeMask"] = field(default_factory=list, init=False)
+    mask: "Mask" = field(init=False)
+    original_mask: "Mask" = field(init=False)
+    base_masks: list["Mask"] = field(default_factory=list, init=False)
 
     def __post_init__(self):
         # Connect Settings
@@ -59,6 +62,10 @@ class Part:
         ]
 
         # Derived
+        # # Relative Box Size
+        x1, y1, x2, y2 = self.bbox
+        self.relative_box = (x1, y1, x2 - x1, y2 - y1)
+
         # # Minimum score
         if min_score := self.part_settings.minimum_score:
             self.minimum_score = min_score
@@ -108,7 +115,7 @@ class Part:
         merge_method = self.config.rendering_settings.merge_method
         is_block_merge = merge_method == MergeMethod.ALL
         if is_block_merge:
-            self.merge_group = self.config.censor_settings.enabled_parts
+            self.merge_group = self.config.ai_settings.detections_enabled
 
     def __str__(self) -> str:
         return (
@@ -176,14 +183,14 @@ class Part:
 
         self.is_merged = True
 
-    def add(self, mask: "TypeMask") -> None:
+    def add(self, mask: "Mask") -> None:
         self.mask = cv2.add(self.mask, mask)
 
-    def subtract(self, mask: "TypeMask") -> None:
+    def subtract(self, mask: "Mask") -> None:
         self.mask = cv2.subtract(self.mask, mask)
 
     @staticmethod
-    def normalise_mask(mask: "TypeMask") -> "TypeMask":
+    def normalise_mask(mask: "Mask") -> "Mask":
         if len(mask.shape) > 2:  # noqa: PLR2004
             mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
 
@@ -209,7 +216,7 @@ class Part:
         image_mask: tuple[int, int, int],
         *,
         inverse: bool = False,
-    ) -> "TypeMask":
+    ) -> "Mask":
         """
         This function acts as a factory for empty masks, due to 1) bad copying
         issues, and 2) because it's not a one-liner.

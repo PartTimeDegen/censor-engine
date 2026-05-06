@@ -8,12 +8,12 @@ from censor_engine.libs.registries import MaskRegistry
 from censor_engine.models.lib_models.masks import BlanketMask
 
 if TYPE_CHECKING:
-    from censor_engine.typing import TypeMask
+    from censor_engine.typing import Mask
 
 
 @MaskRegistry.register()
 class CoverLeft(BlanketMask):
-    def generate(self, mask_context: MaskContext) -> "TypeMask":
+    def generate(self, mask_context: MaskContext) -> "Mask":
         cont_rect = cv2.findContours(
             image=mask_context.part.mask,
             mode=cv2.RETR_TREE,
@@ -49,7 +49,7 @@ class CoverLeft(BlanketMask):
 
 @MaskRegistry.register()
 class CoverRight(BlanketMask):
-    def generate(self, mask_context: MaskContext) -> "TypeMask":
+    def generate(self, mask_context: MaskContext) -> "Mask":
         cont_rect = cv2.findContours(
             image=mask_context.part.mask,
             mode=cv2.RETR_TREE,
@@ -85,7 +85,7 @@ class CoverRight(BlanketMask):
 
 @MaskRegistry.register()
 class CoverBottom(BlanketMask):
-    def generate(self, mask_context: MaskContext) -> "TypeMask":
+    def generate(self, mask_context: MaskContext) -> "Mask":
         cont_rect = cv2.findContours(
             image=mask_context.part.mask,
             mode=cv2.RETR_TREE,
@@ -121,7 +121,7 @@ class CoverBottom(BlanketMask):
 
 @MaskRegistry.register()
 class CoverTop(BlanketMask):
-    def generate(self, mask_context: MaskContext) -> "TypeMask":
+    def generate(self, mask_context: MaskContext) -> "Mask":
         cont_rect = cv2.findContours(
             image=mask_context.part.mask,
             mode=cv2.RETR_TREE,

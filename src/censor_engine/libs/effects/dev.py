@@ -4,7 +4,7 @@ import cv2
 
 from censor_engine.api.effects import EffectContext
 from censor_engine.detected_part import Part
-from censor_engine.libs.detectors.bbox_detectors.nude_net import (
+from censor_engine.libs.detectors.detector_interfaces.nude_net import (
     NudeNetDetector,
 )
 from censor_engine.libs.registries import EffectRegistry
@@ -15,7 +15,7 @@ from censor_engine.models.lib_models.effects.sub_variants import (
 )
 from censor_engine.models.structs.colours import Colour, _colours
 from censor_engine.models.structs.contours import Contour
-from censor_engine.typing import Image, ProcessedImage, TypeMask
+from censor_engine.typing import Image, ProcessedImage, Mask
 
 # ruff: noqa
 
@@ -28,7 +28,7 @@ colour_dict = dict(
 )
 
 
-def _get_contours_from_mask(mask: TypeMask) -> list[Contour]:
+def _get_contours_from_mask(mask: Mask) -> list[Contour]:
     contours, hierarchy = cv2.findContours(
         mask,
         cv2.RETR_TREE,

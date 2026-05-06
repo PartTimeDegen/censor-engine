@@ -8,7 +8,7 @@ from censor_engine.censor_engine.tools.config_previewer.base import (
 )
 from censor_engine.models.caching.base import Cache
 from censor_engine.models.config import Config
-from censor_engine.models.lib_models.detectors.api import (
+from censor_engine.models.lib_models.detectors.core_structs import (
     DetectedPartSchema,
 )
 from censor_engine.models.structs import IndexedFile, Mixin
@@ -105,7 +105,7 @@ class MixinImagePipeline(Mixin):
                 )
             else:
                 config_info = get_config_preview(
-                    config.censor_settings.enabled_parts
+                    config.ai_settings.detections_enabled
                 )
 
                 file_image = config_info["preview"]

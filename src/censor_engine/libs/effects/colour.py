@@ -12,7 +12,7 @@ from censor_engine.typing import ProcessedImage
 @EffectRegistry.register()
 class Greyscale(ColourEffect):
     def apply_effect(self, effect_context: EffectContext) -> ProcessedImage:  # type: ignore
-        # Get TypeMask
+        # Get Mask
         mask_image = cv2.cvtColor(
             effect_context.image,
             cv2.COLOR_BGR2GRAY,

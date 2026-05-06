@@ -1,20 +1,16 @@
 import statistics
 
-from censor_engine.libs.detectors import (
-    enabled_detectors,
-    enabled_determiners,
-)
 from censor_engine.libs.registries import EffectRegistry, MaskRegistry
 from censor_engine.models.structs import Mixin
 
 
 class MixinReporting(Mixin):
     # Reporting
-    def get_detectors(self) -> list[str]:
-        return [detector.model_name for detector in enabled_detectors]
+    # def get_detectors(self) -> list[str]:
+    #     return [detector.model_name for detector in enabled_detectors]
 
-    def get_determiners(self) -> list[str]:
-        return [detector.model_name for detector in enabled_determiners]
+    # def get_determiners(self) -> list[str]:
+    #     return [detector.model_name for detector in enabled_determiners]
 
     def get_masks(self) -> list[str]:
         return list(MaskRegistry.get_all().keys())

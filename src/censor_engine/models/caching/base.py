@@ -89,21 +89,21 @@ class Cache:
             with self._image_cache.open("w") as f:
                 f.write(output.model_dump_json())
 
-    def get_frame(self, frame: int | None) -> AIOutputData:
+    def get_frame(self, frame: int | None, model_name: str) -> AIOutputData:
         if self.is_video:
             if frame is None:
                 msg = "Missing Frame Number!"
                 raise TypeError(msg)
-            return self._video_cache.get_frame_data(frame)
+            return self._video_cache.get_frame_data(frame, model_name)
         with self._image_cache.open() as f:
             return AIOutputData.model_validate_json(f.read())
 
-    def check_for_frame(self, frame: int | None) -> bool:
+    def check_for_frame(self, frame: int | None, model_name: str) -> bool:
         if self.is_video:
             if frame is None:
                 msg = "Missing Frame Number!"
                 raise TypeError(msg)
-            return self._video_cache.frame_exists(frame)
+            return self._video_cache.frame_exists(frame, model_name)
         return self._image_cache.exists()
 
     def close(self):

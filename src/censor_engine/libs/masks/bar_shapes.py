@@ -8,7 +8,7 @@ from censor_engine.api.masks import MaskContext
 from censor_engine.models.lib_models.masks import BarMask
 
 if TYPE_CHECKING:
-    from censor_engine.typing import TypeMask
+    from censor_engine.typing import Mask
 
 from censor_engine.libs.registries import MaskRegistry
 
@@ -43,7 +43,7 @@ class Bar(BarMask, _BarInfo):
         force_vertical: bool = False,
         long_direction: bool = False,
         tight_bar: bool = False,
-    ) -> "TypeMask":
+    ) -> "Mask":
         if not mask_context.part.is_merged:
             force_horizontal = True
         # Find Contours via Joint Ellipse
@@ -139,7 +139,7 @@ class HorizontalBar(Bar):
         force_vertical: bool = False,
         long_direction: bool = False,
         tight_bar: bool = False,
-    ) -> "TypeMask":
+    ) -> "Mask":
         return super().generate(mask_context, force_horizontal=True)
 
 
@@ -153,7 +153,7 @@ class VerticalBar(Bar):
         force_vertical: bool = False,
         long_direction: bool = False,
         tight_bar: bool = False,
-    ) -> "TypeMask":
+    ) -> "Mask":
         return super().generate(mask_context, force_vertical=True)
 
 
@@ -167,7 +167,7 @@ class LongBar(Bar):
         force_vertical: bool = False,
         long_direction: bool = False,
         tight_bar: bool = False,
-    ) -> "TypeMask":
+    ) -> "Mask":
         return super().generate(mask_context, long_direction=True)
 
 
@@ -183,5 +183,5 @@ class EllipseBasedBar(Bar):
         force_vertical: bool = False,
         long_direction: bool = False,
         tight_bar: bool = False,
-    ) -> "TypeMask":
+    ) -> "Mask":
         return super().generate(mask_context, tight_bar=True)

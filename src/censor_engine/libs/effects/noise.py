@@ -100,7 +100,7 @@ class CentricChromaticAberration(NoiseEffect):
                 effect_context.image, (ksize, ksize), 0
             )
 
-        # Step 5: TypeMask the result onto the original image
+        # Step 5: Mask the result onto the original image
         return effect_context.image
 
 

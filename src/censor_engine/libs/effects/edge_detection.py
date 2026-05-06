@@ -27,7 +27,7 @@ class EdgeDetectionCanny(EdgeDetectionEffect):
             -   https://en.wikipedia.org/wiki/Canny_edge_detector
 
         :param Image image: Original Image, used to apply the effects.
-        :param TypeMask mask: TypeMask of the applied zone.
+        :param Mask mask: Mask of the applied zone.
         :param list[Contour] contours: List of Contours (Sometimes used)
         :param Part part: Part of the mask (Sometimes used)
         :param tuple[int, int] | None tolerances: Tolerances of the lines for
@@ -44,7 +44,7 @@ class EdgeDetectionCanny(EdgeDetectionEffect):
         # Prepare Image to get better Results
         mask_image = self.prepare_mask(effect_context.image)
 
-        # Get TypeMask
+        # Get Mask
         mask_image = cv2.Canny(mask_image, threshold, threshold)
 
         # Clean Image
@@ -68,7 +68,7 @@ class EdgeDetectionSobel(EdgeDetectionEffect):
             -   https://en.wikipedia.org/wiki/Sobel_operator
 
         :param Image image: Original Image, used to apply the effects.
-        :param TypeMask mask: TypeMask of the applied zone.
+        :param Mask mask: Mask of the applied zone.
         :param list[Contour] contours: List of Contours (Sometimes used)
         :param Part part: Part of the mask (Sometimes used)
         :param tuple[int, int] | None tolerances: Tolerances of the lines for
@@ -85,7 +85,7 @@ class EdgeDetectionSobel(EdgeDetectionEffect):
         # Prepare Image to get better Results
         mask_image = self.prepare_mask(effect_context.image)
 
-        # Get TypeMask
+        # Get Mask
         mask_image = cv2.Sobel(mask_image, cv2.CV_64F, 1, 1, ksize=kernel_size)
 
         # Clean Image
@@ -109,7 +109,7 @@ class EdgeDetectionScharr(EdgeDetectionEffect):
             -   https://en.wikipedia.org/wiki/Sobel_operator
 
         :param Image image: Original Image, used to apply the effects.
-        :param TypeMask mask: TypeMask of the applied zone.
+        :param Mask mask: Mask of the applied zone.
         :param list[Contour] contours: List of Contours (Sometimes used)
         :param Part part: Part of the mask (Sometimes used)
         :param tuple[int, int] | None tolerances: Tolerances of the lines for
@@ -125,7 +125,7 @@ class EdgeDetectionScharr(EdgeDetectionEffect):
         # Prepare Image to get better Results
         mask_image = self.prepare_mask(effect_context.image)
 
-        # Get TypeMask
+        # Get Mask
         sobelx = cv2.Sobel(mask_image, cv2.CV_64F, 1, 0, ksize=kernel_size)
         sobely = cv2.Sobel(mask_image, cv2.CV_64F, 0, 1, ksize=kernel_size)
         mask_image = cv2.magnitude(sobelx, sobely)
@@ -152,7 +152,7 @@ class EdgeDetectionLapacian(EdgeDetectionEffect):
             -   https://en.wikipedia.org/wiki/Sobel_operator
 
         :param Image image: Original Image, used to apply the effects.
-        :param TypeMask mask: TypeMask of the applied zone.
+        :param Mask mask: Mask of the applied zone.
         :param list[Contour] contours: List of Contours (Sometimes used)
         :param Part part: Part of the mask (Sometimes used)
         :param tuple[int, int] | None tolerances: Tolerances of the lines for
@@ -168,7 +168,7 @@ class EdgeDetectionLapacian(EdgeDetectionEffect):
         # Prepare Image to get better Results
         mask_image = self.prepare_mask(effect_context.image)
 
-        # Get TypeMask
+        # Get Mask
         mask_image = cv2.Laplacian(mask_image, cv2.CV_64F, ksize=kernel_size)
 
         # Clean Image
@@ -258,7 +258,7 @@ class EdgeDetectionRoberts(EdgeDetectionEffect):
         # Prepare Image to get better Results
         mask_image = self.prepare_mask(effect_context.image)
 
-        # Get TypeMask
+        # Get Mask
         mask_image = roberts(mask_image)
 
         # Clean Image
@@ -307,7 +307,7 @@ class EdgeDetectionPrewitt(EdgeDetectionEffect):
         # Prepare Image to get better Results
         mask_image = self.prepare_mask(effect_context.image)
 
-        # Get TypeMask
+        # Get Mask
         mask_image = prewitt(mask_image)
 
         # Clean Image

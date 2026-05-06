@@ -5,13 +5,14 @@ import yaml
 from pydantic import BaseModel
 
 from censor_engine.libs.configs import get_config_path
-from censor_engine.libs.detectors.bbox_detectors.nude_net import (
+from censor_engine.libs.detectors.detector_interfaces.nude_net import (
     NudeNetDetector,
 )
 
+from .ai_model import AIConfig
 from .development import DevelopmentConfig
 from .file import FileConfig
-from .image import AIConfig, RenderingConfig, ReverseCensorConfig
+from .image import RenderingConfig, ReverseCensorConfig
 from .part import (
     MergingConfig,
     PartInformationConfig,
@@ -54,7 +55,7 @@ class Config(BaseModel):
         censor_settings = config_data.get("censor_settings", {})
 
         # Censor Part Information
-        enabled_parts = censor_settings.get("enabled_parts", [])
+        detections_enabled = ai_settings.get("detections_enabled", [])
         default_part_settings = censor_settings.get(
             "default_part_settings", {}
         )
@@ -64,16 +65,16 @@ class Config(BaseModel):
         merge_settings = censor_settings.get("merge_settings", {})
 
         # Handle "all" shortcut
-        if isinstance(enabled_parts, str) and enabled_parts == "all":
-            enabled_parts = list(NudeNetDetector.model_classifiers)
-        elif isinstance(enabled_parts, str):
-            enabled_parts = [enabled_parts]
+        if isinstance(detections_enabled, str) and detections_enabled == "all":
+            detections_enabled = list(NudeNetDetector.model_classifiers)
+        elif isinstance(detections_enabled, str):
+            detections_enabled = [detections_enabled]
 
         # Handle Part Data
         parts_settings: dict[str, PartSettingsConfig] = {}
         default_settings_object = PartSettingsConfig(**default_part_settings)
 
-        for part_name in enabled_parts:
+        for part_name in detections_enabled:
             part_data = censor_settings.get(part_name, {})
 
             if (
@@ -103,7 +104,6 @@ class Config(BaseModel):
             "ai_settings": AIConfig(**ai_settings),
             "default_censor_settings": default_settings_object,
             "censor_settings": PartInformationConfig(
-                enabled_parts=enabled_parts,
                 parts_settings=parts_settings,
                 merge_settings=MergingConfig(**merge_settings),
             ),
@@ -148,6 +148,6 @@ class Config(BaseModel):
 
     def _test_recalculate_missing_part_settings(self) -> None:
         existing_parts = self.censor_settings.parts_settings
-        for part_name in self.censor_settings.enabled_parts:
+        for part_name in self.ai_settings.detections_enabled:
             if not existing_parts.get(part_name):
                 existing_parts[part_name] = self.default_censor_settings

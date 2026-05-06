@@ -6,14 +6,14 @@ import cv2
 from censor_engine.constant import DIM_COLOUR, DIM_GREY
 from censor_engine.detected_part import Part
 from censor_engine.models.structs.contours import Contour
-from censor_engine.typing import Image, TypeMask
+from censor_engine.typing import Image, Mask
 
 
 @dataclass(slots=True)
 class EffectContext:
     # Tools
     image: Image
-    mask: TypeMask
+    mask: Mask
     contours: list[Contour]
     part: Part | None
     part_list: list[Part] | None = None

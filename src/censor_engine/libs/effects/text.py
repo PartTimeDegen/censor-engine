@@ -170,7 +170,7 @@ class DevText(TextEffect):
             msg = f"Trying to use unavailable font! {fonts}"
             raise ValueError(msg)
 
-        # Get TypeMask Coords
+        # Get Mask Coords
         rel_box = effect_context.contours[0].as_bounding_box()
         mask_coords = self._get_middle_coords(rel_box)
 

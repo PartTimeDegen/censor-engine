@@ -12,7 +12,7 @@ from censor_engine import CensorEngine
 from censor_engine.censor_engine.tools.config_previewer.example_image import (
     ImageGenerator,
 )
-from censor_engine.models.lib_models.detectors.api import (
+from censor_engine.models.lib_models.detectors.core_structs import (
     DetectedPartSchema,
 )
 

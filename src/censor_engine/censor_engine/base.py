@@ -4,13 +4,14 @@ from typing import Any
 
 import __main__
 from censor_engine.models.config import Config
-from censor_engine.models.lib_models.detectors.api import (
+from censor_engine.models.lib_models.detectors.core_structs import (
     DetectedPartSchema,
 )
 from censor_engine.paths import PathManager
 from censor_engine.typing import Image
 
 from .mixin_arguments import MixinArguments
+from .mixin_model_management import MixinModelManagement
 from .mixin_pipeline_image import MixinImagePipeline
 from .mixin_pipeline_video import MixinVideoPipeline
 from .mixin_reporting import MixinReporting
@@ -25,6 +26,7 @@ class CensorEngine(
     MixinVideoPipeline,
     MixinReporting,
     MixinArguments,
+    MixinModelManagement,
     MixinUtils,
 ):
     """
@@ -136,6 +138,9 @@ class CensorEngine(
 
         :return list[Image]: List of censored images.
         """
+        # Enable AI Models
+        self._activate_used_models(self._config)
+
         # Find Files
         args: dict[str, Any] = {
             "main_files_path": self.base_folder,

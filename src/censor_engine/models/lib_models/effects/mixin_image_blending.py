@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 
 from censor_engine.models.structs.meta_structs import Mixin
-from censor_engine.typing import Image, TypeMask
+from censor_engine.typing import Image, Mask
 
 
 class MixinImageBlending(Mixin):
@@ -12,7 +12,7 @@ class MixinImageBlending(Mixin):
         self,
         image: Image,
         image_with_effect: Image,
-        mask: TypeMask,
+        mask: Mask,
         fade_width: int,
         gradient_mode: Literal["linear", "gaussian"] = "linear",
         mask_thickness: int = -1,  # TODO: Add
@@ -48,7 +48,7 @@ class MixinImageBlending(Mixin):
         self,
         image: Image,
         image_with_effect: Image,
-        mask: TypeMask,
+        mask: Mask,
     ) -> Image:
         mask_bool = mask[:, :, 0] > 0
         return np.where(mask_bool[..., None], image_with_effect, image)

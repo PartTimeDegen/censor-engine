@@ -5,7 +5,7 @@ import numpy as np
 
 from censor_engine.constant import DIM_COLOUR
 from censor_engine.models.structs.colours import Colour
-from censor_engine.typing import Image, TypeMask
+from censor_engine.typing import Image, Mask
 
 
 @dataclass
@@ -25,7 +25,7 @@ class Contour:
         self,
         image_mask: tuple[int, int],
         mask_thickness: int = -1,
-    ) -> TypeMask:
+    ) -> Mask:
         mask = np.zeros(image_mask, dtype=np.uint8)
         cv2.drawContours(
             mask,
@@ -38,11 +38,11 @@ class Contour:
 
     def draw_contour(
         self,
-        image: Image | TypeMask,
+        image: Image | Mask,
         thickness: int,
         linetype: int,
         colour: Colour | None = None,
-    ) -> TypeMask:
+    ) -> Mask:
         if not colour:
             colour = Colour()
 

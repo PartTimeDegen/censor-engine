@@ -8,12 +8,13 @@ from censor_engine.censor_engine.tools.debugger import (
 )
 from censor_engine.censor_engine.tools.dev_tools import DevTools
 from censor_engine.detected_part import Part
-from censor_engine.libs.detectors import enabled_detectors
+from censor_engine.libs.registries import DetectorRegistry
 from censor_engine.models.caching import Cache
 from censor_engine.models.caching.caching_schemas import AIOutputData
 from censor_engine.models.config import Config
-from censor_engine.models.lib_models.detectors.api import (
+from censor_engine.models.lib_models.detectors.core_structs import (
     DetectedPartSchema,
+    Detector,
 )
 from censor_engine.paths import PathManager
 from censor_engine.typing import Image
@@ -102,7 +103,6 @@ class ImageProcessor(
             self.__detect_parts()
 
     # Post Init Helper Functions
-
     def __detect_parts(self) -> None:
         """
         This function detects the parts using the detector dataclass.
@@ -112,9 +112,26 @@ class ImageProcessor(
         using the GPU (or CPU), however it's still a minor improvement.
 
         """
-        if self.cache and self.cache.check_for_frame(self.frame_counter):
-            all_parts = self.cache.get_frame(self.frame_counter).output_data
+        # FIXME The stuff for making multiple detectors needs to be properly handled and also the info
+        # For Video
+        if self.cache and self.cache.check_for_frame(
+            self.frame_counter, "NudeNet"
+        ):
+            all_parts = self.cache.get_frame(
+                self.frame_counter, "NudeNet"
+            ).output_data  # FIXME
+
+        # Run Executor
         else:
+            # Enable and Initiate
+            full_detectors = list(DetectorRegistry.get_all().values())
+            enabled_detectors: list[Detector] = [
+                detector()
+                for detector in full_detectors  # type: ignore
+                if detector.model_name == "NudeNet"  # FIXME
+            ]
+            [detector.turn_on_model() for detector in enabled_detectors]
+
             with ThreadPoolExecutor() as executor:
                 detected_parts = list(
                     executor.map(
@@ -131,14 +148,17 @@ class ImageProcessor(
                 self.cache.save_frame(self.frame_counter, output)
 
         # Sort and Label ID Based on Position
-        all_parts.sort(
-            key=lambda part: (part.relative_box[1], part.relative_box[0]),
+        bbox_parts = [
+            part for part in all_parts if part.bbox is not None
+        ]  # FIXME
+        bbox_parts.sort(
+            key=lambda part: (part.bbox[1], part.bbox[0]),  # type: ignore # Already checked
         )
 
-        for index, part in enumerate(all_parts, start=1):
+        for index, part in enumerate(bbox_parts, start=1):
             part.set_part_id(index)
 
-        self._detected_parts = all_parts
+        self._detected_parts = bbox_parts
 
     # Dev Tools
     def _decompile_masks(

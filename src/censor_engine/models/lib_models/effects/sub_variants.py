@@ -3,7 +3,7 @@ import numpy as np
 
 from censor_engine.models.enums import EffectType
 from censor_engine.models.structs.colours import Colour
-from censor_engine.typing import Image, TypeMask
+from censor_engine.typing import Image, Mask
 
 from .base import Effect
 
@@ -81,7 +81,7 @@ class OverlayEffect(Effect):
     def _apply_mask_as_overlay(
         self,
         image: Image,
-        mask: TypeMask,
+        mask: Mask,
         colour: Colour,
         alpha: float,
     ) -> Image:

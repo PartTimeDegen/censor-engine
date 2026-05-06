@@ -4,7 +4,7 @@ from censor_engine.api.masks import MaskContext
 from censor_engine.detected_part import Part
 from censor_engine.models.config import Config
 from censor_engine.models.enums import MaskType
-from censor_engine.models.lib_models.detectors.api import (
+from censor_engine.models.lib_models.detectors.core_structs import (
     DetectedPartSchema,
 )
 from censor_engine.models.structs import Mixin
@@ -64,14 +64,14 @@ class MixinGenerateParts(Mixin):
                 class method
             :return Optional[Part]: A Part object (or None)
             """
-            if detect_part.label not in config.censor_settings.enabled_parts:
+            if detect_part.label not in config.ai_settings.detections_enabled:
                 return None
 
             return Part(
                 part_name=detect_part.label,
                 part_id=detect_part.part_id,
                 score=detect_part.score,
-                relative_box=detect_part.relative_box,
+                bbox=detect_part.bbox,
                 config=config,
                 file_uuid=file_uuid,
                 image_mask=mask,

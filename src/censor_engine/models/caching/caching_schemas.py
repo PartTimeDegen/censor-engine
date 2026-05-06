@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from censor_engine.models.lib_models.detectors.api import (
+from censor_engine.models.lib_models.detectors.core_structs import (
     DetectedPartSchema,
 )
 

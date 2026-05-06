@@ -4,7 +4,7 @@ from censor_engine.api.masks import MaskContext
 from censor_engine.models.enums import MaskType
 
 if TYPE_CHECKING:
-    from censor_engine.typing import TypeMask
+    from censor_engine.typing import Mask
 
 
 class Mask:
@@ -21,7 +21,7 @@ class Mask:
     def generate(
         self,
         mask_context: MaskContext,
-    ) -> "TypeMask":
+    ) -> "Mask":
         raise NotImplementedError
 
 

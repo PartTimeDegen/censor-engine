@@ -261,20 +261,6 @@ class PartInformationConfig(BaseModel):
 
     """
 
-    enabled_parts: list[str] = Field(
-        default_factory=list,
-        description="List of enabled parts",
-        examples=[
-            "all",  # TODO: Account for this, it's in the code just not here
-            ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"],
-            [
-                "FEMALE_BREAST_EXPOSED",
-                "FEMALE_BREAST_COVERED",
-                "FEMALE_GENITALIA_EXPOSED",
-                "FEMALE_GENITALIA_COVERED",
-            ],
-        ],
-    )
     parts_settings: dict[str, PartSettingsConfig] = Field(
         default_factory=dict, description="Settings per part"
     )
