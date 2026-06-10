@@ -18,4 +18,4 @@ EmptyMask = Annotated[NDArray[np.bool_], ("H", "W")]
 OpenCVMask = Annotated[NDArray[np.uint32], ("H", "W")]
 
 # Bounding box
-BBox = Annotated[NDArray[np.uint32], (4,)]  # [x1, y1, x2, y2]
+BBox = tuple[int, int, int, int]  # [x1, y1, x2, y2]

@@ -1,0 +1,163 @@
+from uuid import UUID
+
+from censor_engine.api.masks import MaskContext
+from censor_engine.detected_part import Part
+from censor_engine.models.config import Config
+from censor_engine.models.enums import MaskType
+from censor_engine.models.lib_models.detectors.schemas import (
+    DetectedPart,
+)
+from censor_engine.models.structs import Mixin
+
+
+class MixinGenerateParts(Mixin):
+    """
+    This mixin is used to handle the generation of the parts that are created
+    by the AI models.
+
+    """
+
+    def _create_parts(
+        self,
+        config: Config,
+        file_uuid: UUID,
+        detected_parts: list[DetectedPart],
+        mask: tuple[int, int, int],
+    ) -> list[Part]:
+        """
+        This function creates the list of Parts for CensorEngine to keep track
+        of. # TODO: Update me to account for split with _detection.
+
+        Method:
+            1)  It will create an empty list and also find the enabled parts
+            2)  It will then collect a list of all of the parts from all of the
+                enable AI models/detectors.
+            3)  It will then use the parts list to make `Part` objects from the
+                found parts, while also discarding any that aren't enabled.
+            4)  It then will filter for `None` values (by product of the
+                function)
+
+        Notes:
+            -   The reason a Map/Filter function is used is because this part
+                of the code takes a while to run, using map/filter reduces the
+                time massively, as ugly as it looks (I did try to learn it up
+                but there's only so much makeup you can put on a pig).
+
+            -   NudeNet (and I assume others) were found to be 98% of the time
+                taken for this to run, so it's slow but it's because of the
+                package/model itself, not the rest of the code. It's pretty
+                much optimised as much as it can be (even the Part creation in
+                total was only 0.005s, which is nothing)
+
+        """
+
+        # Map and Filter Parts for Missing Information
+        def add_parts(detect_part: DetectedPart) -> Part | None:
+            """
+            Generates the parts using the Part constructor. Also checks that
+            the part is in the enabled parts.
+
+            The structure could be improved but the reason I've used a map()
+            instead of list comprehensions is because it's faster.
+
+            :param DetectedPartSchema detect_part: Output from the Detector
+                class method
+            :return Optional[Part]: A Part object (or None)
+            """
+            if (detect_part.label is None) or (detect_part.label not in config.ai_settings.detections_enabled):
+                return None
+
+            return Part(
+                part_name=detect_part.label,
+                part_id=detect_part.part_id,
+                score=detect_part.score,
+                bbox=detect_part.bbox,
+                config=config,
+                file_uuid=file_uuid,
+                image_mask=mask,
+            )
+
+        return [
+            part for part in map(add_parts, detected_parts) if part is not None
+        ]
+
+    def _apply_and_generate_mask_masks(
+        self,
+        parts: list[Part],
+    ) -> list[Part]:
+        """
+        This method applies the mask masks.
+
+        The method will iterate through the parts and find it's determined
+        mask.
+
+        For more advanced masks like joints and bars, additional passes are
+        required.
+
+        For joints, the part will generate a basic mask of the base_objects
+        (normally ellipses), and that will be used as the input for the joint
+        mask. This is because joints are normally produced with either the
+        cv2 bounding box method or the the fit ellipse method, so it needs
+        something to fit for both of them.
+
+        Bars extend this by performing the requirements to get their joint
+        object (almost entirely a bounding box since it gives the best base),
+        then use that to cast lines to the edge of the image.
+
+        TODO: Move this to it's own mixin at some point.
+        TODO: Update this for custom mask patterns.
+
+        :param list[Part] parts: List of parts
+        :return list[Part]: List of parts with masks applied.
+        """
+        if len(parts) == 0:
+            return []
+
+        new_parts = []
+        empty_mask = Part.create_empty_mask(parts[0].image_mask)
+        for part in parts:
+            mask_context = MaskContext(part=part, empty_mask=empty_mask)
+
+            # Handle Universal Blanket Coverage
+            # TODO: This probably needs to be generalised
+            if part.mask_object.mask_type == MaskType.BLANKET:
+                part.mask = part.mask_object.generate(mask_context)
+                new_parts.append(part)
+                continue
+
+            # For Simple Masks
+            if not part.is_merged:
+                mask_single = Part.get_mask_class(
+                    part.mask_object.single_mask,
+                )
+                part.mask = mask_single.generate(mask_context)
+                new_parts.append(part)
+                continue
+
+            # For Advanced Masks
+            match part.mask_object.mask_type:
+                case MaskType.BASIC:
+                    pass
+                case MaskType.JOINT:
+                    part.mask = part.mask_object.generate(mask_context)
+
+                case MaskType.BAR:
+                    if not part.is_merged:
+                        # Make Basic Mask
+                        mask_single = Part.get_mask_class(
+                            part.mask_object.base_mask,
+                        )
+                        part.mask = mask_single.generate(mask_context)
+
+                    # Make Mask Joint for Bar Basis
+                    mask_joint = Part.get_mask_class(
+                        part.mask_object.joint_mask,
+                    )
+                    part.mask = mask_joint.generate(mask_context)
+
+                    # Generate Bar
+                    part.mask = part.mask_object.generate(mask_context)
+
+            new_parts.append(part)
+
+        return new_parts

@@ -33,6 +33,7 @@ class AIConfig(BaseModel):
                 "FEMALE_BREAST_COVERED",
                 "FEMALE_GENITALIA_EXPOSED",
                 "FEMALE_GENITALIA_COVERED",
+                "SKIN",
             ],
         ],
     )

@@ -1,7 +1,7 @@
 
 import cv2
 
-from censor_engine.censor_engine.tools.config_previewer.example_image import (
+from censor_engine.core_engine.tools.config_previewer.example_image import (
     ImageGenerator,
 )
 from tests.utils import (

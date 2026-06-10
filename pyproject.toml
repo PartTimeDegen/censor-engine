@@ -24,6 +24,7 @@ dependencies = [
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
+addopts = "--ignore tests/02_integration_tests --ignore tests/utils.py"
 
 [dependency-groups]
 dev = [

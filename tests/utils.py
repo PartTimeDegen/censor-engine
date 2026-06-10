@@ -7,14 +7,14 @@ from typing import Any
 import cv2
 import numpy as np
 import yaml
-
-from censor_engine import CensorEngine
-from censor_engine.censor_engine.tools.config_previewer.example_image import (
+from censor_engine.core_engine.tools.config_previewer.example_image import (
     ImageGenerator,
 )
-from censor_engine.models.lib_models.detectors.core_structs import (
-    DetectedPartSchema,
+from censor_engine.models.lib_models.detectors.schemas import (
+    DetectedPart,
 )
+
+from censor_engine import CensorEngine
 
 
 # Utils
@@ -168,7 +168,7 @@ def load_config_base_yaml(config: str = "basic/default.yml") -> Any:  # noqa: AN
 class ImageFixtureData:
     path: Path
     generator: ImageGenerator
-    parts: list[DetectedPartSchema]
+    parts: list[DetectedPart]
 
     def update_parts(self, list_parts_enabled: list[str] | str) -> None:
         if isinstance(list_parts_enabled, str):

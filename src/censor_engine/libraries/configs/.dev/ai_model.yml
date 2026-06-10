@@ -1,0 +1,30 @@
+video_settings:
+  frame_difference_threshold: 0.02
+  part_frame_hold_seconds: 0.5
+  persistence_groups:
+    - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
+
+censor_settings:
+  merge_settings:
+    merge_groups:
+      - ["FEMALE_BREAST_EXPOSED", "FEMALE_BREAST_COVERED"]
+
+  default_part_settings:
+    censors:
+      [
+        {
+          "effect": "CentricChromaticAberration",
+          parameters: { "offset": 2, "blur": 5 },
+        },
+        { "effect": "Pixelate", parameters: { "factor": 10 } },
+      ]
+    mask: "JointEllipse" # "Ellipse" for pmv, haven't made merge range
+    margin: 0.2
+
+ai_settings:
+  detections_enabled:
+    - "FEMALE_BREAST_EXPOSED"
+    - "FEMALE_BREAST_COVERED"
+
+#   extras:
+#     clothes_segmentation: True

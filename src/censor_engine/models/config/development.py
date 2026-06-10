@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from censor_engine.censor_engine.tools.debugger import DebugLevels
+from censor_engine.core_engine.tools.debugger import DebugLevels
 
 
 class DevelopmentConfig(BaseModel):

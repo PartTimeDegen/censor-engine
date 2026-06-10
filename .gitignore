@@ -205,3 +205,5 @@ tools/models/640m.pt
 
 scripts/test_scripts/*
 !scripts/test_scripts/.gitkeep
+*.pt
+!tools/models/320n.pt

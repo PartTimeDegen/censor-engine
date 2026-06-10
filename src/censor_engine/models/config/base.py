@@ -5,9 +5,8 @@ import yaml
 from pydantic import BaseModel
 
 from censor_engine.libs.configs import get_config_path
-from censor_engine.libs.detectors.detector_interfaces.nude_net import (
-    NudeNetDetector,
-)
+from censor_engine.libs.detectors.nude_net import NudeNetModel
+
 
 from .ai_model import AIConfig
 from .development import DevelopmentConfig
@@ -66,7 +65,7 @@ class Config(BaseModel):
 
         # Handle "all" shortcut
         if isinstance(detections_enabled, str) and detections_enabled == "all":
-            detections_enabled = list(NudeNetDetector.model_classifiers)
+            detections_enabled = list(NudeNetModel.model_classifiers)
         elif isinstance(detections_enabled, str):
             detections_enabled = [detections_enabled]
 
