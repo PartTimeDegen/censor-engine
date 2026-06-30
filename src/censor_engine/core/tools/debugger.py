@@ -1,7 +1,7 @@
 from enum import IntEnum
 
 
-class DebugLevels(IntEnum):
+class DebugLevel(IntEnum):
     """
     This function determines the levels of debug that are active (stacks):
     -   NONE:

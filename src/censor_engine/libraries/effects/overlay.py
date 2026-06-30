@@ -1,11 +1,11 @@
 import cv2
 import numpy as np
 
+from censor_engine._typing import ProcessedImage
 from censor_engine.api.effects import EffectContext
 from censor_engine.libs.registries import EffectRegistry
 from censor_engine.models.lib_models.effects import OverlayEffect
-from censor_engine.models.structs.colours import Colour
-from censor_engine.typing import ProcessedImage
+from censor_engine.structs.colours import Colour
 
 
 @EffectRegistry.register()

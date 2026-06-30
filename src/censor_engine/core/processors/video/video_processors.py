@@ -6,7 +6,7 @@ from pathlib import Path
 
 import cv2
 
-from censor_engine.typing import Image
+from censor_engine._typing import Image
 
 TEMP_AUDIO_NAME = "temp_audio"
 TEMP_VIDEO_NAME = "temp_video"

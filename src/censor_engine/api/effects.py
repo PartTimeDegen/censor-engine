@@ -3,17 +3,17 @@ from typing import Literal
 
 import cv2
 
-from censor_engine.constant import DIM_COLOUR, DIM_GREY
-from censor_engine.detected_part import Part
-from censor_engine.models.structs.contours import Contour
-from censor_engine.typing import Image, Mask
+from censor_engine._common_constants import DIM_COLOUR, DIM_GREY
+from censor_engine._typing import Image, MaskImage
+from censor_engine.models.detected_part import Part
+from censor_engine.structs.contours import Contour
 
 
 @dataclass(slots=True)
 class EffectContext:
     # Tools
     image: Image
-    mask: Mask
+    mask: MaskImage
     contours: list[Contour]
     part: Part | None
     part_list: list[Part] | None = None

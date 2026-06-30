@@ -1,0 +1,14 @@
+{
+    "Windows": {
+        "download_url": "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip",
+        "binary_name": "ffmpeg.exe"
+    },
+    "Linux": {
+        "download_url": "https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz",
+        "binary_name": "ffmpeg"
+    },
+    "Darwin": {
+        "download_url": "https://evermeet.cx/ffmpeg/getrelease/zip",
+        "binary_name": "ffmpeg_mac"
+    }
+}

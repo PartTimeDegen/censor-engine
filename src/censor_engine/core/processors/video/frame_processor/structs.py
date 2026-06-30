@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from censor_engine.detected_part import Part
+from censor_engine.models.detected_part import Part
 
 
 @dataclass(slots=True)

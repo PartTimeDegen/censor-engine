@@ -3,19 +3,17 @@ from statistics import fmean
 import cv2
 
 from censor_engine.api.effects import EffectContext
-from censor_engine.detected_part import Part
-from censor_engine.libs.detectors.nude_net import (
-    NudeNetModel
-)
+from censor_engine.models.detected_part import Part
+from censor_engine.libs.detectors.nude_net import NudeNetModel
 from censor_engine.libs.registries import EffectRegistry
 from censor_engine.models.enums import MergeMethod
 from censor_engine.models.lib_models.effects import DevEffect
 from censor_engine.models.lib_models.effects.sub_variants import (
     EdgeDetectionEffect,
 )
-from censor_engine.models.structs.colours import Colour, _colours
-from censor_engine.models.structs.contours import Contour
-from censor_engine.typing import Image, ProcessedImage, Mask
+from censor_engine.structs.colours import Colour, _colours
+from censor_engine.structs.contours import Contour
+from censor_engine._typing import Image, ProcessedImage, MaskImage
 
 # ruff: noqa
 
@@ -28,7 +26,7 @@ colour_dict = dict(
 )
 
 
-def _get_contours_from_mask(mask: Mask) -> list[Contour]:
+def _get_contours_from_mask(mask: MaskImage) -> list[Contour]:
     contours, hierarchy = cv2.findContours(
         mask,
         cv2.RETR_TREE,

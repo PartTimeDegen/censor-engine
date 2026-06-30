@@ -207,3 +207,4 @@ scripts/test_scripts/*
 !scripts/test_scripts/.gitkeep
 *.pt
 !tools/models/320n.pt
+!src/censor_engine/models/**/*.json

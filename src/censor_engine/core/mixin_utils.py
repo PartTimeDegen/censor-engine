@@ -1,7 +1,7 @@
 from natsort import natsorted
 
-from censor_engine.models.structs import IndexedFile, Mixin
-from censor_engine.paths import PathManager
+from censor_engine.core.paths import PathManager
+from censor_engine.structs import IndexedFile, Mixin
 
 APPROVED_FORMATS_IMAGE = [".jpg", ".jpeg", ".png", ".webp"]
 APPROVED_FORMATS_VIDEO = [".mp4", ".webm", ".mov"]

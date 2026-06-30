@@ -1,0 +1,10 @@
+CURRENT_VERSION = 2
+
+
+# SETTING DEFAULTS
+# Default Part Settings
+DEFAULT_MASK = "Box"
+
+
+# Video
+DEFAULT_SIZE_DIFF_PERCENTAGE = 0.05

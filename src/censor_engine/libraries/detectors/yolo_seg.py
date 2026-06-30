@@ -3,12 +3,12 @@ import logging
 import torch
 from ultralytics import YOLO
 
+from censor_engine._typing import Image
 from censor_engine.libs.registries import AIModelRegistry
 from censor_engine.models.lib_models.detectors.ai_models import (
     AIModel,
     DetectedPart,
 )
-from censor_engine.typing import Image
 
 logging.getLogger("ultralytics").setLevel(logging.ERROR)
 

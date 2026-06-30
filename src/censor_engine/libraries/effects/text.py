@@ -4,11 +4,11 @@ from matplotlib import font_manager
 from PIL import Image as PImage
 from PIL import ImageDraw, ImageFont
 
+from censor_engine._typing import Image, ProcessedImage
 from censor_engine.api.effects import EffectContext
 from censor_engine.libs.registries import EffectRegistry
 from censor_engine.models.lib_models.effects import TextEffect
-from censor_engine.models.structs.colours import Colour
-from censor_engine.typing import Image, ProcessedImage
+from censor_engine.structs.colours import Colour
 
 
 @EffectRegistry.register()

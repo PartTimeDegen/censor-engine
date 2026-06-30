@@ -5,6 +5,7 @@ import numpy as np
 import torch
 from transformers import Sam2Model, Sam2Processor
 
+from censor_engine._typing import BBox, Image, MaskImage
 from censor_engine.libs.registries import AIModelRegistry
 from censor_engine.models.lib_models.detectors.ai_models import (
     AIModel,
@@ -12,7 +13,6 @@ from censor_engine.models.lib_models.detectors.ai_models import (
 from censor_engine.models.lib_models.detectors.schemas import (
     DetectedPart,
 )
-from censor_engine.typing import BBox, Image, Mask
 
 logging.getLogger("ultralytics").setLevel(logging.ERROR)
 
@@ -70,7 +70,7 @@ class SAMTwo(AIModel):
 
     def __get_safe_float(
         self,
-        x: Mask | float | list[float],
+        x: MaskImage | float | list[float],
     ) -> np.ndarray | float:
         if isinstance(x, list):
             x = np.array(x, dtype=np.float32)  # type: ignore
@@ -78,7 +78,7 @@ class SAMTwo(AIModel):
             return float(x.item()) if x.size == 1 else float(x.flat[0])
         return float(x)  # type: ignore
 
-    def __get_normalised_mask(self, output: Any, inputs: dict) -> Mask:  # noqa: ANN401
+    def __get_normalised_mask(self, output: Any, inputs: dict) -> MaskImage:  # noqa: ANN401
         # Convert Outputs to Masks
         masks = self.sam_processor.post_process_masks(
             output.pred_masks,
@@ -95,10 +95,10 @@ class SAMTwo(AIModel):
 
     def __handle_mask_logic(
         self,
-        masks: Mask,
+        masks: MaskImage,
         scores: list[float],
         image: Image,
-    ) -> tuple[Mask, float]:
+    ) -> tuple[MaskImage, float]:
         # Handle Empty Masks
         if masks.shape[0] == 0:
             h, w = image.shape[:2]
@@ -130,7 +130,7 @@ class SAMTwo(AIModel):
         self,
         image: Image,
         point: tuple[float, float],
-    ) -> tuple[Mask, float]:
+    ) -> tuple[MaskImage, float]:
 
         inputs = self.__setup_inputs(image=image, point=point)
 
@@ -145,7 +145,7 @@ class SAMTwo(AIModel):
 
     def __compute_mask_confidence(
         self,
-        full_mask: Mask,
+        full_mask: MaskImage,
         bbox: BBox,
         score: float,
     ) -> float:

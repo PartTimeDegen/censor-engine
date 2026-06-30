@@ -1,13 +1,13 @@
 from uuid import UUID
 
 from censor_engine.api.masks import MaskContext
-from censor_engine.detected_part import Part
 from censor_engine.models.config import Config
+from censor_engine.models.detected_part import Part
 from censor_engine.models.enums import MaskType
 from censor_engine.models.lib_models.detectors.schemas import (
     DetectedPart,
 )
-from censor_engine.models.structs import Mixin
+from censor_engine.structs import Mixin
 
 
 class MixinGenerateParts(Mixin):
@@ -64,7 +64,9 @@ class MixinGenerateParts(Mixin):
                 class method
             :return Optional[Part]: A Part object (or None)
             """
-            if (detect_part.label is None) or (detect_part.label not in config.ai_settings.detections_enabled):
+            if (detect_part.label is None) or (
+                detect_part.label not in config.ai_settings.detections_enabled
+            ):
                 return None
 
             return Part(

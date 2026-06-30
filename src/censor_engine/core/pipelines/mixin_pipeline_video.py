@@ -4,17 +4,17 @@ from pathlib import Path
 
 import progressbar
 
+from censor_engine._typing import Image
+from censor_engine.core.paths import PathManager
 from censor_engine.models.caching.utils import Cache
 from censor_engine.models.config import Config
 from censor_engine.models.lib_models.detectors.ai_models import AIModel
 from censor_engine.models.lib_models.detectors.schemas import (
     DetectedPart,
 )
-from censor_engine.models.structs import IndexedFile, Mixin
-from censor_engine.paths import PathManager
-from censor_engine.typing import Image
+from censor_engine.structs import IndexedFile, Mixin
 
-from ..tools.debugger import DebugLevels
+from ..tools.debugger import DebugLevel
 from ..tools.dev_tools import DevTools
 from ..tools.video_tools import VideoInfo
 from .mixin_pipeline_image import ImageProcessor
@@ -49,7 +49,7 @@ class MixinVideoPipeline(Mixin):
         main_files_path: str,
         indexed_files: list[IndexedFile],
         config: Config,
-        debug_level: DebugLevels,
+        debug_level: DebugLevel,
         function_get_index: Callable[[int, int], str],
         flags: dict[str, bool],
         path_manager: PathManager,
@@ -194,7 +194,7 @@ class MixinVideoPipeline(Mixin):
                 file_output: Image = ip.return_output()
 
                 # # Apply Debug Effects
-                if debug_level > DebugLevels.NONE:
+                if debug_level > DebugLevel.NONE:
                     video_info = VideoInfo(
                         frame,
                         frame_counter,

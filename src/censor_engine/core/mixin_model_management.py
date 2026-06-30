@@ -1,7 +1,7 @@
 from censor_engine.libs.registries import AIModelRegistry
 from censor_engine.models.config.base import Config
 from censor_engine.models.lib_models.detectors.ai_models import AIModel
-from censor_engine.models.structs import Mixin
+from censor_engine.structs import Mixin
 
 
 class MixinModelManagement(Mixin):

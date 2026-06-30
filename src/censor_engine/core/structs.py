@@ -1,7 +1,7 @@
-
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from censor_engine._typing import Image
 from censor_engine.core_engine.cli.structs import (
     EngineFlags,
     ParsedArguments,
@@ -9,8 +9,7 @@ from censor_engine.core_engine.cli.structs import (
 from censor_engine.core_engine.tools.debugger import DebugLevels
 from censor_engine.models.config import Config
 from censor_engine.models.lib_models.detectors.ai_models import AIModel
-from censor_engine.paths.base import PathManager
-from censor_engine.typing import Image
+from censor_engine.paths._OLD.base import PathManager
 
 
 @dataclass

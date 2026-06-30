@@ -10,7 +10,7 @@
 
 
 # @pytest.fixture
-# def dummy_input_image_data(tmp_path) -> Generator[ImageFixtureData]:  # noqa: ANN001, D103
+# def dummy_input_image_data(tmp_path) -> Generator[ImageFixtureData]:
 #     input_path = tmp_path / "input.jpg"
 
 #     image_generator = ImageGenerator()

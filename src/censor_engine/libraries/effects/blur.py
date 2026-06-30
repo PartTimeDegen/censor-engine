@@ -1,10 +1,10 @@
 import cv2
 import numpy as np
 
+from censor_engine._typing import Image, ProcessedImage
 from censor_engine.api.effects import EffectContext
 from censor_engine.libs.registries import EffectRegistry
 from censor_engine.models.lib_models.effects import BlurEffect
-from censor_engine.typing import Image, ProcessedImage
 
 
 @EffectRegistry.register()

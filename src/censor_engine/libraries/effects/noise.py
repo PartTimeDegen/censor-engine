@@ -3,10 +3,10 @@ import math
 import cv2
 import numpy as np
 
+from censor_engine._typing import ProcessedImage
 from censor_engine.api.effects import EffectContext
 from censor_engine.libs.registries import EffectRegistry
 from censor_engine.models.lib_models.effects import NoiseEffect
-from censor_engine.typing import ProcessedImage
 
 
 @EffectRegistry.register()

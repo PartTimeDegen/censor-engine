@@ -1,9 +1,9 @@
 from typing import TypedDict
 
+from censor_engine._typing import Image
 from censor_engine.models.lib_models.detectors.schemas import (
     DetectedPart,
 )
-from censor_engine.typing import Image
 
 from .example_image import ImageGenerator
 

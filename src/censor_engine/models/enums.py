@@ -1,4 +1,4 @@
-from enum import IntEnum, StrEnum
+from enum import IntEnum
 
 
 class PartState(IntEnum):
@@ -34,10 +34,3 @@ class MergeMethod(IntEnum):
     PARTS = 3
     FULL = 4
     ALL = 5
-
-
-class CensorMode(StrEnum):
-    AUTO = "auto"
-    IMAGE = "image"
-    VIDEO = "video"
-    PREVIEW = "preview"

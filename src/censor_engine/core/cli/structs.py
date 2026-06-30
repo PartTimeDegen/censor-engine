@@ -1,12 +1,8 @@
-
-
-
-
 from dataclasses import dataclass
 from pathlib import Path
 
-from censor_engine.core_engine.tools.debugger import DebugLevels
-from censor_engine.models.config import Config
+from censor_engine.models.models_core.tools.debugger.enums import DebugLevels
+from censor_engine.models.models_library.configs.config import Config
 
 
 @dataclass(slots=True)

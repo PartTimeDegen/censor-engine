@@ -1,8 +1,9 @@
-
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from censor_engine._typing import Image
+from censor_engine.core.paths import PathManager
 from censor_engine.core_engine.cli.parser import build_parser
 from censor_engine.core_engine.cli.processor import process_arguments
 from censor_engine.core_engine.structs import EngineSettings
@@ -12,8 +13,6 @@ from censor_engine.models.lib_models.detectors.ai_models import AIModel
 from censor_engine.models.lib_models.detectors.schemas import (
     DetectedPart,
 )
-from censor_engine.paths import PathManager
-from censor_engine.typing import Image
 
 from .mixin_model_management import MixinModelManagement
 from .mixin_utils import MixinUtils

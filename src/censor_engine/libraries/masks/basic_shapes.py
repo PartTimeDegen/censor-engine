@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 import cv2
 
 if TYPE_CHECKING:
-    from censor_engine.typing import Mask
+    from censor_engine._typing import MaskImage
 
 from censor_engine.api.masks import MaskContext
 from censor_engine.libs.registries import MaskRegistry
@@ -11,11 +11,11 @@ from censor_engine.models.lib_models.masks import Mask
 
 
 @MaskRegistry.register()
-class Box(Mask):
+class Box(MaskImage):
     base_mask: str = "Box"
     single_mask: str = "Box"
 
-    def generate(self, mask_context: MaskContext) -> "Mask":
+    def generate(self, mask_context: MaskContext) -> "MaskImage":
         box = mask_context.part.part_area.region.get_corners()
         return cv2.rectangle(
             mask_context.empty_mask, box[0], box[1], (255, 255, 255), -1
@@ -23,11 +23,11 @@ class Box(Mask):
 
 
 @MaskRegistry.register()
-class Circle(Mask):
+class Circle(MaskImage):
     base_mask: str = "Circle"
     single_mask: str = "Circle"
 
-    def generate(self, mask_context: MaskContext) -> "Mask":
+    def generate(self, mask_context: MaskContext) -> "MaskImage":
         return cv2.circle(
             mask_context.empty_mask,
             mask_context.part.part_area.region.centre.convert_to_tuple(),
@@ -38,11 +38,11 @@ class Circle(Mask):
 
 
 @MaskRegistry.register()
-class Ellipse(Mask):
+class Ellipse(MaskImage):
     base_mask: str = "Ellipse"
     single_mask: str = "Ellipse"
 
-    def generate(self, mask_context: MaskContext) -> "Mask":
+    def generate(self, mask_context: MaskContext) -> "MaskImage":
         return cv2.ellipse(
             mask_context.empty_mask,  # type: ignore
             mask_context.part.part_area.region.centre.convert_to_tuple(),
@@ -56,11 +56,11 @@ class Ellipse(Mask):
 
 
 @MaskRegistry.register()
-class RoundedBox(Mask):
+class RoundedBox(MaskImage):
     base_mask: str = "RoundedBox"
     single_mask: str = "RoundedBox"
 
-    def generate(self, mask_context: MaskContext) -> "Mask":
+    def generate(self, mask_context: MaskContext) -> "MaskImage":
         box = mask_context.part.part_area.region.get_corners()
         mask = cv2.rectangle(
             mask_context.empty_mask, box[0], box[1], (255, 255, 255), -1

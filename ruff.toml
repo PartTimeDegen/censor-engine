@@ -1,7 +1,7 @@
 src = ["src"]
 exclude = [
     ".venv",
-    "tests/01_unit_tests",
+    # "tests/01_unit_tests",
     "tests/02_integration_tests",
     "docs",
     ".github",

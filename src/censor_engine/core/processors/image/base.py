@@ -1,19 +1,19 @@
 from dataclasses import dataclass, field
 from uuid import UUID, uuid4
 
+from censor_engine._typing import Image
+from censor_engine.core.paths import PathManager
 from censor_engine.core_engine.tools.debugger import (
     DebugLevels,
 )
 from censor_engine.core_engine.tools.dev_tools import DevTools
-from censor_engine.detected_part import Part
 from censor_engine.models.caching import Cache
 from censor_engine.models.config import Config
+from censor_engine.models.detected_part import Part
 from censor_engine.models.lib_models.detectors.ai_models import AIModel
 from censor_engine.models.lib_models.detectors.schemas import (
     DetectedPart,
 )
-from censor_engine.paths import PathManager
-from censor_engine.typing import Image
 
 from .mixin_compile_masks import MixinComponentCompile
 from .mixin_detect_parts import MixinDetectParts

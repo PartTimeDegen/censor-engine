@@ -1,6 +1,7 @@
 import itertools
 from concurrent.futures import ThreadPoolExecutor
 
+from censor_engine._typing import Image
 from censor_engine.models.caching import Cache
 from censor_engine.models.caching.schemas import (
     AIOutputData,
@@ -11,8 +12,7 @@ from censor_engine.models.lib_models.detectors.ai_models import AIModel
 from censor_engine.models.lib_models.detectors.schemas import (
     DetectedPart,
 )
-from censor_engine.models.structs import Mixin
-from censor_engine.typing import Image
+from censor_engine.structs import Mixin
 
 
 class MixinDetectParts(Mixin):

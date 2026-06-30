@@ -9,4 +9,4 @@ uv run ruff format .
 # Check
 echo ""
 echo "=== Checking With Linter ==="
-bash lint.sh
+bash scripts/lint.sh

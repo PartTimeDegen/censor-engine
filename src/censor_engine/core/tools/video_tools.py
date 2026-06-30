@@ -2,13 +2,13 @@ from dataclasses import dataclass, field
 
 import cv2
 
+from censor_engine._typing import Image
 from censor_engine.core_engine.processors.video import (
     FrameProcessor,
     VideoProcessor,
 )
 from censor_engine.core_engine.tools.debugger import DebugLevels
-from censor_engine.detected_part import Part
-from censor_engine.typing import Image
+from censor_engine.models.detected_part import Part
 
 
 class InfoGenerator:

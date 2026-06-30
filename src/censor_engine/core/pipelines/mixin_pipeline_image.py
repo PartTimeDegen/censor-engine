@@ -1,10 +1,10 @@
-
-
 from collections.abc import Callable
 from pathlib import Path
 
 import cv2
 
+from censor_engine._typing import Image
+from censor_engine.core.paths import PathManager
 from censor_engine.core_engine.tools.config_previewer.base import (
     get_config_preview,
 )
@@ -14,11 +14,9 @@ from censor_engine.models.lib_models.detectors.ai_models import AIModel
 from censor_engine.models.lib_models.detectors.schemas import (
     DetectedPart,
 )
-from censor_engine.models.structs import IndexedFile, Mixin
-from censor_engine.paths import PathManager
-from censor_engine.typing import Image
+from censor_engine.structs import IndexedFile, Mixin
 
-from ..tools.debugger import DebugLevels
+from ..tools.debugger import DebugLevel
 from ..tools.dev_tools import DevTools
 from .processors.image import ImageProcessor
 
@@ -53,7 +51,7 @@ class MixinImagePipeline(Mixin):
         main_files_path: Path,
         indexed_files: list[IndexedFile],
         config: Config,
-        debug_level: DebugLevels,
+        debug_level: DebugLevel,
         function_get_index: Callable[[int, int], str],
         flags: dict[str, bool],
         path_manager: PathManager,
