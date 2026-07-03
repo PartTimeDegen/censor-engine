@@ -18,3 +18,6 @@ OpenCVMask = Annotated[NDArray[np.uint32], ("H", "W")]
 
 # Bounding box
 BBox = tuple[int, int, int, int]  # [x1, y1, x2, y2]
+
+# Shapes
+ImageShape = tuple[int, int]

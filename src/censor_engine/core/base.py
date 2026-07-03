@@ -14,11 +14,17 @@ from censor_engine.models.lib_models.detectors.schemas import (
     DetectedPart,
 )
 
-from .mixin_model_management import MixinModelManagement
-from .mixin_utils import MixinUtils
-from .pipelines.mixin_pipeline_image import MixinImagePipeline
-from .pipelines.mixin_pipeline_video import MixinVideoPipeline
-from .tools.dev_tools import DevTools
+from ..models.models_core.engine.mixin_model_management import (
+    MixinModelManagement,
+)
+from ..models.models_core.path_manager.mixin_utils import MixinUtils
+from ..models.models_core.pipelines.image.mixin_pipeline_image import (
+    MixinImagePipeline,
+)
+from ..models.models_core.pipelines.video.mixin_pipeline_video import (
+    MixinVideoPipeline,
+)
+from ..models.models_core.tools.debugger.dev_tools import DevTools
 
 
 @dataclass(slots=True, repr=False, eq=False, order=False)
