@@ -9,6 +9,7 @@ from censor_engine.models.libraries.configs._validators import (
     normalise_censors,
     normalise_margins,
 )
+from censor_engine.models.libraries.configs.settings.schemas import Margins
 from censor_engine.structs.censors import Censor
 
 
@@ -43,30 +44,27 @@ class TestNormalisers:
     class TestNormaliseMargins:
         def test_float(self):
             input_data = 1.0
-            assert normalise_margins(input_data) == {
-                "height": 1.0,
-                "width": 1.0,
-            }
+            assert normalise_margins(input_data) == Margins(
+                height=1.0, width=1.0
+            )
 
         def test_int(self):
             input_data = 1
-            assert normalise_margins(input_data) == {
-                "height": 1.0,
-                "width": 1.0,
-            }
+            assert normalise_margins(input_data) == Margins(
+                height=1.0, width=1.0
+            )
 
         def test_half_dictionary(self):
             input_data = {"height": 1.0}
-            assert normalise_margins(input_data) == {
-                "height": 1.0,
-            }
+            assert normalise_margins(input_data) == Margins(
+                height=1.0, width=0.0
+            )
 
         def test_full_dictionary(self):
             input_data = {"height": 1.0, "width": 1.0}
-            assert normalise_margins(input_data) == {
-                "height": 1.0,
-                "width": 1.0,
-            }
+            assert normalise_margins(input_data) == Margins(
+                height=1.0, width=1.0
+            )
 
 
 class TestConvertors:
@@ -79,6 +77,11 @@ class TestConvertors:
         def test_lowercase(self):
             for state in MergeMethod:
                 name = state.name.lower()
+                assert state == convert_merge_method(name)
+
+        def test_already(self):
+            for state in MergeMethod:
+                name = state
                 assert state == convert_merge_method(name)
 
         def test_wrong_type(self):
@@ -100,6 +103,11 @@ class TestConvertors:
                 name = state.name.lower()
                 assert state == convert_debug_level(name)
 
+        def test_already(self):
+            for state in DebugLevel:
+                name = state
+                assert state == convert_debug_level(name)
+
         def test_wrong_type(self):
             with pytest.raises(TypeError):
                 convert_debug_level(3)  # type: ignore
@@ -117,6 +125,11 @@ class TestConvertors:
         def test_lowercase(self):
             for state in PartState:
                 name = state.name.lower()
+                assert state == convert_state(name)
+
+        def test_already(self):
+            for state in PartState:
+                name = state
                 assert state == convert_state(name)
 
         def test_wrong_type(self):

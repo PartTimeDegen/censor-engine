@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import numpy as np
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel
 
 from censor_engine._typing import MaskImage
+from censor_engine.models.libraries.configs.settings.schemas import Margins
 
 
 class AbsoluteBBox(BaseModel):
@@ -133,6 +134,38 @@ class AbsoluteBBox(BaseModel):
             cy / image_height,
             self.width / image_width,
             self.height / image_height,
+        )
+
+    def rescale_bbox(self, margins: Margins) -> AbsoluteBBox:
+        """
+        Expand a bounding box according to relative margin values.
+
+        Margins may be provided as a single scalar applied to both
+        dimensions or as a dictionary containing separate `width`
+        and `height` factors.
+
+        Args:
+            input_bbox (AbsoluteBBox): Bounding box to expand.
+
+            margins (float | dict[str, float]): Relative expansion
+                factors.
+
+        Returns:
+            AbsoluteBBox: Expanded bounding box.
+
+        """
+        # Get the Margin Data Depending on Type
+        print(margins, type(margins))
+        w_margin = margins.width
+        h_margin = margins.height
+
+        # Get The Differences in Width and Height
+        x, y, width, height = self.xywh
+        dw = int(width * w_margin)
+        dh = int(height * h_margin)
+
+        return AbsoluteBBox.from_xywh(
+            (x - dw // 2, y - dh // 2, width + dw, height + dh)
         )
 
 

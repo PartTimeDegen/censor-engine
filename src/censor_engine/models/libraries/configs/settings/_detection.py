@@ -5,21 +5,16 @@ from censor_engine.models.libraries.configs._constants import DEFAULT_MASK
 from censor_engine.models.libraries.configs._helper_types import (
     BoundPercentage,
     ListOfCensors,
-    MarginPercentage,
 )
 from censor_engine.models.libraries.configs._validators import (
     convert_state,
     normalise_censors,
     normalise_margins,
 )
+from censor_engine.models.libraries.configs.settings.schemas import Margins
 
 
-class _Margins(BaseModel):
-    height: MarginPercentage = 0.0
-    width: MarginPercentage = 0.0
-
-
-class _PartSettings(BaseModel):
+class PartSettings(BaseModel):
     """
     _summary_.
 
@@ -39,25 +34,23 @@ class _PartSettings(BaseModel):
     use_global_area: bool = True
 
     censors: ListOfCensors = Field(default_factory=list)  # TODO: Convert
-    margins: _Margins = Field(default_factory=_Margins)
-    tracking_margin: _Margins = Field(default_factory=_Margins)
+    margins: Margins = Field(default_factory=Margins)
+    tracking_margin: Margins = Field(default_factory=Margins)
 
     _normalise_censor = field_validator("censors", mode="before")(
         normalise_censors
     )
-    _convert_sate = field_validator("state", mode="before")(convert_state)
+    _normalise_margins = field_validator(
+        "margins", "tracking_margin", mode="before"
+    )(normalise_margins)
 
-    @field_validator("margins", "tracking_margin", mode="before")
-    @classmethod
-    def normalise_margins(cls, v):  # noqa: ANN001, ANN206
-        processed_data = normalise_margins(v)
-        return _Margins(**processed_data)
+    _convert_sate = field_validator("state", mode="before")(convert_state)
 
 
 class DetectionSettings(BaseModel):
     enabled_parts: list[str] = Field(default_factory=list)
-    default_settings: _PartSettings = Field(default_factory=_PartSettings)
-    parts: dict[str, _PartSettings] = Field(default_factory=dict)
+    default_settings: PartSettings = Field(default_factory=PartSettings)
+    parts: dict[str, PartSettings] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def apply_defaults(self):
@@ -75,9 +68,11 @@ class DetectionSettings(BaseModel):
                 continue
 
             # Update Defaults with Found settings
-            resolved_parts[part] = self.default_settings.model_copy(
-                update=custom_part_config.model_dump(exclude_unset=True),
-                deep=True,
+            resolved_parts[part] = PartSettings.model_validate(
+                {
+                    **self.default_settings.model_dump(),
+                    **custom_part_config.model_dump(exclude_unset=True),
+                }
             )
 
         self.parts = resolved_parts

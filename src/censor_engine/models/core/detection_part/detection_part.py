@@ -6,9 +6,8 @@ from censor_engine.models.libraries.detectors.schemas import (
     DetectorOutput,
 )
 
-from ._config_shortcuts import ConfigShortcuts
-from ._detection_properties import DetectionProperties
 from ._mask_manager import MaskManager
+from ._part_properties import PartProperties
 from ._schemas import PartNameType
 
 
@@ -20,11 +19,8 @@ class Part:
     file_uuid: UUID
     image_shape: tuple[int, int]
 
-    # Easy Access Classes
-    _config_shortcuts: ConfigShortcuts = field(init=False)
-
     # Properties
-    properties: DetectionProperties = field(init=False)
+    properties: PartProperties = field(init=False)
     masks: MaskManager = field(init=False)
 
     def __post_init__(self):
@@ -33,27 +29,16 @@ class Part:
             msg = "Missing Name"
             raise TypeError(msg)
 
-        # Config Shortcuts
-        part_config = self.config.detection.parts[label]
-        self._config_shortcuts = ConfigShortcuts(
-            detection_settings=self.config.detection,
-            part_settings=part_config,
-            groups=self.config.groups,
-            image_settings=self.config.image,
-        )
-
         # Part Properties
-        self.properties = DetectionProperties(
+        self.properties = PartProperties(
             detector_output=self.detector_output,
-            margins=self._config_shortcuts.margins,
-            groups_merge=self._config_shortcuts.groups_merge,
-            groups_persistance=self._config_shortcuts.groups_persistance,
+            config=self.config,
         )
 
         # Mask Manager
         self.masks = MaskManager(
-            mask_name=self._config_shortcuts.mask_name,
-            protection_mask_name=self._config_shortcuts.protection_mask_name,
+            mask_name=self.properties.settings.mask,
+            protection_mask_name=self.properties.settings.protection_mask,
             image_shape=self.image_shape,
         )
 

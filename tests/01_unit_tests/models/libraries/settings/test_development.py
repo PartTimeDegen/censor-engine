@@ -16,7 +16,7 @@ class TestMerging:
             def test_baseline(self):
                 for level in DebugLevel:
                     assert (
-                        DevelopmentSettings(debug_level=level.name).debug_level
+                        DevelopmentSettings(debug_level=level.name).debug_level  # type: ignore
                         == level
                     )  # type: ignore
 

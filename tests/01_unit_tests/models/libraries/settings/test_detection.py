@@ -5,83 +5,134 @@ from censor_engine.models.enums import PartState
 from censor_engine.models.libraries.configs._constants import DEFAULT_MASK
 from censor_engine.models.libraries.configs.settings._detection import (
     DetectionSettings,
-    _PartSettings,
+    PartSettings,
 )
+from censor_engine.models.libraries.configs.settings.schemas import Margins
+from censor_engine.structs.censors import Censor
 
 
 class TestPartSettings:
     def test_initiate(self):
-        _PartSettings()
+        PartSettings()
 
     class TestFields:
         class TestMask:
             def test_baseline(self):
-                assert _PartSettings().mask == DEFAULT_MASK
+                assert PartSettings().mask == DEFAULT_MASK
 
             def test_custom(self):
-                assert _PartSettings(protection_mask="Box").mask == "Box"
+                assert PartSettings(protection_mask="Box").mask == "Box"
 
         class TestMinimumScore:
             def test_baseline(self):
-                assert _PartSettings().minimum_score == 0.0
+                assert PartSettings().minimum_score == 0.0
 
             def test_custom(self):
-                assert _PartSettings(minimum_score=0.5).minimum_score == 0.5
+                assert PartSettings(minimum_score=0.5).minimum_score == 0.5
 
             def test_over_limit(self):
                 with pytest.raises(ValidationError):
-                    _PartSettings(minimum_score=1.1)
+                    PartSettings(minimum_score=1.1)
 
             def test_under_limit(self):
                 with pytest.raises(ValidationError):
-                    _PartSettings(minimum_score=-0.1)
+                    PartSettings(minimum_score=-0.1)
 
         class TestState:
             def test_baseline(self):
-                assert _PartSettings().state == PartState.UNPROTECTED
+                assert PartSettings().state == PartState.UNPROTECTED
 
             def test_custom(self):
                 for part in PartState:
-                    assert _PartSettings(state=str(part.name)).state == part  # type: ignore
+                    assert PartSettings(state=str(part.name)).state == part  # type: ignore
 
             def test_missing_state(self):
                 with pytest.raises(AttributeError):
-                    ps = _PartSettings(state="doesn't exist").state  # type: ignore
+                    ps = PartSettings(state="doesn't exist").state  # type: ignore
 
         class TestProtectionMask:
             def test_baseline(self):
-                assert _PartSettings().protection_mask is None
+                assert PartSettings().protection_mask is None
 
             def test_custom(self):
                 assert (
-                    _PartSettings(protection_mask="Box").protection_mask
+                    PartSettings(protection_mask="Box").protection_mask
                     == "Box"
                 )
 
         class TestFade:
             def test_baseline(self):
-                assert _PartSettings().fade == 0.0
+                assert PartSettings().fade == 0.0
 
             def test_custom(self):
-                assert _PartSettings(fade=0.5).fade == 0.5
+                assert PartSettings(fade=0.5).fade == 0.5
 
             def test_over_limit(self):
                 with pytest.raises(ValidationError):
-                    _PartSettings(fade=1.1)
+                    PartSettings(fade=1.1)
 
             def test_under_limit(self):
                 with pytest.raises(ValidationError):
-                    _PartSettings(fade=-0.1)
+                    PartSettings(fade=-0.1)
 
         class TestUseGlobalArea:
             def test_baseline(self):
-                assert _PartSettings().use_global_area == True
+                assert PartSettings().use_global_area == True
 
             def test_false(self):
                 assert (
-                    _PartSettings(use_global_area=False).use_global_area
+                    PartSettings(use_global_area=False).use_global_area
                     == False
                 )
+
+        class TestCensors:
+            def test_baseline(self):
+                ps = PartSettings(censors=[{"effect": "blur"}])
+                assert ps.censors == [Censor(effect="blur")]
+
+        class TestMargins:
+            def test_baseline(self):
+                ps = PartSettings()
+                assert isinstance(ps.margins, Margins)
+                assert ps.margins == Margins()
+
+            def test_float(self):
+                ps = PartSettings(margins=0.2)
+                assert isinstance(ps.margins, Margins)
+                assert ps.margins == Margins(width=0.2, height=0.2)
+
+            def test_int(self):
+                ps = PartSettings(margins=1)
+                assert isinstance(ps.margins, Margins)
+                assert ps.margins == Margins(width=1.0, height=1.0)
+
+            def test_dict(self):
+                ps = PartSettings(margins={"width": 0.2, "height": 0.2})
+                assert isinstance(ps.margins, Margins)
+                assert ps.margins == Margins(width=0.2, height=0.2)
+
+        class TestTrackingMargins:
+            def test_baseline(self):
+                ps = PartSettings()
+                assert isinstance(ps.tracking_margin, Margins)
+                assert ps.tracking_margin == Margins()
+
+            def test_float(self):
+                ps = PartSettings(tracking_margin=0.2)
+                assert isinstance(ps.tracking_margin, Margins)
+                assert ps.tracking_margin == Margins(width=0.2, height=0.2)
+
+            def test_int(self):
+                ps = PartSettings(tracking_margin=1)
+                assert isinstance(ps.tracking_margin, Margins)
+                assert ps.tracking_margin == Margins(width=1.0, height=1.0)
+
+            def test_dict(self):
+                ps = PartSettings(
+                    tracking_margin={"width": 0.2, "height": 0.2}
+                )
+                assert isinstance(ps.tracking_margin, Margins)
+                assert ps.tracking_margin == Margins(width=0.2, height=0.2)
 
 
 class TestDetectionSettings:

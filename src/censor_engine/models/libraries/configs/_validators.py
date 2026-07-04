@@ -3,6 +3,7 @@ from typing import Any, TypeVar
 
 from censor_engine.models.core.tools.debugger.enums import DebugLevel
 from censor_engine.models.enums import MergeMethod, PartState
+from censor_engine.models.libraries.configs.settings.schemas import Margins
 from censor_engine.structs.censors import Censor
 
 
@@ -33,12 +34,12 @@ def normalise_censors(
 
 def normalise_margins(
     margin_data: float | dict[str, float | int],
-) -> dict[str, int | float]:
+) -> Margins:
     if isinstance(margin_data, (int, float)):
-        return {"height": margin_data, "width": margin_data}
+        return Margins(height=margin_data, width=margin_data)
 
     if isinstance(margin_data, dict):
-        return margin_data
+        return Margins(**margin_data)
 
     msg = "Wrong Type for Margin Data"
     raise TypeError(msg)
@@ -49,10 +50,13 @@ E = TypeVar("E", bound=Enum)
 
 
 def _generic_convert_to_enum[E: Enum](
-    input_str: str,
+    input_str: str | type[E],
     enum: type[E],
     enum_name: str,
 ) -> E:
+    if isinstance(input_str, enum):
+        return input_str
+
     if not isinstance(input_str, str):
         msg = f"Invalid {enum_name} value: {input_str}"
         raise TypeError(msg)
@@ -64,16 +68,16 @@ def _generic_convert_to_enum[E: Enum](
         raise AttributeError(msg) from e
 
 
-def convert_merge_method(merge_method: str) -> MergeMethod:
-    return _generic_convert_to_enum(merge_method, MergeMethod, "MergeMethod")
+def convert_merge_method(merge_method: str | MergeMethod) -> MergeMethod:
+    return _generic_convert_to_enum(merge_method, MergeMethod, "MergeMethod")  # type: ignore
 
 
-def convert_debug_level(debug_level: str) -> DebugLevel:
-    return _generic_convert_to_enum(debug_level, DebugLevel, "DebugLevel")
+def convert_debug_level(debug_level: str | DebugLevel) -> DebugLevel:
+    return _generic_convert_to_enum(debug_level, DebugLevel, "DebugLevel")  # type: ignore
 
 
-def convert_state(state: str) -> PartState:
-    return _generic_convert_to_enum(state, PartState, "PartState")
+def convert_state(state: str | PartState) -> PartState:
+    return _generic_convert_to_enum(state, PartState, "PartState")  # type: ignore
 
 
 # Fixers
