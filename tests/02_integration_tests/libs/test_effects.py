@@ -7,7 +7,7 @@ import pytest
 from censor_engine.libs.detectors.detector_interfaces.nude_net import (
     NudeNetDetector,
 )
-from censor_engine.libs.registries import EffectRegistry
+from censor_engine.libraries.registries import EffectRegistry
 from censor_engine.models.enums import EffectType
 from tests.utils import run_image_test
 

@@ -6,12 +6,12 @@ if TYPE_CHECKING:
     from censor_engine._typing import MaskImage
 
 from censor_engine.api.masks import MaskContext
-from censor_engine.libs.registries import MaskRegistry
-from censor_engine.models.lib_models.masks import Mask
+from censor_engine.libraries.registries import MaskRegistry
+from censor_engine.models.libraries.masks import Mask
 
 
 @MaskRegistry.register()
-class Box(MaskImage):
+class Box(Mask):
     base_mask: str = "Box"
     single_mask: str = "Box"
 
@@ -23,7 +23,7 @@ class Box(MaskImage):
 
 
 @MaskRegistry.register()
-class Circle(MaskImage):
+class Circle(Mask):
     base_mask: str = "Circle"
     single_mask: str = "Circle"
 
@@ -38,7 +38,7 @@ class Circle(MaskImage):
 
 
 @MaskRegistry.register()
-class Ellipse(MaskImage):
+class Ellipse(Mask):
     base_mask: str = "Ellipse"
     single_mask: str = "Ellipse"
 
@@ -56,7 +56,7 @@ class Ellipse(MaskImage):
 
 
 @MaskRegistry.register()
-class RoundedBox(MaskImage):
+class RoundedBox(Mask):
     base_mask: str = "RoundedBox"
     single_mask: str = "RoundedBox"
 

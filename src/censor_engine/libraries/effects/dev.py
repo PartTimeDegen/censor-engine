@@ -5,7 +5,7 @@ import cv2
 from censor_engine.api.effects import EffectContext
 from censor_engine.models.detected_part import Part
 from censor_engine.libs.detectors.nude_net import NudeNetModel
-from censor_engine.libs.registries import EffectRegistry
+from censor_engine.libraries.registries import EffectRegistry
 from censor_engine.models.enums import MergeMethod
 from censor_engine.models.lib_models.effects import DevEffect
 from censor_engine.models.lib_models.effects.sub_variants import (

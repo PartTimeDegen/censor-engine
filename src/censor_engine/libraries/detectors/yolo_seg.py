@@ -4,7 +4,7 @@ import torch
 from ultralytics import YOLO
 
 from censor_engine._typing import Image
-from censor_engine.libs.registries import AIModelRegistry
+from censor_engine.libraries.registries import AIModelRegistry
 from censor_engine.models.lib_models.detectors.ai_models import (
     AIModel,
     DetectedPart,

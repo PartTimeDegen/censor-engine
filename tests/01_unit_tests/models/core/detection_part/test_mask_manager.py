@@ -45,8 +45,8 @@ class TestMaskManager:
         expected = np.full((4, 4), 100, dtype=np.uint8)
 
         assert np.array_equal(manager._original_mask, expected)
-        assert np.array_equal(manager._current_mask, expected)
-        assert manager._layers_of_mask == [manager._original_mask]
+        assert np.array_equal(manager.current_mask, expected)
+        assert manager.layers_of_mask == [manager._original_mask]
         assert isinstance(manager._obj_mask, DummyMask)
         assert isinstance(manager._obj_mask_protected, DummyProtectionMask)
 
@@ -86,13 +86,13 @@ class TestMaskManager:
                     image_shape=(2, 2),
                 )
 
-                manager._current_mask = np.full((2, 2), 100, dtype=np.uint8)
+                manager.current_mask = np.full((2, 2), 100, dtype=np.uint8)
                 manager.add_to_current_mask(
                     np.full((2, 2), 50, dtype=np.uint8)
                 )
 
                 expected = np.full((2, 2), 150, dtype=np.uint8)
-                assert np.array_equal(manager._current_mask, expected)
+                assert np.array_equal(manager.current_mask, expected)
 
             def test_add_to_current_mask_saturates(self, registry):
                 manager = MaskManager(
@@ -101,12 +101,12 @@ class TestMaskManager:
                     image_shape=(2, 2),
                 )
 
-                manager._current_mask = np.full((2, 2), 250, dtype=np.uint8)
+                manager.current_mask = np.full((2, 2), 250, dtype=np.uint8)
                 manager.add_to_current_mask(
                     np.full((2, 2), 20, dtype=np.uint8)
                 )
 
-                assert np.all(manager._current_mask == 255)
+                assert np.all(manager.current_mask == 255)
 
             def test_subtract_from_current_mask(self, registry):
                 manager = MaskManager(
@@ -115,13 +115,13 @@ class TestMaskManager:
                     image_shape=(2, 2),
                 )
 
-                manager._current_mask = np.full((2, 2), 100, dtype=np.uint8)
+                manager.current_mask = np.full((2, 2), 100, dtype=np.uint8)
                 manager.subtract_from_current_mask(
                     np.full((2, 2), 40, dtype=np.uint8)
                 )
 
                 expected = np.full((2, 2), 60, dtype=np.uint8)
-                assert np.array_equal(manager._current_mask, expected)
+                assert np.array_equal(manager.current_mask, expected)
 
             def test_subtract_from_current_mask_saturates(self, registry):
                 manager = MaskManager(
@@ -130,12 +130,12 @@ class TestMaskManager:
                     image_shape=(2, 2),
                 )
 
-                manager._current_mask = np.full((2, 2), 10, dtype=np.uint8)
+                manager.current_mask = np.full((2, 2), 10, dtype=np.uint8)
                 manager.subtract_from_current_mask(
                     np.full((2, 2), 50, dtype=np.uint8)
                 )
 
-                assert np.all(manager._current_mask == 0)
+                assert np.all(manager.current_mask == 0)
 
             def test_compile_base_masks_adds_all_layers(self, registry):
                 manager = MaskManager(
@@ -144,8 +144,8 @@ class TestMaskManager:
                     image_shape=(2, 2),
                 )
 
-                manager._current_mask = np.zeros((2, 2), dtype=np.uint8)
-                manager._layers_of_mask = [
+                manager.current_mask = np.zeros((2, 2), dtype=np.uint8)
+                manager.layers_of_mask = [
                     np.full((2, 2), 10, dtype=np.uint8),
                     np.full((2, 2), 20, dtype=np.uint8),
                     np.full((2, 2), 30, dtype=np.uint8),
@@ -154,4 +154,4 @@ class TestMaskManager:
                 manager.compile_base_masks()
 
                 expected = np.full((2, 2), 60, dtype=np.uint8)
-                assert np.array_equal(manager._current_mask, expected)
+                assert np.array_equal(manager.current_mask, expected)

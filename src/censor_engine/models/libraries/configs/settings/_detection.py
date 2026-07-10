@@ -56,7 +56,7 @@ class DetectionSettings(BaseModel):
     def apply_defaults(self):
         resolved_parts = {}
 
-        for part in self.parts:
+        for part in self.enabled_parts:
             # Check if Part was Mentioned
             custom_part_config = self.parts.get(part)
 

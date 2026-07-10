@@ -3,11 +3,11 @@ from typing import TYPE_CHECKING
 
 import cv2
 import numpy as np
+from censor_engine.models.detected_part import Part
 
 from censor_engine._typing import Image, MaskImage
 from censor_engine.api.effects import EffectContext
-from censor_engine.libs.registries import EffectRegistry
-from censor_engine.models.detected_part import Part
+from censor_engine.libraries.registries import EffectRegistry
 from censor_engine.models.enums import EffectType
 from censor_engine.structs import Censor, Mixin
 from censor_engine.structs.contours import Contour

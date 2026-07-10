@@ -5,12 +5,12 @@ import cv2
 import numpy as np
 
 from censor_engine.api.masks import MaskContext
-from censor_engine.models.lib_models.masks import BarMask
+from censor_engine.models.libraries.masks import BarMask
 
 if TYPE_CHECKING:
     from censor_engine._typing import MaskImage
 
-from censor_engine.libs.registries import MaskRegistry
+from censor_engine.libraries.registries import MaskRegistry
 
 
 class _BarInfo:

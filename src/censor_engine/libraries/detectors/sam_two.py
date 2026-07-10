@@ -6,7 +6,7 @@ import torch
 from transformers import Sam2Model, Sam2Processor
 
 from censor_engine._typing import BBox, Image, MaskImage
-from censor_engine.libs.registries import AIModelRegistry
+from censor_engine.libraries.registries import AIModelRegistry
 from censor_engine.models.lib_models.detectors.ai_models import (
     AIModel,
 )

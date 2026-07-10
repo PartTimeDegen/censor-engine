@@ -3,7 +3,7 @@ import os
 
 import pytest
 
-from censor_engine.libs.registries import MaskRegistry
+from censor_engine.libraries.registries import MaskRegistry
 from censor_engine.models.enums import MaskType
 from tests.utils import run_image_test
 

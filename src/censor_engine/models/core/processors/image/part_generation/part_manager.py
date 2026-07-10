@@ -5,7 +5,7 @@ from censor_engine.models.core.detection_part.detection_part import Part
 from censor_engine.models.core.path_manager.path_manager import PathManager
 from censor_engine.models.libraries.detectors.schemas import DetectorOutput
 
-from ._merge_on_method_method import MergeMechanismManager
+from ._merge_mechanism import MergeMechanismManager
 from ._merge_on_part_state import PartStateMechanism
 
 
@@ -103,9 +103,20 @@ class PartManager:
             reverse=True,
         )
 
-    def run_part_generation_pipeline(self):
+    def run_part_generation_pipeline(
+        self,
+        path_manager: PathManager,
+        detected_outputs: list[DetectorOutput],
+        file_uuid: UUID,
+        image_shape: ImageShape,
+    ):
         # Generate Part Objects
-        parts = self._create_parts_objects_from_detector_outputs(...)
+        parts = self._create_parts_objects_from_detector_outputs(
+            path_manager,
+            detected_outputs,
+            file_uuid,
+            image_shape,
+        )
 
         # Sort Parts
         parts = self._sort_parts(parts)

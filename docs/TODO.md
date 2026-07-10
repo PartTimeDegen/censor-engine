@@ -1,6 +1,11 @@
 # Rewrite Update
 - Currently to do:
+    - Library Stuff
+            - Tools
+            - Registers
+            - Libraries
     - Tests
+        - Part.detection_part
         - Image.part.part_proper
 
 
@@ -21,8 +26,6 @@
         
         - Library Stuff
             - Tools
-            - Registers
-            - Libraries
         
         - Extras
             - Logging

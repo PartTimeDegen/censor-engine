@@ -37,6 +37,8 @@ class MaskManager:
     mask_name: str
     protection_mask_name: str | None
     image_shape: tuple[int, int]
+    current_mask: MaskImage = field(init=False)
+    layers_of_mask: list[MaskImage] = field(default_factory=list, init=False)
 
     # Generated
     _obj_mask: Mask = field(init=False)
@@ -44,8 +46,6 @@ class MaskManager:
 
     # Mask Arrays
     _original_mask: MaskImage = field(init=False)
-    _current_mask: MaskImage = field(init=False)
-    _layers_of_mask: list[MaskImage] = field(default_factory=list, init=False)
 
     def __post_init__(self) -> None:
         """
@@ -76,9 +76,9 @@ class MaskManager:
             empty_mask=Mask.create_empty_mask(self.image_shape),
         )
         self._original_mask = self._obj_mask.generate(mask_context)
-        self._layers_of_mask = [self._original_mask]
+        self.layers_of_mask = [self._original_mask]
 
-        self._current_mask = self._original_mask.copy()
+        self.current_mask = self._original_mask.copy()
 
     @staticmethod
     def get_mask_class(mask: str) -> Mask:
@@ -119,7 +119,7 @@ class MaskManager:
             None
 
         """
-        self._current_mask = cv2.add(self._current_mask, mask)  # type: ignore
+        self.current_mask = cv2.add(self.current_mask, mask)  # type: ignore
 
     def subtract_from_current_mask(self, mask: MaskImage) -> None:
         """
@@ -135,7 +135,7 @@ class MaskManager:
             None
 
         """
-        self._current_mask = cv2.subtract(self._current_mask, mask)  # type: ignore
+        self.current_mask = cv2.subtract(self.current_mask, mask)  # type: ignore
 
     def compile_base_masks(self) -> None:
         """
@@ -149,5 +149,5 @@ class MaskManager:
             None
 
         """
-        for mask in self._layers_of_mask:
+        for mask in self.layers_of_mask:
             self.add_to_current_mask(mask)
