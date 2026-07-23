@@ -1,5 +1,5 @@
-from censor_engine.models.libraries.registry import Registry
+from censor_engine.models.libraries.registries.registry import Registry
 
-EffectRegistry = Registry("censor_engine.libraries.effects")
-MaskRegistry = Registry("censor_engine.libraries.masks")
-AIModelRegistry = Registry("censor_engine.libraries.detectors.ai_models")
+EffectRegistry = Registry("effects")
+MaskRegistry = Registry("masks")
+AIModelRegistry = Registry("detectors.ai_models")

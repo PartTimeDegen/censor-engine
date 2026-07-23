@@ -1,7 +1,3 @@
-import numpy as np
-import pytest
-
-from censor_engine._typing import MaskImage
 from censor_engine.models.core.detection_part._part_properties import (
     PartProperties,
 )
@@ -11,95 +7,17 @@ from censor_engine.models.libraries.detectors.schemas import (
     DetectorOutput,
 )
 
-GROUPS = [
-    ["boobs", "bum"],
-    ["car", "vehicle"],
-]
-
-
-@pytest.fixture
-def config_filled() -> Config:
-    return Config.from_dict(
-        {
-            "groups": {"merging": GROUPS, "persistance": GROUPS},
-            "detection": {
-                "enabled_parts": [GROUPS[0][0]],
-                "parts": {GROUPS[0][0]: {"margins": 0.2}},
-            },
-        }
-    )
-
-
-@pytest.fixture
-def bbox() -> AbsoluteBBox:
-    return AbsoluteBBox.from_xyxy((25, 25, 75, 75))
-
-
-@pytest.fixture
-def mask_empty() -> MaskImage:
-    return np.zeros((100, 100), dtype=np.uint8)
-
-
-@pytest.fixture
-def mask_full() -> MaskImage:
-    return np.ones((100, 100), dtype=np.uint8) * 255
-
-
-@pytest.fixture
-def detector_output(
-    bbox: AbsoluteBBox, mask_empty: MaskImage, mask_full: MaskImage
-) -> DetectorOutput:
-    return DetectorOutput(
-        bbox=bbox,
-        # assumes MaskImage is bytes-like in tests
-        masks=[mask_empty, mask_full],
-        origin="test_origin",
-        part_id=1,
-        label=GROUPS[0][0],
-        score=0.95,
-    )
-
-
-@pytest.fixture
-def groups_merge() -> list[list[str]]:
-    return GROUPS
-
-
-@pytest.fixture
-def groups_persistence() -> list[list[str]]:
-    return GROUPS
-
-
-@pytest.fixture
-def detection_properties(detector_output: DetectorOutput) -> PartProperties:
-    return PartProperties(
-        detector_output=detector_output,
-        config=Config.from_dict(
-            {
-                "detection": {
-                    "enabled_parts": [GROUPS[0][0]],
-                    "parts": {GROUPS[0][0]: {}},
-                }
-            }
-        ),
-    )
-
-
-@pytest.fixture
-def detection_properties_extras(
-    detector_output: DetectorOutput, config_filled: Config
-) -> PartProperties:
-    return PartProperties(
-        detector_output=detector_output, config=config_filled
-    )
-
 
 class TestPartProperties:
     def test_initiate(
-        self, detector_output: DetectorOutput, config_filled: Config
+        self,
+        detector_output: DetectorOutput,
+        config_with_parts: Config,
     ):
 
-        PartProperties(detector_output=detector_output, config=config_filled)
+        PartProperties(
+            detector_output=detector_output, config=config_with_parts
+        )
 
     class TestGeneratedFields:
         class TestCorrectedBox:
@@ -110,7 +28,7 @@ class TestPartProperties:
             ):
                 dp = detection_properties
                 assert dp.bbox == bbox
-                assert dp.bbox.center == bbox.center
+                assert dp.bbox.centre == bbox.centre
                 assert dp.bbox.area == bbox.area
 
             def test_margin(
@@ -128,7 +46,7 @@ class TestPartProperties:
                 )
 
                 assert dp.bbox == expected_bbox
-                assert dp.bbox.center == expected_bbox.center
+                assert dp.bbox.centre == expected_bbox.centre
                 assert dp.bbox.area == expected_bbox.area
 
         class TestIsMerged:
@@ -159,10 +77,10 @@ class TestPartProperties:
                 assert dp.group_merge == []
 
             def test_no_merge_group(
-                self, detection_properties_extras: PartProperties
+                self, detection_properties_extras: PartProperties, groups
             ):
                 dp = detection_properties_extras
-                assert dp.group_merge == GROUPS[0]
+                assert dp.group_merge == groups[0]
 
         class TestGroupPersistID:
             def test_baseline(self, detection_properties: PartProperties):
@@ -181,7 +99,7 @@ class TestPartProperties:
                 assert dp.group_persist == []
 
             def test_no_persist_group(
-                self, detection_properties_extras: PartProperties
+                self, detection_properties_extras: PartProperties, groups
             ):
                 dp = detection_properties_extras
-                assert dp.group_persist == GROUPS[0]
+                assert dp.group_persist == groups[0]

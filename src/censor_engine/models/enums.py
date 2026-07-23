@@ -7,27 +7,6 @@ class PartState(IntEnum):
     PROTECTED = 3
 
 
-class MaskType(IntEnum):
-    BASIC = 1
-    JOINT = 2
-    BAR = 3
-    BLANKET = 4
-
-
-class EffectType(IntEnum):
-    INVALID = 0
-    BLUR = 1
-    OVERLAY = 2
-    COLOUR = 3
-    DEV = 4
-    EDGE_DETECTION = 5
-    NOISE = 6
-    PIXELATION = 7
-    STYLISATION = 8
-    TEXT = 9
-    TRANSPARENCY = 10
-
-
 class MergeMethod(IntEnum):
     NONE = 1
     GROUPS = 2

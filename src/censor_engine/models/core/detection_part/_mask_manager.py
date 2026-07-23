@@ -2,11 +2,12 @@ import copy
 from dataclasses import dataclass, field
 
 import cv2
+import numpy as np
 
 from censor_engine._typing import MaskImage
-from censor_engine.api.masks import MaskContext
 from censor_engine.libraries.registries import MaskRegistry
-from censor_engine.models.libraries.masks import Mask
+from censor_engine.models.libraries.masks.masks import Mask
+from censor_engine.models.libraries.masks.schemas import MaskContext
 
 
 @dataclass(slots=True)
@@ -36,7 +37,9 @@ class MaskManager:
 
     mask_name: str
     protection_mask_name: str | None
-    image_shape: tuple[int, int]
+    mask_context: MaskContext
+
+    image_shape: tuple[int, int] = field(init=False)
     current_mask: MaskImage = field(init=False)
     layers_of_mask: list[MaskImage] = field(default_factory=list, init=False)
 
@@ -55,10 +58,9 @@ class MaskManager:
         original mask, initializes the layer stack, and creates the
         mutable current mask.
 
-        Returns:
-            None
-
         """
+        self.image_shape = self.mask_context.empty_mask.shape[:2]
+
         # Base Mask
         self._obj_mask = self.get_mask_class(self.mask_name)
 
@@ -71,11 +73,7 @@ class MaskManager:
             self._obj_mask_protected = copy.copy(self._obj_mask)
 
         # Generate Masks
-        mask_context = MaskContext(
-            part=self,
-            empty_mask=Mask.create_empty_mask(self.image_shape),
-        )
-        self._original_mask = self._obj_mask.generate(mask_context)
+        self._original_mask = self._obj_mask.generate_mask(self.mask_context)
         self.layers_of_mask = [self._original_mask]
 
         self.current_mask = self._original_mask.copy()
@@ -104,6 +102,34 @@ class MaskManager:
             raise ValueError(msg)
 
         return masks[mask]()
+
+    def create_empty_mask(
+        self,
+        *,
+        inverse: bool = False,
+    ) -> MaskImage:
+        """
+        Creates an empty mask to serve as the base image for a mask.
+
+        The generated mask is a grayscale image with `uint8` data type.
+        By default, the mask is initialized with zeros (black). When
+        `inverse` is set to `True`, the mask is initialized with ones
+        (white, value 255).
+
+        Args:
+            image_shape: The shape of the image mask to create.
+            inverse: Whether to create a white base mask instead of a black
+                one. Defaults to False.
+
+        Returns:
+            MaskImage: An empty grayscale mask image.
+
+        """
+        return (
+            np.ones(self.image_shape, dtype=np.uint8) * 255
+            if inverse
+            else np.zeros(self.image_shape, dtype=np.uint8)
+        )
 
     def add_to_current_mask(self, mask: MaskImage) -> None:
         """

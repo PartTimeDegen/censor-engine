@@ -1,12 +1,13 @@
 from uuid import UUID
 
-from censor_engine.api.masks import MaskContext
+from censor_engine.api.context import MaskContext
 from censor_engine.models.config import Config
 from censor_engine.models.detected_part import Part
-from censor_engine.models.enums import MaskType
 from censor_engine.models.lib_models.detectors.schemas import (
     DetectedPart,
 )
+
+from censor_engine.models.enums import MaskType
 from censor_engine.structs import Mixin
 
 

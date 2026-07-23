@@ -2,8 +2,9 @@ from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
 import pytest
-from censor_engine.models.parts._schemas import PartNameType
-from censor_engine.models.parts.part import Part
+
+from censor_engine.models.core.detection_part._schemas import PartNameType
+from censor_engine.models.core.detection_part.detection_part import Part
 
 
 @pytest.fixture

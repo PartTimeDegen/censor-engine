@@ -1,10 +1,10 @@
 # Rewrite Update
 - Currently to do:
     - Library Stuff
-            - Tools
-            - Registers
             - Libraries
+            - Blanket
     - Tests
+        - Part.mask_manager
         - Part.detection_part
         - Image.part.part_proper
 

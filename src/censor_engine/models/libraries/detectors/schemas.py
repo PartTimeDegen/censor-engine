@@ -73,46 +73,40 @@ class AbsoluteBBox(BaseModel):
     # Information
     @property
     def width(self) -> int:
-        """Bounding box width."""
         return self.x2 - self.x1
 
     @property
     def height(self) -> int:
-        """Bounding box height."""
         return self.y2 - self.y1
 
     @property
     def area(self) -> int:
-        """Bounding box area."""
         return self.width * self.height
 
     @property
-    def center(self) -> tuple[float, float]:
-        """
-        Return the center point.
+    def centre(self) -> tuple[int, int]:
+        return ((self.x1 + self.x2) >> 1, (self.y1 + self.y2) >> 1)
 
-        :returns: (center_x, center_y)
-        """
-        return ((self.x1 + self.x2) / 2, (self.y1 + self.y2) / 2)
+    @property
+    def radius(self) -> tuple[int, int]:
+        return (self.width >> 1, self.height >> 1)
 
     # Outputs
     @property
     def xyxy(self) -> tuple[int, int, int, int]:
-        """
-        Return the bounding box as absolute coordinates.
-
-        :returns: (x1, y1, x2, y2)
-        """
         return (self.x1, self.y1, self.x2, self.y2)
 
     @property
     def xywh(self) -> tuple[int, int, int, int]:
-        """
-        Return the bounding box in XYWH format.
-
-        :returns: (x, y, width, height)
-        """
         return (self.x1, self.y1, self.width, self.height)
+
+    @property
+    def points(self) -> tuple[tuple[int, int], tuple[int, int]]:
+        return ((self.x1, self.y1), (self.x2, self.y2))
+
+    @property
+    def axes(self) -> tuple[int, int]:
+        return (self.width >> 1, self.height >> 1)
 
     # Methods
     def to_cxcywh(
@@ -127,7 +121,7 @@ class AbsoluteBBox(BaseModel):
         :param image_height: Image height in pixels.
         :returns: (center_x, center_y, width, height)
         """
-        cx, cy = self.center
+        cx, cy = self.centre
 
         return (
             cx / image_width,
@@ -155,7 +149,6 @@ class AbsoluteBBox(BaseModel):
 
         """
         # Get the Margin Data Depending on Type
-        print(margins, type(margins))
         w_margin = margins.width
         h_margin = margins.height
 

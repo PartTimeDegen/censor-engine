@@ -21,3 +21,6 @@ BBox = tuple[int, int, int, int]  # [x1, y1, x2, y2]
 
 # Shapes
 ImageShape = tuple[int, int]
+
+# Constants
+Alpha = int  # 0-255

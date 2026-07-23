@@ -5,6 +5,7 @@ from censor_engine.models.libraries.configs.config import Config
 from censor_engine.models.libraries.detectors.schemas import (
     DetectorOutput,
 )
+from censor_engine.models.libraries.masks.schemas import MaskContext
 
 from ._mask_manager import MaskManager
 from ._part_properties import PartProperties
@@ -36,10 +37,16 @@ class Part:
         )
 
         # Mask Manager
+        mask_context = MaskContext(
+            part_name=self.get_name(),
+            part_properties=self.properties,
+            mask=self.masks.current_mask,
+            base_empty_mask=self.masks.create_empty_mask(),
+        )
         self.masks = MaskManager(
             mask_name=self.properties.settings.mask,
             protection_mask_name=self.properties.settings.protection_mask,
-            image_shape=self.image_shape,
+            mask_context=mask_context,
         )
 
     def get_name(self, output: PartNameType = PartNameType.NAME) -> str:

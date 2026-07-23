@@ -1,24 +1,13 @@
-# from collections.abc import Generator
+import os
+from pathlib import Path
 
-# import cv2
-# import pytest
+ignore_paths = ["__init__", "__pycache__"]
+fixtures = [
+    str(path)[:-3].replace(os.sep, ".")
+    for path in list(Path("tests/fixtures").glob("*"))
+    if path.stem not in ignore_paths and not path.stem.startswith("_")
+]
+print(*fixtures, sep="\n")
 
-# from censor_engine.censor_engine.tools.config_previewer.example_image import (
-#     ImageGenerator,
-# )
-# from tests.utils import ImageFixtureData
 
-
-# @pytest.fixture
-# def dummy_input_image_data(tmp_path) -> Generator[ImageFixtureData]:
-#     input_path = tmp_path / "input.jpg"
-
-#     image_generator = ImageGenerator()
-#     dummy_img = image_generator.make_test_image()
-
-#     cv2.imwrite(str(input_path), dummy_img)
-#     return ImageFixtureData(
-#         path=input_path,
-#         generator=image_generator,
-#         parts=image_generator.parts,
-#     )  # type: ignore
+pytest_plugins = fixtures
