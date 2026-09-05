@@ -1,4 +1,5 @@
 from censor_engine.models.detected_part import Part
+
 from censor_engine.models.enums import MergeMethod, PartState
 from censor_engine.structs import Mixin
 

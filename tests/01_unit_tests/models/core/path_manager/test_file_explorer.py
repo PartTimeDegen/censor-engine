@@ -109,7 +109,7 @@ class TestFileExplorer:
                 fe = image_file_file_explorer
 
                 with pytest.raises(TypeError):
-                    indexed_file = fe._index_single_file(Path("file.aaaaaa"))
+                    fe._index_single_file(Path("file.aaaaaa"))
 
         class TestIndexMultipleFiles:
             def test_baseline(
@@ -132,7 +132,7 @@ class TestFileExplorer:
                 fe = empty_folder_file_explorer
                 rp = fe.root_path
                 with pytest.raises(FileNotFoundError):
-                    files = fe._index_multiple_files(rp)
+                    fe._index_multiple_files(rp)
 
         class TestFindFiles:
             def test_baseline(
@@ -224,4 +224,4 @@ class TestFileExplorer:
                 fe = empty_folder_file_explorer
 
                 with pytest.raises(FileNotFoundError):
-                    files = fe.find_files()
+                    fe.find_files()

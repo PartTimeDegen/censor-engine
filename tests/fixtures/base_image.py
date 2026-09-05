@@ -47,3 +47,47 @@ def base_mask() -> MaskImage:
     )
 
     return bg
+
+
+@pytest.fixture
+def base_image_offset(noisy_image) -> Image:
+    bg = noisy_image.copy()
+
+    cv2.circle(
+        bg,
+        (MIDPOINT // 2, MIDPOINT // 2),
+        BIG_HALF_PART_SIZE,
+        WHITE_3C,
+        thickness=-1,
+    )
+
+    return bg
+
+
+@pytest.fixture
+def base_mask_offset() -> MaskImage:
+    bg = np.zeros((CANVAS_SIZE, CANVAS_SIZE), dtype=np.uint8)
+    cv2.circle(
+        bg,
+        (MIDPOINT // 2, MIDPOINT // 2),
+        int(BIG_HALF_PART_SIZE * 2),
+        WHITE_3C,
+        thickness=-1,
+    )
+
+    return bg
+
+
+@pytest.fixture
+def base_mask_blanket() -> MaskImage:
+    bg = np.zeros((CANVAS_SIZE, CANVAS_SIZE), dtype=np.uint8)
+    top = MIDPOINT - int(BIG_HALF_PART_SIZE * 2)
+    cv2.rectangle(
+        bg,
+        (0, top),
+        (CANVAS_SIZE, CANVAS_SIZE),
+        WHITE_3C,
+        thickness=-1,
+    )
+
+    return bg

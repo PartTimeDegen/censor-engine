@@ -7,7 +7,6 @@ fixtures = [
     for path in list(Path("tests/fixtures").glob("*"))
     if path.stem not in ignore_paths and not path.stem.startswith("_")
 ]
-print(*fixtures, sep="\n")
 
 
 pytest_plugins = fixtures

@@ -119,10 +119,12 @@ class PartManager:
         )
 
         # Sort Parts
-        parts = self._sort_parts(parts)
+        sorted_parts = self._sort_parts(parts)
 
         # Run Mechanisms to Merge Parts
-        merged_parts = self.merge_mechanism.merge_parts_based_on_merge_method()
-        processed_parts = (
-            self.state_mechanism.handle_mask_overlaps_based_on_part_state()
+        merged_parts = self.merge_mechanism.merge_parts_based_on_merge_method(
+            parts=sorted_parts,
+            merge_method=path_manager.config.image.merging.method,
+            groups=path_manager.config.groups.merging,
         )
+        return self.state_mechanism.handle_mask_overlaps_based_on_part_state()

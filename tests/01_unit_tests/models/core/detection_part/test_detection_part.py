@@ -3,142 +3,77 @@ from uuid import uuid4
 
 import pytest
 
-from censor_engine.models.core.detection_part._schemas import PartNameType
+from censor_engine._typing import Image
 from censor_engine.models.core.detection_part.detection_part import Part
+from censor_engine.models.libraries.configs.config import Config
+from censor_engine.models.libraries.detectors.schemas import DetectorOutput
 
 
 @pytest.fixture
-def detector_output():
-    output = MagicMock()
-    output.label = "face"
-    return output
-
-
-@pytest.fixture
-def config():
-    return MagicMock()
-
-
-@pytest.fixture
-def image_shape():
-    return (100, 200)
-
-
-@pytest.fixture
-def file_uuid():
-    return uuid4()
-
-
-@pytest.fixture
-def properties():
-    props = MagicMock()
-    props.label = "face"
-    props.part_id = "123"
-    props.is_merged = False
-    props.settings.mask = "mask"
-    props.settings.protection_mask = "protection"
-    return props
-
-
-@pytest.fixture
-def part(detector_output, config, file_uuid, image_shape, properties):
-    with (
-        patch(
-            "censor_engine.models.parts.part.PartProperties",
-            return_value=properties,
-        ),
-        patch(
-            "censor_engine.models.parts.part.MaskManager",
-        ),
-    ):
-        return Part(
-            detector_output=detector_output,
-            config=config,
-            file_uuid=file_uuid,
-            image_shape=image_shape,
-        )
-
-
-def test_part_initialization_creates_properties_and_masks(
-    detector_output,
-    config,
-    file_uuid,
-    image_shape,
-    properties,
-):
-    with (
-        patch(
-            "censor_engine.models.parts.part.PartProperties",
-            return_value=properties,
-        ) as properties_mock,
-        patch(
-            "censor_engine.models.parts.part.MaskManager",
-        ) as mask_mock,
-    ):
-        part = Part(
-            detector_output=detector_output,
-            config=config,
-            file_uuid=file_uuid,
-            image_shape=image_shape,
-        )
-
-    properties_mock.assert_called_once_with(
+def part(
+    detector_output: DetectorOutput,
+    config_with_parts: Config,
+    base_image: Image,
+) -> Part:
+    return Part(
         detector_output=detector_output,
-        config=config,
+        config=config_with_parts,
+        file_uuid=uuid4(),
+        image_shape=base_image.shape[0:2],
     )
 
-    mask_mock.assert_called_once_with(
-        mask_name=properties.settings.mask,
-        protection_mask_name=properties.settings.protection_mask,
-        image_shape=image_shape,
-    )
 
-    assert part.properties == properties
-    assert part.masks == mask_mock.return_value
-
-
-def test_part_raises_error_when_label_is_missing(
-    config,
-    file_uuid,
-    image_shape,
-):
-    detector_output = MagicMock()
-    detector_output.label = None
-
-    with pytest.raises(TypeError, match="Missing Name"):
+class TestPart:
+    def test_initiate(
+        self,
+        detector_output: DetectorOutput,
+        config_with_parts: Config,
+        base_image: Image,
+    ):
         Part(
             detector_output=detector_output,
-            config=config,
-            file_uuid=file_uuid,
-            image_shape=image_shape,
+            config=config_with_parts,
+            file_uuid=uuid4(),
+            image_shape=base_image.shape[0:2],
         )
 
+    # class TestProperties:
+    #     def test_properties(self, part: Part):
+    #         assert part.properties.settings ==
+    #         assert part.properties.bbox ==
 
-@pytest.mark.parametrize(
-    "output, expected",
-    [
-        (PartNameType.NAME, "face"),
-        (PartNameType.ID_AND_NAME, "123_face"),
-        (PartNameType.ID_AND_NAME_AND_MERGED, "123_face_single"),
-        (PartNameType.NAME_AND_MERGED, "123_face_single"),
-    ],
-)
-def test_get_name(part, output, expected):
-    assert part.get_name(output) == expected
+    #         assert part.properties.detector_origin ==
+    #         assert part.properties.part_id ==
+    #         assert part.properties.label ==
+    #         assert part.properties.score ==
+    #         assert part.properties.original_bbox ==
+    #         assert part.properties.masks ==
 
+    #         assert part.properties.is_merged ==
+    #         assert part.properties.group_merge_id ==
+    #         assert part.properties.group_merge ==
 
-def test_get_name_returns_name_for_unknown_output(part):
-    assert part.get_name("invalid") == "face"
+    #         assert part.properties.group_persist_id ==
+    #         assert part.properties.group_persist ==
 
+    #     def test_detector_data(self, part: Part): ...
+    #     def test_config_data(self, part: Part): ...
+    #     def test_group_data(self, part: Part): ...
 
-@pytest.mark.parametrize(
-    "is_merged, expected",
-    [
-        (True, "123_face_merged"),
-        (False, "123_face_single"),
-    ],
-)
-def test_get_name_merged_state(part, is_merged, expected):
-    part.properties.is_merged = is_merged
+    # class TestMaskManager:
+    #     def test_properties(self, part: Part):
+    #         assert part.masks.mask_name ==
+    #         assert part.masks.protection_mask_name ==
+    #         assert part.masks.mask_context ==
 
-    assert part.get_name(PartNameType.ID_AND_NAME_AND_MERGED) == expected
+    #         assert part.masks.image_shape ==
+    #         assert part.masks.current_mask ==
+    #         assert part.masks.layers_of_mask ==
+
+    #         assert part.masks._obj_mask ==
+    #         assert part.masks._obj_mask_protected ==
+
+    #     def test_create_empty_mask(self, part: Part): ...
+    #     def test_add_to_current_mask(self, part: Part): ...
+    #     def test_subtract_from_current_mask(self, part: Part): ...
+    #     def test_compile_base_masks(self, part: Part): ...

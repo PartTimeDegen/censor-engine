@@ -23,7 +23,7 @@ class GeneralHelpers:
         # Fixing Strength
         factor = factor * 4 + 1
 
-        factor = self.normalise_factor(image, factor)
+        factor = self.normalise_factor(image, factor)  # type: ignore
 
         if factor < 1:
             factor = 1

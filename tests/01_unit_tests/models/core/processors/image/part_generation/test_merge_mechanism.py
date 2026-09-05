@@ -1,12 +1,10 @@
 import uuid
-from collections import defaultdict
 
 import pytest
 
 # Replace these imports with your actual test factories/classes
 from censor_engine.models.core.detection_part.detection_part import Part
 from censor_engine.models.core.processors.image.part_generation._merge_mechanism import (
-    GroupingStrategy,
     MergeMechanismManager,
 )
 from censor_engine.models.enums import MergeMethod
@@ -37,7 +35,6 @@ def parts_list():
     config = Config.from_dict(
         {"detection": {"enabled_parts": list(set(names))}}
     )
-    print(config.detection.parts)
 
     return [
         Part(
@@ -157,7 +154,7 @@ def groups():
 
 class TestMergeMechanismManager:
     def test_initiate(self):
-        mm = MergeMechanismManager()
+        MergeMechanismManager()
 
     class TestMergePartsBasedOnMergeMethod:
         def test_baseline(
@@ -166,7 +163,7 @@ class TestMergeMechanismManager:
             groups: Groups,
         ):
             mm = MergeMechanismManager()
-            output = mm.merge_parts_based_on_merge_method(
+            mm.merge_parts_based_on_merge_method(
                 parts_list,
                 MergeMethod.PARTS,
                 groups,

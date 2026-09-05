@@ -88,8 +88,8 @@ class TestPathManager:
         image_file: tuple[Path, Path],
         args: ParsedArguments,
     ):
-        base_dir, rel_media_path = image_file
-        pm = PathManager(base_dir, args)
+        base_dir, _rel_media_path = image_file
+        PathManager(base_dir, args)
 
     class TestMethods:
         class TestLoadMediaPath:

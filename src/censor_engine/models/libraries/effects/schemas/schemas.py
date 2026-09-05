@@ -8,12 +8,8 @@ from censor_engine.models.core.detection_part._part_properties import (
 )
 from censor_engine.structs.contours import Contour
 
-from .constants import OBLIQUE
-
-
-@dataclass(slots=True)
-class GeneralParameters:
-    alpha: float = OBLIQUE
+from ._general_parameters import GeneralParameters
+from ._mask_info_extraction import MaskInfo
 
 
 @dataclass(slots=True)
@@ -24,17 +20,28 @@ class EffectContext:
 
     part_properties: PartProperties
 
-    mask_bool: Image = field(init=False)
+    # Derivative Values
     original_image: Image = field(init=False)
+
+    mask_bool: Image = field(init=False)
+    mask_info: MaskInfo = field(init=False)
+
     contours: list[Contour] = field(init=False)
 
     # Settings
-    settings: GeneralParameters = field(default_factory=GeneralParameters)
+    general_settings: GeneralParameters = field(
+        default_factory=GeneralParameters
+    )
 
     def __post_init__(self):
-        self.mask_bool = self.mask > 0  # type: ignore
+        # Image Processing
         self.original_image = self.image.copy()
 
+        # Mask Processing
+        self.mask_bool = self.mask > 0  # type: ignore
+        self.mask_info = MaskInfo(self.mask)
+
+        # Contour Processing
         self.contours = self._get_contours_from_mask()
 
     @property

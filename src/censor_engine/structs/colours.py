@@ -1,3 +1,9 @@
+# Types
+TypeRGB = tuple[int, int, int]
+TypeColour = str | TypeRGB
+
+
+# Class
 class Colour:
     """
     This is the class that handles the colours used in CensorEngine, such that
@@ -19,7 +25,7 @@ class Colour:
 
     def __init__(
         self,
-        colour_name_or_rgb_value: str | tuple[int, int, int] = "WHITE",
+        colour_name_or_rgb_value: TypeColour = "WHITE",
         *,
         already_bgr: bool = False,
     ) -> None:

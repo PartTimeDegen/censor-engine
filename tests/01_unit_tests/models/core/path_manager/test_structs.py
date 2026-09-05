@@ -33,8 +33,8 @@ class TestApprovedFormats:
 
             def test_folder(self):
                 af = ApprovedFormats()
-                assert af.check_is_approved(Path("folder")) == False
+                assert not af.check_is_approved(Path("folder"))
 
             def test_non_approved_file(self):
                 af = ApprovedFormats()
-                assert af.check_is_approved(Path("file.aaaaaa")) == False
+                assert not af.check_is_approved(Path("file.aaaaaa"))

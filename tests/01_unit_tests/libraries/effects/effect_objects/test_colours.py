@@ -2,7 +2,6 @@ from pathlib import Path
 from typing import Any
 
 import cv2
-import numpy as np
 import pytest
 
 from censor_engine.libraries.effects.colours import (
@@ -15,7 +14,9 @@ from censor_engine.libraries.effects.colours import (
     Posterise,
     Sepia,
 )
-from censor_engine.models.libraries.effects.schemas import EffectContext
+from censor_engine.models.libraries.effects.schemas.schemas import (
+    EffectContext,
+)
 from tests.helpers.effect_handler import run_effect_tester
 
 file_path = Path(__file__)
@@ -23,7 +24,7 @@ file_path = Path(__file__)
 
 class TestEffects:
     @pytest.mark.parametrize(
-        "param, value",
+        ("param", "value"),
         [
             (None, None),
         ],
@@ -34,11 +35,11 @@ class TestEffects:
         run_effect_tester(file_path, effect_context, Greyscale, param, value)
 
     @pytest.mark.parametrize(
-        "param, value",
+        ("param", "value"),
         [
             (None, None),
-            ("colour_one", "GREY"),
-            ("colour_two", "PINK"),
+            ("colour_light", "GREY"),
+            ("colour_dark", "PINK"),
         ],
     )
     def test_duotone(
@@ -47,7 +48,7 @@ class TestEffects:
         run_effect_tester(file_path, effect_context, DuoTone, param, value)
 
     @pytest.mark.parametrize(
-        "param, value",
+        ("param", "value"),
         [
             (None, None),
             ("colour_map", "COLORMAP_AUTUMN"),
@@ -68,7 +69,7 @@ class TestEffects:
         )
 
     @pytest.mark.parametrize(
-        "param, value",
+        ("param", "value"),
         [
             (None, None),
             ("contrast_alpha", 0.5),
@@ -83,7 +84,7 @@ class TestEffects:
         run_effect_tester(file_path, effect_context, Contrast, param, value)
 
     @pytest.mark.parametrize(
-        "param, value",
+        ("param", "value"),
         [
             (None, None),
             ("hsv_lower_limit", "(120, 120, 120)"),
@@ -99,7 +100,7 @@ class TestEffects:
         run_effect_tester(file_path, effect_context, ColourMask, param, value)
 
     @pytest.mark.parametrize(
-        "param, value",
+        ("param", "value"),
         [
             (None, None),
             ("levels", 2),
@@ -112,7 +113,7 @@ class TestEffects:
         run_effect_tester(file_path, effect_context, Posterise, param, value)
 
     @pytest.mark.parametrize(
-        "param, value",
+        ("param", "value"),
         [
             (None, None),
         ],
@@ -123,7 +124,7 @@ class TestEffects:
         run_effect_tester(file_path, effect_context, Negative, param, value)
 
     @pytest.mark.parametrize(
-        "param, value",
+        ("param", "value"),
         [
             (None, None),
         ],

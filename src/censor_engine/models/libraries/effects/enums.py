@@ -1,15 +1,17 @@
-from enum import IntEnum
+from enum import IntEnum, auto
 
 
 class EffectType(IntEnum):
-    INVALID = 0
-    BLUR = 1
-    OVERLAY = 2
-    COLOUR = 3
-    DEV = 4
-    EDGE_DETECTION = 5
-    NOISE = 6
-    PIXELATION = 7
-    STYLISATION = 8
-    TEXT = 9
-    TRANSPARENCY = 10
+    INVALID = auto()
+    BLUR = auto()
+    OVERLAY = auto()
+    COLOUR = auto()
+    DEV = auto()
+    EDGE_DETECTION = auto()
+    NOISE = auto()
+    PIXELATION = auto()
+    CRYSTALLISATION = auto()
+    POLYGON = auto()
+    STYLISATION = auto()
+    TEXT = auto()
+    TRANSPARENCY = auto()

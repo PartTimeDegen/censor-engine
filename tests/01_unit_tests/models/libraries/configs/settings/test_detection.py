@@ -48,7 +48,7 @@ class TestPartSettings:
 
             def test_missing_state(self):
                 with pytest.raises(AttributeError):
-                    ps = PartSettings(state="doesn't exist").state  # type: ignore
+                    PartSettings(state="doesn't exist").state  # type: ignore
 
         class TestProtectionMask:
             def test_baseline(self):
@@ -77,12 +77,11 @@ class TestPartSettings:
 
         class TestUseGlobalArea:
             def test_baseline(self):
-                assert PartSettings().use_global_area == True
+                assert PartSettings().use_global_area
 
             def test_false(self):
                 assert (
-                    PartSettings(use_global_area=False).use_global_area
-                    == False
+                    not PartSettings(use_global_area=False).use_global_area
                 )
 
         class TestCensors:

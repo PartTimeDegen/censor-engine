@@ -1,10 +1,10 @@
 import cv2
 import numpy as np
-
-from censor_engine._typing import Image
 from censor_engine.models.lib_models.detectors.schemas import (
     DetectedPart,
 )
+
+from censor_engine._typing import Image
 
 HORIZONTAL_ROWS = {
     "far-left": 100,

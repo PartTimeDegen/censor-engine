@@ -1,4 +1,3 @@
-import cv2
 import numpy as np
 
 from censor_engine.models.enums import EffectType

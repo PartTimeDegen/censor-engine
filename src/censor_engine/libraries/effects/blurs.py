@@ -4,7 +4,11 @@ import numpy as np
 from censor_engine._typing import Image
 from censor_engine.libraries.registries import EffectRegistry
 from censor_engine.models.libraries.effects.effects import BlurEffect
-from censor_engine.models.libraries.effects.schemas import EffectContext
+from censor_engine.models.libraries.effects.schemas.schemas import (
+    EffectContext,
+)
+
+from ._default_args import FACTOR
 
 
 @EffectRegistry.register()
@@ -13,7 +17,7 @@ class Blur(BlurEffect):
         self,
         effect_context: EffectContext,
         *,
-        factor: float = 20,
+        factor: float = FACTOR,
     ) -> Image:
         new_factor = int(
             self.helpers.normalise_factor(effect_context.image_shape, factor)
@@ -27,14 +31,16 @@ class GaussianBlur(BlurEffect):
         self,
         effect_context: EffectContext,
         *,
-        factor: float = 20,
+        factor: float = FACTOR,
     ) -> Image:
         new_factor = int(
             self.helpers.normalise_factor(effect_context.image_shape, factor)
         )
         return cv2.GaussianBlur(
-            effect_context.image, (new_factor, new_factor), 0
-        )  # type: ignore
+            effect_context.image,  # type: ignore
+            (new_factor, new_factor),
+            0,
+        )
 
 
 @EffectRegistry.register()
@@ -43,7 +49,7 @@ class MedianBlur(BlurEffect):
         self,
         effect_context: EffectContext,
         *,
-        factor: float = 20,
+        factor: float = FACTOR,
     ) -> Image:
         new_factor = int(
             self.helpers.normalise_factor(effect_context.image_shape, factor)
@@ -57,7 +63,7 @@ class BilateralBlur(BlurEffect):
         self,
         effect_context: EffectContext,
         *,
-        distance: float = 20,
+        distance: float = FACTOR,
         sigma_colour: int = 150,
         sigma_space: int = 150,
     ) -> Image:
@@ -105,7 +111,7 @@ class MotionBlur(BlurEffect):
         self,
         effect_context: EffectContext,
         *,
-        offset: int = 10,
+        offset: int = FACTOR,
         angle: int = current_angle,
         video_rotate: int = 0,  # Neg, neutral, positive
     ) -> Image:

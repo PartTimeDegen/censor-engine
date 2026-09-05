@@ -1,11 +1,11 @@
 import cv2
 import numpy as np
+from censor_engine.models.lib_models.effects import TransparentEffect
 
 from censor_engine._common_constants import DIM_COLOUR, DIM_GREY, DIM_RGBA
 from censor_engine._typing import Image, ProcessedImage
 from censor_engine.api.effects import EffectContext
 from censor_engine.libraries.registries import EffectRegistry
-from censor_engine.models.lib_models.effects import TransparentEffect
 
 
 @EffectRegistry.register()

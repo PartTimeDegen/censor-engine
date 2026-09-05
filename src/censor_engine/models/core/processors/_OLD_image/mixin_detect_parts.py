@@ -1,7 +1,6 @@
 import itertools
 from concurrent.futures import ThreadPoolExecutor
 
-from censor_engine._typing import Image
 from censor_engine.models.caching import Cache
 from censor_engine.models.caching.schemas import (
     AIOutputData,
@@ -12,6 +11,8 @@ from censor_engine.models.lib_models.detectors.ai_models import AIModel
 from censor_engine.models.lib_models.detectors.schemas import (
     DetectedPart,
 )
+
+from censor_engine._typing import Image
 from censor_engine.structs import Mixin
 
 
@@ -45,14 +46,13 @@ class MixinDetectParts(Mixin):
 
         # Run YOLO First if Using Skin or ROI
         roi_output = None
-        model_outputs: DetectedPart = []
         if use_roi_focus or use_body_seg or use_skin_part:
             roi_output = detector_by_name["YoloSeg"].detect_image(image)
             # TODO: Add PERSON label
 
         # Run NudeNet Next
         if roi_output:
-            nudenet_output = [
+            [
                 detector_by_name["NudeNet"].detect_image_with_roi(roi_output)  # type: ignore
             ]
         # TODO Rest need to be done, and also remove "Interface, it's not needed"
@@ -140,7 +140,6 @@ class MixinDetectParts(Mixin):
         missing_detections: list[AIModel] = [
             k for k, v in verdicts.items() if not v
         ]
-        print(missing_detections)
         detected_parts = self.__run_detector(missing_detections, image)
 
         # Handle Cached Parts

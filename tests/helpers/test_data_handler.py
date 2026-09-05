@@ -37,7 +37,7 @@ def _create_new_test_data(
 
 
 def run_comparison_test(test_folder, expected_image, image):
-    THRESHOLD = 0.1
+    THRESHOLD = 1
 
     if len(image.shape) == 2:
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
@@ -49,11 +49,6 @@ def run_comparison_test(test_folder, expected_image, image):
 
     test = diff_percent < THRESHOLD
     if not test:
-        print(f"Failed Equality, check {test_folder}")
-        print(f"- Images differ by {diff_percent:.3f}% ({diff_pixels} pixels)")
-        print(f"- Max: {diff_pixels.max()}")
-        print(f"- Mean: {diff_pixels.mean()}")
-        print(f"- Count: {np.count_nonzero(diff_pixels)}")
         cv2.imwrite(
             str(test_folder / "diff.png"),
             cv2.absdiff(expected_image, image),

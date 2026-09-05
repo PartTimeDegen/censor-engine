@@ -3,7 +3,6 @@ from itertools import count
 from pathlib import Path
 
 import cv2
-
 from censor_engine.models.detected_part import Part
 
 

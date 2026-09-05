@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from censor_engine.models.lib_models.effects import TextEffect
 from matplotlib import font_manager
 from PIL import Image as PImage
 from PIL import ImageDraw, ImageFont
@@ -7,7 +8,6 @@ from PIL import ImageDraw, ImageFont
 from censor_engine._typing import Image, ProcessedImage
 from censor_engine.api.effects import EffectContext
 from censor_engine.libraries.registries import EffectRegistry
-from censor_engine.models.lib_models.effects import TextEffect
 from censor_engine.structs.colours import Colour
 
 

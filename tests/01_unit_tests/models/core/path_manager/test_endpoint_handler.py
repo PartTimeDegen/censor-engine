@@ -56,7 +56,8 @@ def pre_loaded_internal_paths(
     base_dir, rel_media_path = image_file
     config = args.config
     if config is None:
-        raise TypeError("Ignore")
+        msg = "Ignore"
+        raise TypeError(msg)
     return EndpointHandler(
         base_dir=base_dir,
         uncensored_base_dir=config.file_handling.folders.uncensored,
@@ -83,10 +84,11 @@ class TestBaseFunctions:
         image_file: tuple[Path, Path],
         args: ParsedArguments,
     ):
-        base_dir, rel_media_path = image_file
+        base_dir, _rel_media_path = image_file
         config = args.config
         if config is None:
-            raise TypeError("Ignore")
+            msg = "Ignore"
+            raise TypeError(msg)
 
         _ip = EndpointHandler(
             base_dir=base_dir,

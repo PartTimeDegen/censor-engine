@@ -11,10 +11,6 @@ from censor_engine.models.libraries.masks.bar_structs import (
     BoundingInfo,
 )
 from censor_engine.models.libraries.masks.schemas import MaskContext
-from tests.fixtures.mask_contexts import (
-    mask_context_inline_two_parts,
-    mask_context_vertical,
-)
 
 
 @pytest.fixture
@@ -64,7 +60,7 @@ class TestBoundingInfo:
             assert boi.centre == (249, 250)
             assert boi.dimensions == (128, 390)
             assert boi.angle == -90
-            assert boi.is_tight == False
+            assert not boi.is_tight
 
         def test_ellipse_tight(self, mask_context_inline_two_parts):
             mask_obj = Mask()
@@ -87,7 +83,7 @@ class TestBoundingInfo:
             assert boi.centre == (249, 250)
             assert boi.dimensions == (128, 390)
             assert boi.angle == 90
-            assert boi.is_tight == True
+            assert boi.is_tight
 
         def test_rectangle_non_tight(self, mask_context_inline_two_parts):
             mask_obj = Mask()
@@ -110,7 +106,7 @@ class TestBoundingInfo:
             assert boi.centre == (248, 250)
             assert boi.dimensions == (40, 206)
             assert boi.angle == -90
-            assert boi.is_tight == False
+            assert not boi.is_tight
 
         def test_rectangle_tight(self, mask_context_inline_two_parts):
             mask_obj = Mask()
@@ -148,7 +144,7 @@ class TestBoundingInfo:
 
     class TestProperties:
         @pytest.mark.parametrize(
-            "context, expected",
+            ("context", "expected"),
             [
                 ("mask_context_inline_two_parts", True),
                 ("mask_context_vertical", False),
@@ -178,7 +174,7 @@ class TestBoundingInfo:
             assert boi.is_wider_than_taller_rectangle == expected
 
         @pytest.mark.parametrize(
-            "long_direction, result", [(False, 128), (True, 390)]
+            ("long_direction", "result"), [(False, 128), (True, 390)]
         )
         def test_bar_thickness(
             self,
@@ -192,7 +188,7 @@ class TestBoundingInfo:
             assert boi.bar_thickness == result
 
         @pytest.mark.parametrize(
-            "force_hor, force_vert, result",
+            ("force_hor", "force_vert", "result"),
             [
                 (False, False, False),
                 (True, False, True),
@@ -215,7 +211,7 @@ class TestBoundingInfo:
 
     class TestPrivateMethods:
         @pytest.mark.parametrize(
-            "tight_bar, is_taller_than_wider, angle, result_angle, result_dimensions",
+            ("tight_bar", "is_taller_than_wider", "angle", "result_angle", "result_dimensions"),
             [
                 # When Angle is less than snap
                 (True, False, 0.1, 0.1, (128, 390)),
@@ -255,7 +251,7 @@ class TestBoundingInfo:
             assert boi.dimensions == result_dimensions
 
         @pytest.mark.parametrize(
-            "is_long_direction, is_tight",
+            ("is_long_direction", "is_tight"),
             [
                 (False, False),
                 (True, False),
@@ -278,7 +274,7 @@ class TestBoundingInfo:
             assert boi.angle == old_angle + 90 * addon
 
         @pytest.mark.parametrize(
-            "angle, result",
+            ("angle", "result"),
             [
                 (0.0, 0.0),
                 (90.0, 90.0),
@@ -301,7 +297,7 @@ class TestBoundingInfo:
         def test_fix_angles(self): ...  # Done through others
 
         @pytest.mark.parametrize(
-            "angle, result",
+            ("angle", "result"),
             [
                 # Horizontal Snap
                 (0.0, 0.0),
@@ -325,7 +321,7 @@ class TestBoundingInfo:
             assert boi.angle == result
 
         @pytest.mark.parametrize(
-            "force_hor, force_vert, result",
+            ("force_hor", "force_vert", "result"),
             [
                 (False, False, None),
                 (False, True, 391),

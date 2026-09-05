@@ -1,13 +1,15 @@
 from typing import ClassVar
 
-import cv2
 import numpy as np
 
 from censor_engine._typing import Image
-
-from .enums import EffectType
-from .helpers.general_effects import GeneralHelpers
-from .schemas import EffectContext
+from censor_engine.models.libraries.effects.enums import EffectType
+from censor_engine.models.libraries.effects.helpers.general_effects import (
+    GeneralHelpers,
+)
+from censor_engine.models.libraries.effects.schemas.schemas import (
+    EffectContext,
+)
 
 
 class Effect:
@@ -17,8 +19,7 @@ class Effect:
     helpers: GeneralHelpers
 
     # Supporting Information
-    force_png: bool = False
-    default_linetype: int = cv2.LINE_AA
+    force_png: ClassVar[bool] = False
 
     def __init__(self):
         self.helpers = GeneralHelpers()
@@ -32,7 +33,7 @@ class Effect:
         return np.where(
             effect_context.mask_bool[..., None],
             image_output,
-            effect_context.image,
+            effect_context.original_image,
         )
 
     # Pipeline
@@ -51,10 +52,19 @@ class Effect:
         )
         return self.generate_effect(new_effect_context, **new_kwargs)
 
+    # Public Methods
+    def generate_effect_pre_process(
+        self, effect_context: EffectContext, **kwargs: dict
+    ) -> Image:
+        return effect_context.image
+
     def generate_effect(
-        self,
-        effect_context: EffectContext,
-        **kwargs: dict,
+        self, effect_context: EffectContext, **kwargs: dict
     ) -> Image:
         msg = f"{self.__class__.__name__} does not implement generate_effect()"
         raise NotImplementedError(msg)
+
+    def generate_effect_post_process(
+        self, effect_context: EffectContext, **kwargs: dict
+    ) -> Image:
+        return effect_context.image

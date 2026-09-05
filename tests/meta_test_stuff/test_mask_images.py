@@ -26,7 +26,7 @@ def mask(request):
 
 
 @pytest.mark.parametrize(
-    "mask_name, mask", params, indirect=["mask"], ids=MASKS
+    ("mask_name", "mask"), params, indirect=["mask"], ids=MASKS
 )
 def test_mask_fixture_images(mask_name, mask):
     handle_test_data(

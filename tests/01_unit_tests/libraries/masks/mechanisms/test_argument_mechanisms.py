@@ -18,7 +18,7 @@ class TestMechanisms:
 
         def test_thickness(self, shape_cls, mask_context_no_part: MaskContext):
             """
-            TODO: THIS IS EXPERIMENTAL
+            TODO: THIS IS EXPERIMENTAL.
             """
             mask_context_no_part.settings.thickness = 0.5
             general_image_library_test(
@@ -36,7 +36,7 @@ class TestMechanisms:
             bbox_long_vert: AbsoluteBBox,
         ):
             """
-            TODO: THIS IS EXPERIMENTAL
+            TODO: THIS IS EXPERIMENTAL.
             """
             mask_context_no_part.settings.thickness = 0.5
             mask_context_no_part.part_properties.bbox = bbox_long_vert
@@ -55,7 +55,7 @@ class TestMechanisms:
             bbox_long_hor: AbsoluteBBox,
         ):
             """
-            TODO: THIS IS EXPERIMENTAL
+            TODO: THIS IS EXPERIMENTAL.
             """
             mask_context_no_part.settings.thickness = 0.5
             mask_context_no_part.part_properties.bbox = bbox_long_hor

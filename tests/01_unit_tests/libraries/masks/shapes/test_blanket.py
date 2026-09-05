@@ -1,16 +1,11 @@
-from copy import deepcopy
 from pathlib import Path
-from uuid import uuid4
 
-import cv2
 import pytest
 
-from censor_engine.models.libraries.masks._base_mask import Mask
 from censor_engine.models.libraries.masks.enums import MaskType
 from censor_engine.models.libraries.masks.schemas import MaskContext
 from tests.helpers.image_test_handlers import general_image_library_test
 from tests.helpers.masks import get_masks
-from tests.helpers.test_data_handler import handle_test_data
 
 file_path = Path(__file__)
 

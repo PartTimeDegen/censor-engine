@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from uuid import UUID
 
+import numpy as np
+
 from censor_engine.models.libraries.configs.config import Config
 from censor_engine.models.libraries.detectors.schemas import (
     DetectorOutput,
@@ -37,11 +39,12 @@ class Part:
         )
 
         # Mask Manager
+        empty_mask = np.zeros(self.image_shape, dtype=np.uint8)
         mask_context = MaskContext(
             part_name=self.get_name(),
             part_properties=self.properties,
-            mask=self.masks.current_mask,
-            base_empty_mask=self.masks.create_empty_mask(),
+            mask=empty_mask,
+            base_empty_mask=empty_mask,
         )
         self.masks = MaskManager(
             mask_name=self.properties.settings.mask,

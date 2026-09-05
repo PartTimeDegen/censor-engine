@@ -3,7 +3,6 @@ from pathlib import Path
 
 import pytest
 
-from censor_engine import models
 from censor_engine.models.core.data_caching._common_paths import (
     META_FILE,
 )

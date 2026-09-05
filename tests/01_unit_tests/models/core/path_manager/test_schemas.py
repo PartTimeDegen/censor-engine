@@ -26,7 +26,7 @@ outputs = [
 
 both = [
     (index, max_index, expected)
-    for (index, max_index), expected in zip(inputs, outputs)
+    for (index, max_index), expected in zip(inputs, outputs, strict=False)
 ]
 
 

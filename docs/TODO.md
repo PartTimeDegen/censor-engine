@@ -2,11 +2,10 @@
 - Currently to do:
     - Library Stuff
             - Libraries
-            - Blanket
+            - Tranc
     - Tests
-        - Part.mask_manager
-        - Part.detection_part
         - Image.part.part_proper
+        - Helpers and tests for effects
 
 
 

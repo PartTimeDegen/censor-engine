@@ -1,8 +1,6 @@
 from pathlib import Path
 from typing import Any
 
-import cv2
-import numpy as np
 import pytest
 
 from censor_engine.libraries.effects.blurs import (
@@ -12,7 +10,9 @@ from censor_engine.libraries.effects.blurs import (
     MedianBlur,
     MotionBlur,
 )
-from censor_engine.models.libraries.effects.schemas import EffectContext
+from censor_engine.models.libraries.effects.schemas.schemas import (
+    EffectContext,
+)
 from tests.helpers.effect_handler import run_effect_tester
 
 file_path = Path(__file__)
@@ -20,7 +20,7 @@ file_path = Path(__file__)
 
 class TestEffects:
     @pytest.mark.parametrize(
-        "param, value",
+        ("param", "value"),
         [
             (None, None),
             ("factor", 5),
@@ -31,7 +31,7 @@ class TestEffects:
         run_effect_tester(file_path, effect_context, Blur, param, value)
 
     @pytest.mark.parametrize(
-        "param, value",
+        ("param", "value"),
         [
             (None, None),
             ("factor", 5),
@@ -46,7 +46,7 @@ class TestEffects:
         )
 
     @pytest.mark.parametrize(
-        "param, value",
+        ("param", "value"),
         [
             (None, None),
             ("factor", 5),
@@ -59,7 +59,7 @@ class TestEffects:
         run_effect_tester(file_path, effect_context, MedianBlur, param, value)
 
     @pytest.mark.parametrize(
-        "param, value",
+        ("param", "value"),
         [
             (None, None),
             ("distance", 2),
@@ -78,7 +78,7 @@ class TestEffects:
         )
 
     @pytest.mark.parametrize(
-        "param, value",
+        ("param", "value"),
         [
             (None, None),
             ("offset", 2),
@@ -91,3 +91,6 @@ class TestEffects:
         self, param: str, value: Any, effect_context: EffectContext
     ):
         run_effect_tester(file_path, effect_context, MotionBlur, param, value)
+
+
+class TestFactor: ...
