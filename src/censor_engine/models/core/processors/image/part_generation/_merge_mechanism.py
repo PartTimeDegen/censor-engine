@@ -150,12 +150,12 @@ class MergeMechanismManager:
             # Add Layers of Masks to First Part
             first_part = part_list_by_state[0]
             rest_of_parts = part_list_by_state[1:]
-            first_part.masks.layers_of_mask += [
-                part.masks.current_mask for part in rest_of_parts
+            first_part.mask_manager.layers_of_mask += [
+                part.mask_manager.current_mask for part in rest_of_parts
             ]
 
             # Compile and Add Parts to List
-            first_part.masks.compile_base_masks()
+            first_part.mask_manager.compile_base_masks()
             parts.append(first_part)
 
         return parts

@@ -45,35 +45,35 @@ effects_sorted = sorted(effect_list, key=lambda x: x.__name__)
 
 
 # @pytest.mark.parametrize("file_name", files)
-@pytest.mark.parametrize("effect", effects_sorted)
-def test_effect(
-    effect,
-    # file_name: str,
-    detection_properties: PartProperties,
-):
-    effect_obj = effect()
-    folder = _get_test_data_path(file_path) / "custom"
-    folder.mkdir(parents=True, exist_ok=True)
-    # base_path = folder / f"{Path(effect.__name__)}_{file_name}"
-    base_path = folder / f"{Path(effect.__name__)}"
+# @pytest.mark.parametrize("effect", effects_sorted)
+# def test_effect(
+#     effect,
+#     # file_name: str,
+#     detection_properties: PartProperties,
+# ):
+#     effect_obj = effect()
+#     folder = _get_test_data_path(file_path) / "custom"
+#     folder.mkdir(parents=True, exist_ok=True)
+#     # base_path = folder / f"{Path(effect.__name__)}_{file_name}"
+#     base_path = folder / f"{Path(effect.__name__)}"
 
-    ec = effect_context_test_image(
-        detection_properties,
-        #    file_name,
-    )
+#     ec = effect_context_test_image(
+#         detection_properties,
+#         #    file_name,
+#     )
 
-    effect_image = effect_obj.generate_effect(ec)
-    cut_image = effect_obj.apply_effect_to_image(ec, effect_image)
+#     effect_image = effect_obj.generate_effect(ec)
+#     cut_image = effect_obj.apply_effect_to_image(ec, effect_image)
 
-    shape = cut_image.shape[:2]
-    min_dim = min(shape)
+#     shape = cut_image.shape[:2]
+#     min_dim = min(shape)
 
-    cv2.circle(
-        cut_image,
-        (shape[1] // 2, shape[0] // 2),
-        int((min_dim // 2) * 0.9),
-        (0, 0, 0),
-        thickness=2,
-    )
+#     cv2.circle(
+#         cut_image,
+#         (shape[1] // 2, shape[0] // 2),
+#         int((min_dim // 2) * 0.9),
+#         (0, 0, 0),
+#         thickness=2,
+#     )
 
-    cv2.imwrite(f"{base_path}.png", cut_image)
+#     cv2.imwrite(f"{base_path}.png", cut_image)

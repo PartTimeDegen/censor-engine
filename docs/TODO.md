@@ -6,6 +6,9 @@
     - Tests
         - Image.part.part_proper
         - Helpers and tests for effects
+        - Part Manager
+        - Mask converter^ # It's pretty simple but worth it for documenting
+            behaviour
 
 
 

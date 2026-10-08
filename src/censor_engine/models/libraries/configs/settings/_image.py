@@ -2,13 +2,13 @@ from pydantic import BaseModel, Field, field_validator
 
 from censor_engine.models.enums import MergeMethod
 from censor_engine.models.libraries.configs._helper_types import (
+    ListOfCensors,
     MarginPercentage,
 )
 from censor_engine.models.libraries.configs._validators import (
     convert_merge_method,
     normalise_censors,
 )
-from censor_engine.structs.censors import Censor
 
 
 class _Merging(BaseModel):
@@ -22,7 +22,7 @@ class _Merging(BaseModel):
 
 class ImageSettings(BaseModel):
     merging: _Merging = Field(default_factory=_Merging)
-    reverse_censor: list[Censor] = Field(default_factory=list)  # TODO: Convert
+    reverse_censor: ListOfCensors = Field(default_factory=list)
 
     _normalise_censor = field_validator("reverse_censor", mode="before")(
         normalise_censors

@@ -175,5 +175,10 @@ class MaskManager:
             None
 
         """
+        # TODO: Low priority: change to reduce function
         for mask in self.layers_of_mask:
             self.add_to_current_mask(mask)
+
+    @property
+    def mask_obj(self):
+        return self._obj_mask

@@ -138,62 +138,62 @@ class ImageProcessor(
         """
         return self.file_image
 
-    def generate_parts(self) -> None:
-        """
-        This method handles the generation of the parts.
+    # def generate_parts(self) -> None:
+    #     """
+    #     This method handles the generation of the parts.
 
-        Stages:
-            1)  Create parts.
-            2)  Filter parts that don't meet the minimum score threshold.
+    #     Stages:
+    #         1)  Create parts.
+    #         2)  Filter parts that don't meet the minimum score threshold.
 
-        """
-        # Create Parts
-        self._image_parts = self._create_parts(
-            self.config,
-            self._file_uuid,
-            self._detected_parts,
-            self.file_image.shape,
-        )
+    #     """
+    #     # Create Parts
+    #     self._image_parts = self._create_parts(
+    #         self.config,
+    #         self._file_uuid,
+    #         self._detected_parts,
+    #         self.file_image.shape,
+    #     )
 
-        # Filter Parts
-        self._image_parts = [
-            part
-            for part in self._image_parts
-            if part.score >= part.minimum_score
-        ]
+    #     # Filter Parts
+    #     self._image_parts = [
+    #         part
+    #         for part in self._image_parts
+    #         if part.score >= part.minimum_score
+    #     ]
 
-    def generate_mask_masks(self) -> None:
-        """
-        This method handles the generation the masks' masks.
+    # def generate_mask_masks(self) -> None:
+    # """
+    # This method handles the generation the masks' masks.
 
-        Stages:
-            1)  Merge parts based on the merge method and merge groups.
-            2)  Apple the mask effects to the mask, handling more advanced
-                parts as well which require more than one pass.
+    # Stages:
+    #     1)  Merge parts based on the merge method and merge groups.
+    #     2)  Apple the mask effects to the mask, handling more advanced
+    #         parts as well which require more than one pass.
 
-        """
-        # Merge Parts
-        self._image_parts = self._merge_parts(
-            self._image_parts,
-        )
+    # """
+    # # Merge Parts
+    # self._image_parts = self._merge_parts(
+    #     self._image_parts,
+    # )
 
-        # Handle More Advanced Parts (i.e., Bars and Joints)
-        self._image_parts = self._apply_and_generate_mask_masks(
-            self._image_parts,
-        )
+    # # Handle More Advanced Parts (i.e., Bars and Joints)
+    # self._image_parts = self._apply_and_generate_mask_masks(
+    #     self._image_parts,
+    # )
 
-    def compile_masks(self) -> None:
-        """
-        This method compiles the masks.
+    # def compile_masks(self) -> None:
+    #     """
+    #     This method compiles the masks.
 
-        This is a separate method for modularity, specifically for the video
-        pipeline.
+    #     This is a separate method for modularity, specifically for the video
+    #     pipeline.
 
-        """
-        # Test Parts for Overlap
-        self._image_parts = self._process_state_logic_for_masks(
-            self._image_parts,
-        )
+    #     """
+    #     # Test Parts for Overlap
+    #     self._image_parts = self._process_state_logic_for_masks(
+    #         self._image_parts,
+    #     )
 
     def apply_censors(self) -> None:
         """

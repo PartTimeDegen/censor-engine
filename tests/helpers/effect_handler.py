@@ -16,8 +16,12 @@ def run_effect_tester(
     extra_args = extra_params if extra_params is not None else {}
     effect = effect_class()
 
-    effect_image = effect.generate_effect(effect_context, **args, **extra_args)
-    output = effect.apply_effect_to_image(effect_context, effect_image)
+    effect_context.image = effect.generate_effect(
+        effect_context,
+        **args,
+        **extra_args,
+    )
+    output = effect.apply_effect_to_image(effect_context)
 
     # cv2.imwrite(f"_{param}_{value}.png", output)
     title = f"{param}-{value}" if param is not None else "baseline"

@@ -9,6 +9,7 @@ from censor_engine.models.libraries.detectors.schemas import (
 )
 from censor_engine.models.libraries.masks.schemas import MaskContext
 
+from ._effect_manager import EffectManager
 from ._mask_manager import MaskManager
 from ._part_properties import PartProperties
 from ._schemas import PartNameType
@@ -24,7 +25,8 @@ class Part:
 
     # Properties
     properties: PartProperties = field(init=False)
-    masks: MaskManager = field(init=False)
+    mask_manager: MaskManager = field(init=False)
+    effect_manager: EffectManager = field(init=False)
 
     def __post_init__(self):
         label = self.detector_output.label
@@ -46,10 +48,16 @@ class Part:
             mask=empty_mask,
             base_empty_mask=empty_mask,
         )
-        self.masks = MaskManager(
+        self.mask_manager = MaskManager(
             mask_name=self.properties.settings.mask,
             protection_mask_name=self.properties.settings.protection_mask,
             mask_context=mask_context,
+        )
+
+        # Effect Manager
+        self.effect_manager = EffectManager(
+            list_of_censors=self.properties.settings.censors,
+            list_of_reverse_censors=self.config.image.reverse_censor,
         )
 
     def get_name(self, output: PartNameType = PartNameType.NAME) -> str:

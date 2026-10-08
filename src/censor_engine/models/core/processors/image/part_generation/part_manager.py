@@ -3,15 +3,19 @@ from uuid import UUID
 from censor_engine._typing import ImageShape
 from censor_engine.models.core.detection_part.detection_part import Part
 from censor_engine.models.core.path_manager.path_manager import PathManager
+from censor_engine.models.core.processors.image.part_generation._advanced_shapes_generation import (
+    AdvancedShapeMaskGenerator,
+)
 from censor_engine.models.libraries.detectors.schemas import DetectorOutput
 
 from ._merge_mechanism import MergeMechanismManager
-from ._merge_on_part_state import PartStateMechanism
+from ._state_mechanism import PartStateMechanism
 
 
 class PartManager:
     merge_mechanism: MergeMechanismManager = MergeMechanismManager()
     state_mechanism: PartStateMechanism = PartStateMechanism()
+    mask_generator: AdvancedShapeMaskGenerator = AdvancedShapeMaskGenerator()
 
     def _create_parts_objects_from_detector_outputs(
         self,
@@ -121,10 +125,19 @@ class PartManager:
         # Sort Parts
         sorted_parts = self._sort_parts(parts)
 
-        # Run Mechanisms to Merge Parts
+        # Run Mechanisms to Merge Parts by Method and States
         merged_parts = self.merge_mechanism.merge_parts_based_on_merge_method(
             parts=sorted_parts,
             merge_method=path_manager.config.image.merging.method,
             groups=path_manager.config.groups.merging,
         )
-        return self.state_mechanism.handle_mask_overlaps_based_on_part_state()
+
+        cleaned_merged_parts = (
+            self.state_mechanism.handle_mask_overlaps_based_on_part_state(
+                merged_parts
+            )
+        )
+
+        return self.mask_generator.convert_masks_to_advanced_versions(
+            cleaned_merged_parts
+        )

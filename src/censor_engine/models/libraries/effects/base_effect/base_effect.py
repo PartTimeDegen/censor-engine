@@ -28,11 +28,10 @@ class Effect:
     def apply_effect_to_image(
         self,
         effect_context: EffectContext,
-        image_output: Image,
     ) -> Image:
         return np.where(
             effect_context.mask_bool[..., None],
-            image_output,
+            effect_context.image,
             effect_context.original_image,
         )
 
