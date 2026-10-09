@@ -5,8 +5,10 @@ import pytest
 
 from censor_engine._typing import Image
 from censor_engine.models.core.detection_part.detection_part import Part
+from censor_engine.models.libraries.ai_models.output_schemas import (
+    DetectorOutput,
+)
 from censor_engine.models.libraries.configs.config import Config
-from censor_engine.models.libraries.detectors.schemas import DetectorOutput
 
 
 @pytest.fixture

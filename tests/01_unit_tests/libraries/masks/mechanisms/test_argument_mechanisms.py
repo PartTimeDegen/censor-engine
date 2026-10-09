@@ -2,7 +2,9 @@ from pathlib import Path
 
 import pytest
 
-from censor_engine.models.libraries.detectors.schemas import AbsoluteBBox
+from censor_engine.models.libraries.ai_models.output_schemas import (
+    AbsoluteBBox,
+)
 from censor_engine.models.libraries.masks.enums import MaskType
 from censor_engine.models.libraries.masks.schemas import MaskContext
 from tests.helpers.image_test_handlers import general_image_library_test

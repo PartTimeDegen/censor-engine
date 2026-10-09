@@ -3,8 +3,10 @@ import pytest
 from censor_engine.models.core.detection_part._part_properties import (
     PartProperties,
 )
+from censor_engine.models.libraries.ai_models.output_schemas import (
+    DetectorOutput,
+)
 from censor_engine.models.libraries.configs.config import Config
-from censor_engine.models.libraries.detectors.schemas import DetectorOutput
 
 
 @pytest.fixture

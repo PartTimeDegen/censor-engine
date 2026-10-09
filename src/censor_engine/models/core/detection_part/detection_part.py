@@ -3,10 +3,10 @@ from uuid import UUID
 
 import numpy as np
 
-from censor_engine.models.libraries.configs.config import Config
-from censor_engine.models.libraries.detectors.schemas import (
+from censor_engine.models.libraries.ai_models.output_schemas import (
     DetectorOutput,
 )
+from censor_engine.models.libraries.configs.config import Config
 from censor_engine.models.libraries.masks.schemas import MaskContext
 
 from ._effect_manager import EffectManager

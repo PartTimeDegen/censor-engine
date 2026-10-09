@@ -1,7 +1,7 @@
 import pytest
 
 from censor_engine._typing import MaskImage
-from censor_engine.models.libraries.detectors.schemas import (
+from censor_engine.models.libraries.ai_models.output_schemas import (
     AbsoluteBBox,
     DetectorOutput,
 )

@@ -12,7 +12,7 @@ from censor_engine.models.core.data_caching.image_cache._paths import (
 from censor_engine.models.core.data_caching.image_cache.model import (
     ImageCache,
 )
-from censor_engine.models.libraries.detectors.schemas import (
+from censor_engine.models.libraries.ai_models.output_schemas import (
     DetectorOutput,
 )
 

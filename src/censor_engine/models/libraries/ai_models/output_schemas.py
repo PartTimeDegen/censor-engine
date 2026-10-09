@@ -176,7 +176,7 @@ class DetectorOutput(BaseModel):
     part_id: int = 0
 
     # Meta
-    score: float  # TODO Make this so if it's missing, set to 100%
+    score: float = 1.0
     label: str | None = None
 
     # Data Used for Information

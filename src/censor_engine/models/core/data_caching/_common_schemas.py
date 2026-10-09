@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from censor_engine.models.libraries.detectors.schemas import (
+from censor_engine.models.libraries.ai_models.output_schemas import (
     DetectorOutput,
 )
 

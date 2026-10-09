@@ -1,6 +1,10 @@
 from dataclasses import dataclass, field
 
 from censor_engine._typing import MaskImage
+from censor_engine.models.libraries.ai_models.output_schemas import (
+    AbsoluteBBox,
+    DetectorOutput,
+)
 from censor_engine.models.libraries.configs._helper_types import (
     BoundPercentage,
     Groups,
@@ -8,10 +12,6 @@ from censor_engine.models.libraries.configs._helper_types import (
 from censor_engine.models.libraries.configs.config import Config
 from censor_engine.models.libraries.configs.settings._detection import (
     PartSettings,
-)
-from censor_engine.models.libraries.detectors.schemas import (
-    AbsoluteBBox,
-    DetectorOutput,
 )
 
 

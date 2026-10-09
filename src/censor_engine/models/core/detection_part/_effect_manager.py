@@ -89,7 +89,6 @@ class EffectManager:
             mask=mask,
             part_properties=part_properties,
         )
-
         effect_context = reduce(
             self._apply_censor_effect,
             self.list_of_censors,

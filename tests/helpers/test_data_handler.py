@@ -67,7 +67,9 @@ def _check_files(expected_file: Path, test_folder: Path, image):
     run_comparison_test(test_folder, expected_image, image)
 
 
-def handle_test_data(test_name: str, image: np.ndarray, file_path: Path):
+def handle_test_data(
+    test_name: str | Path, image: np.ndarray, file_path: Path
+):
     # Make Base Folders
     test_folder = _get_test_data_path(file_path) / test_name
     test_folder.mkdir(parents=True, exist_ok=True)

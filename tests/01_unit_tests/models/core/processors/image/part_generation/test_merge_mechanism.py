@@ -8,9 +8,11 @@ from censor_engine.models.core.processors.image.part_generation._merge_mechanism
     MergeMechanismManager,
 )
 from censor_engine.models.enums import MergeMethod
+from censor_engine.models.libraries.ai_models.output_schemas import (
+    DetectorOutput,
+)
 from censor_engine.models.libraries.configs._helper_types import Groups
 from censor_engine.models.libraries.configs.config import Config
-from censor_engine.models.libraries.detectors.schemas import DetectorOutput
 
 
 @pytest.fixture

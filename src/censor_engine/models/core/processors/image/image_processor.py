@@ -10,7 +10,9 @@ from censor_engine.models.core.processors.image.censor_generation.censor_manager
 from censor_engine.models.core.processors.image.part_generation.part_manager import (  # noqa: E501
     PartManager,
 )
-from censor_engine.models.libraries.detectors.schemas import DetectorOutput
+from censor_engine.models.libraries.ai_models.output_schemas import (
+    DetectorOutput,
+)
 
 
 @dataclass(slots=True)

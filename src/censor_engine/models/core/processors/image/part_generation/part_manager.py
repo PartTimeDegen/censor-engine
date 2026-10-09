@@ -6,7 +6,9 @@ from censor_engine.models.core.path_manager.path_manager import PathManager
 from censor_engine.models.core.processors.image.part_generation._advanced_shapes_generation import (
     AdvancedShapeMaskGenerator,
 )
-from censor_engine.models.libraries.detectors.schemas import DetectorOutput
+from censor_engine.models.libraries.ai_models.output_schemas import (
+    DetectorOutput,
+)
 
 from ._merge_mechanism import MergeMechanismManager
 from ._state_mechanism import PartStateMechanism

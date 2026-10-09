@@ -4,12 +4,10 @@
             - Libraries
             - Tranc
     - Tests
-        - Image.part.part_proper
+        - Image.part.part_properties
         - Helpers and tests for effects
         - Part Manager
-        - Mask converter^ # It's pretty simple but worth it for documenting
-            behaviour
-
+        - Mask converter^ # It's pretty simple but worth it for documenting behaviour
 
 
     - Backlog
