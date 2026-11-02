@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import numpy as np
-from pydantic import BaseModel
+import numpy.typing as npt
+from pydantic import BaseModel, model_validator
 
-from censor_engine._typing import MaskImage
 from censor_engine.models.libraries.configs.settings.schemas import Margins
+from censor_engine.typing import MaskImage
+
+from ._enums import OutputType
 
 
 class AbsoluteBBox(BaseModel):
@@ -171,6 +174,7 @@ class DetectorOutput(BaseModel):
     }
 
     origin: str
+    output_type: OutputType
 
     # Internal
     part_id: int = 0
@@ -181,7 +185,26 @@ class DetectorOutput(BaseModel):
 
     # Data Used for Information
     bbox: AbsoluteBBox | None = None  # XYXY
-    masks: list[MaskImage] | None = None
+    mask: MaskImage | None = None  # np.uint8
+    depth_map: npt.NDArray[np.float32] | None = None  # Depth Data
 
     def set_part_id(self, number: int) -> None:
         self.part_id = number
+
+    @model_validator(mode="after")
+    def generate_bbox(self):
+        if self.bbox is not None or self.mask is None:
+            return self
+
+        ys, xs = np.where(self.mask > 0)
+        if len(xs) > 0:
+            self.bbox = AbsoluteBBox.from_xyxy(
+                (
+                    int(xs.min()),
+                    int(ys.min()),
+                    int(xs.max()) + 1,
+                    int(ys.max()) + 1,
+                )
+            )
+
+        return self

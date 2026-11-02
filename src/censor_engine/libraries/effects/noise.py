@@ -4,7 +4,6 @@ from functools import lru_cache
 import cv2
 import numpy as np
 
-from censor_engine._typing import Image
 from censor_engine.libraries.effects._default_args import (
     OFFSET,
     SEED,
@@ -15,6 +14,7 @@ from censor_engine.models.libraries.effects.effects import NoiseEffect
 from censor_engine.models.libraries.effects.schemas.schemas import (
     EffectContext,
 )
+from censor_engine.typing import Image
 
 
 @EffectRegistry.register()

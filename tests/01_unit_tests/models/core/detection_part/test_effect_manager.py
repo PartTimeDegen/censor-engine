@@ -2,7 +2,6 @@ from pathlib import Path
 
 import cv2
 
-from censor_engine._typing import Image, MaskImage
 from censor_engine.models.core.detection_part._effect_manager import (
     EffectManager,
 )
@@ -13,6 +12,7 @@ from censor_engine.models.libraries.effects.schemas.schemas import (
     EffectContext,
 )
 from censor_engine.structs.censors import Censor
+from censor_engine.typing import Image, MaskImage
 from tests.helpers.test_data_handler import handle_test_data
 
 file_path = Path(__file__)

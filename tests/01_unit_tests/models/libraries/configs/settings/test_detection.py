@@ -80,9 +80,7 @@ class TestPartSettings:
                 assert PartSettings().use_global_area
 
             def test_false(self):
-                assert (
-                    not PartSettings(use_global_area=False).use_global_area
-                )
+                assert not PartSettings(use_global_area=False).use_global_area
 
         class TestCensors:
             def test_baseline(self):
@@ -168,7 +166,7 @@ class TestDetectionSettings:
         def test_baseline(self):
             ds = DetectionSettings(
                 enabled_parts=["Thing"],
-                parts={
+                part_settings={
                     "Thing": {
                         "mask": "Circle",
                         "state": "protected",
@@ -177,44 +175,39 @@ class TestDetectionSettings:
                     }
                 },  # type: ignore
             )
-            assert len(ds.parts) == 1
-            assert ds.parts["Thing"].mask == "Circle"
-            assert ds.parts["Thing"].state == PartState.PROTECTED
-            assert ds.parts["Thing"].fade == 0.5
-            assert ds.parts["Thing"].protection_mask == "placeholder"
+            assert len(ds.part_settings) == 1
+            assert ds.part_settings["Thing"].mask == "Circle"
+            assert ds.part_settings["Thing"].state == PartState.PROTECTED
+            assert ds.part_settings["Thing"].fade == 0.5
+            assert ds.part_settings["Thing"].protection_mask == "placeholder"
+
+        def test_default_enabled_parts(self):
+            ds = DetectionSettings()
+            assert len(ds.part_settings) == 18
 
         def test_missing_enabled_parts(self):
-            ds = DetectionSettings(
-                parts={
-                    "Thing": {
-                        "mask": "Circle",
-                        "state": "protected",
-                        "fade": 0.5,
-                        "protection_mask": "placeholder",
-                    }
-                }  # type: ignore
-            )
-            assert len(ds.parts) == 0
+            ds = DetectionSettings(enabled_parts=[])
+            assert len(ds.part_settings) == 0
 
         def test_defaults(self):
             ds = DetectionSettings(
                 enabled_parts=["Thing"],
-                parts={"Thing": {}},  # type: ignore
+                part_settings={"Thing": {}},  # type: ignore
             )
-            assert len(ds.parts) == 1
-            assert ds.parts["Thing"].mask == DEFAULT_MASK
-            assert ds.parts["Thing"].state == PartState.UNPROTECTED
-            assert ds.parts["Thing"].fade == 0.0
-            assert ds.parts["Thing"].protection_mask is None
+            assert len(ds.part_settings) == 1
+            assert ds.part_settings["Thing"].mask == DEFAULT_MASK
+            assert ds.part_settings["Thing"].state == PartState.UNPROTECTED
+            assert ds.part_settings["Thing"].fade == 0.0
+            assert ds.part_settings["Thing"].protection_mask is None
 
         def test_empty(self):
-            ds = DetectionSettings(parts={})  # type: ignore
-            assert len(ds.parts) == 0
+            ds = DetectionSettings(part_settings={})  # type: ignore
+            assert len(ds.part_settings) == 18
 
         def test_multiple_parts(self):
             ds = DetectionSettings(
                 enabled_parts=["Thing", "Thing2"],
-                parts={
+                part_settings={
                     "Thing": {
                         "mask": "Circle",
                         "state": "protected",
@@ -224,12 +217,12 @@ class TestDetectionSettings:
                     "Thing2": {},
                 },  # type: ignore
             )
-            assert len(ds.parts) == 2
-            assert ds.parts["Thing"].mask == "Circle"
-            assert ds.parts["Thing"].state == PartState.PROTECTED
-            assert ds.parts["Thing"].fade == 0.5
-            assert ds.parts["Thing"].protection_mask == "placeholder"
-            assert ds.parts["Thing2"].mask == DEFAULT_MASK
-            assert ds.parts["Thing2"].state == PartState.UNPROTECTED
-            assert ds.parts["Thing2"].fade == 0.0
-            assert ds.parts["Thing2"].protection_mask is None
+            assert len(ds.part_settings) == 2
+            assert ds.part_settings["Thing"].mask == "Circle"
+            assert ds.part_settings["Thing"].state == PartState.PROTECTED
+            assert ds.part_settings["Thing"].fade == 0.5
+            assert ds.part_settings["Thing"].protection_mask == "placeholder"
+            assert ds.part_settings["Thing2"].mask == DEFAULT_MASK
+            assert ds.part_settings["Thing2"].state == PartState.UNPROTECTED
+            assert ds.part_settings["Thing2"].fade == 0.0
+            assert ds.part_settings["Thing2"].protection_mask is None

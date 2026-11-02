@@ -1,12 +1,12 @@
 import cv2
 import numpy as np
 
-from censor_engine._typing import Image
 from censor_engine.libraries.registries import EffectRegistry
 from censor_engine.models.libraries.effects.effects import TransparentEffect
 from censor_engine.models.libraries.effects.schemas.schemas import (
     EffectContext,
 )
+from censor_engine.typing import Image
 
 
 @EffectRegistry.register()

@@ -1,10 +1,10 @@
 import numpy as np
 import pytest
 
-from censor_engine._typing import MaskImage
 from censor_engine.models.core.detection_part._mask_manager import MaskManager
 from censor_engine.models.libraries.masks.enums import MaskType
 from censor_engine.models.libraries.masks.schemas import MaskContext
+from censor_engine.typing import MaskImage
 from tests.fixtures._dimensions import CANVAS_SIZE
 
 
@@ -12,7 +12,6 @@ from tests.fixtures._dimensions import CANVAS_SIZE
 def mask_manager(mask_context_no_part: MaskContext) -> MaskManager:
     return MaskManager(
         "Box",
-        None,
         mask_context_no_part,
     )
 
@@ -21,7 +20,6 @@ class TestMaskManager:
     def test_working(self, mask_context_quad_square: MaskContext):
         MaskManager(
             "Box",
-            None,
             mask_context_quad_square,
         )
 
@@ -29,7 +27,6 @@ class TestMaskManager:
         def test_working(self, mask_context_no_part: MaskContext):
             mm = MaskManager(
                 "Box",
-                None,
                 mask_context_no_part,
             )
 
@@ -42,26 +39,6 @@ class TestMaskManager:
                 MaskManager.get_mask_class(mm.mask_name)
             )
             assert type(mm._obj_mask_protected) == type(mm._obj_mask)
-
-        def test_with_protected(self, mask_context_no_part: MaskContext):
-            mm = MaskManager(
-                "Box",
-                "Circle",
-                mask_context_no_part,
-            )
-
-            # Created
-            assert mm.image_shape == (CANVAS_SIZE, CANVAS_SIZE)
-            assert len(mm.layers_of_mask) == 1
-
-            # Generated
-            assert type(mm._obj_mask) == type(
-                MaskManager.get_mask_class(mm.mask_name)
-            )
-            assert type(mm._obj_mask_protected) == type(
-                MaskManager.get_mask_class(mm.protection_mask_name)  # type: ignore
-            )
-            assert type(mm._obj_mask_protected) != type(mm._obj_mask)
 
     class TestMethods:
         def test_get_mask_class(self, mask_manager: MaskManager):

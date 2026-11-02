@@ -1,4 +1,3 @@
-from censor_engine._typing import Image
 from censor_engine.libraries.registries import EffectRegistry
 from censor_engine.models.libraries.effects.effects import (
     CrystallisationEffect,
@@ -7,6 +6,7 @@ from censor_engine.models.libraries.effects.schemas.schemas import (
     EffectContext,
 )
 from censor_engine.structs.colours import TypeColour
+from censor_engine.typing import Image
 
 from ._default_args import OUTLINE_COLOUR, OUTLINE_WIDTH, POINT_DENSITY, SEED
 

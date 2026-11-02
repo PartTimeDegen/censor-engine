@@ -1,12 +1,12 @@
 import cv2
 
-from censor_engine._typing import Image
 from censor_engine.models.libraries.effects.base_effect._common_methods import (  # type: ignore
     CommonProcessingMethods,
 )
 from censor_engine.models.libraries.effects.schemas.schemas import (
     EffectContext,
 )
+from censor_engine.typing import Image
 
 
 class PostProcessingPipeline(CommonProcessingMethods):

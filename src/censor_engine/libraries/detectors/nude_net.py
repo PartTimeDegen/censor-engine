@@ -1,23 +1,21 @@
-import logging
-
 import numpy as np
-import torch
 from ultralytics import YOLO
 
-from censor_engine._typing import Image
 from censor_engine.libraries.registries import AIModelRegistry
-from censor_engine.models.lib_models.detectors.ai_models import (
+from censor_engine.models.libraries.ai_models._enums import OutputType
+from censor_engine.models.libraries.ai_models.ai_models import (
     AIModel,
+    ModelType,
 )
-from censor_engine.models.lib_models.detectors.schemas import (
-    DetectedPart,
+from censor_engine.models.libraries.ai_models.output_schemas import (
+    AbsoluteBBox,
+    DetectorOutput,
 )
-
-logging.getLogger("ultralytics").setLevel(logging.ERROR)
+from censor_engine.typing import Image
 
 
 @AIModelRegistry.register()
-class NudeNetModel(AIModel):
+class NudeNet(AIModel):
     """
     This detector is the core of CensorEngine, it uses the NudeNet model.
 
@@ -42,8 +40,7 @@ class NudeNetModel(AIModel):
 
     """
 
-    model_name: str = "NudeNet"
-    model_classifiers: tuple[str, ...] = (
+    _model_classifiers: tuple[str, ...] = (
         "FACE_FEMALE",
         "ARMPITS_EXPOSED",
         "ARMPITS_COVERED",
@@ -63,53 +60,30 @@ class NudeNetModel(AIModel):
         "MALE_GENITALIA_EXPOSED",
         "MALE_BREAST_EXPOSED",
     )
+    model_caching_type: ModelType = ModelType.TORCH
+    model_file = "640m"
+
+    def use_smaller_model(self):
+        self.model_file = "320n"
+
+    def use_bigger_model(self):
+        self.model_file = "640m"
 
     def initiate_model(self) -> None:
-        # Determine Model (Left in for future)
-        use_bigger_model = False
-        used_model = "640m.pt" if use_bigger_model else "320n.pt"
-
-        # GPU Check
-        self._device = 0 if torch.cuda.is_available() else "cpu"
-        device_used = "GPU" if self._device != "cpu" else "CPU"
-
         # Load Model
-        self._model = YOLO(f"tools/models/{used_model}")
-        print(f"NudeNet model: {used_model} ({device_used})")  # noqa: T201
+        self._download_model_from_hf(
+            repo_id="vladmandic/nudenet",
+            file_name=f"nudenet-v34-{self.model_file}.pt",
+        )
+        self._model = YOLO(self._model_full_path)
+        self.print_model_and_device()
 
-        # Cache Fixer
-        self._image_count = 0
-
-    def _handle_cache(self) -> None:
-        if self._image_count % self._cache_limit == 0:
-            torch.cuda.empty_cache()
-        else:
-            self._image_count += 1
-
-    def predict(
-        self,
-        image: Image,
-    ) -> list[DetectedPart]:
-        """
-        This is the prediction function for NudeNet, this is the core of
-        CensorEngine.
-
-        :param Image image: Image to check
-
-        :raises TypeError: Missing Model
-
-        :return list[DetectedPartSchema]: Formatted list of outputs
-        """
+    def predict(self, image: Image) -> list[DetectorOutput]:
         if self._model is None:
-            msg = "Model [NudeNet] is not initialised"
+            msg = f"Model [{self.model_file}] is not initialised"
             raise TypeError(msg)
 
-        with torch.no_grad():
-            results = self._model(
-                image,
-                device=self._device,
-                verbose=False,
-            )[0]
+        results = self._model.predict(source=image, device=self._device)[0]
         boxes = results.boxes
 
         # Save Resources if Empty
@@ -125,11 +99,12 @@ class NudeNetModel(AIModel):
 
         # Build Output
         return [
-            DetectedPart(
+            DetectorOutput(
                 origin=self.model_name,
-                label=names[c],
-                score=float(s),
-                bbox=b,
+                label=self._handle_label(names[label]),
+                score=float(score),
+                bbox=AbsoluteBBox.from_xyxy(bbox),
+                output_type=OutputType.PART,
             )
-            for b, s, c in zip(xyxy, conf, cls, strict=False)
+            for bbox, score, label in zip(xyxy, conf, cls, strict=False)
         ]

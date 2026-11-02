@@ -13,8 +13,8 @@ from censor_engine.models.lib_models.detectors.schemas import (
     DetectedPart,
 )
 
-from censor_engine._typing import Image
 from censor_engine.structs import IndexedFile, Mixin
+from censor_engine.typing import Image
 
 from ...tools.debugger import DebugLevel, DevTools
 from .processors.image import ImageProcessor

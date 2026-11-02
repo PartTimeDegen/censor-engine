@@ -4,9 +4,9 @@ from typing import Literal
 import cv2
 
 from censor_engine._common_constants import DIM_COLOUR, DIM_GREY
-from censor_engine._typing import Image, MaskImage
 from censor_engine.models.detected_part import Part
 from censor_engine.structs.contours import Contour
+from censor_engine.typing import Image, MaskImage
 
 
 @dataclass(slots=True)

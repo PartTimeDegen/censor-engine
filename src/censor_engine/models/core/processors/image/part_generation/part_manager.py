@@ -1,15 +1,23 @@
+from functools import reduce
 from uuid import UUID
 
-from censor_engine._typing import ImageShape
-from censor_engine.models.core.detection_part.detection_part import Part
-from censor_engine.models.core.path_manager.path_manager import PathManager
-from censor_engine.models.core.processors.image.part_generation._advanced_shapes_generation import (
-    AdvancedShapeMaskGenerator,
+import cv2
+
+from censor_engine.models.core.detection_part._schemas import PartNameType
+from censor_engine.models.core.detection_part.detection_part import (
+    Part,
+    PartList,
 )
+from censor_engine.models.libraries.ai_models._enums import OutputType
 from censor_engine.models.libraries.ai_models.output_schemas import (
     DetectorOutput,
 )
+from censor_engine.models.libraries.configs.config import Config
+from censor_engine.typing import ImageShape
 
+from ._advanced_shapes_generation import (
+    AdvancedShapeMaskGenerator,
+)
 from ._merge_mechanism import MergeMechanismManager
 from ._state_mechanism import PartStateMechanism
 
@@ -21,8 +29,8 @@ class PartManager:
 
     def _create_parts_objects_from_detector_outputs(
         self,
-        path_manager: PathManager,
         detected_outputs: list[DetectorOutput],
+        config: Config,
         file_uuid: UUID,
         image_shape: ImageShape,
     ):
@@ -52,7 +60,7 @@ class PartManager:
                 total was only 0.005s, which is nothing)
 
         Args:
-            path_manager: The system Path Manager
+            config: Found config file
             detected_outputs: List of the detected parts from the detectors
             file_uuid: The file UUID, used for bars to maintain angle
             image_shape: Image Shape
@@ -61,7 +69,7 @@ class PartManager:
             List of parts as Part objs
 
         """
-        detection_config = path_manager.config.detection
+        detection_config = config.detection
 
         # Map and Filter Parts for Missing Information
         def add_parts(detector_output: DetectorOutput) -> Part | None:
@@ -82,16 +90,19 @@ class PartManager:
             if detector_output.label is None:
                 return None
 
-            if detector_output.label not in detection_config.enabled_parts:
+            if (
+                detection_config.enabled_parts is not None
+                and detector_output.label not in detection_config.enabled_parts
+            ):
                 return None
 
-            part_config = detection_config.parts[detector_output.label]
+            part_config = detection_config.part_settings[detector_output.label]
             if detector_output.score < part_config.minimum_score:
                 return None
 
             return Part(
                 detector_output=detector_output,
-                config=path_manager.config,
+                config=config,
                 file_uuid=file_uuid,
                 image_shape=image_shape,
             )
@@ -109,17 +120,17 @@ class PartManager:
             reverse=True,
         )
 
-    def run_part_generation_pipeline(
+    def _process_part_parts(
         self,
-        path_manager: PathManager,
-        detected_outputs: list[DetectorOutput],
+        list_of_parts: list[DetectorOutput],
+        config: Config,
         file_uuid: UUID,
         image_shape: ImageShape,
     ):
         # Generate Part Objects
         parts = self._create_parts_objects_from_detector_outputs(
-            path_manager,
-            detected_outputs,
+            list_of_parts,
+            config,
             file_uuid,
             image_shape,
         )
@@ -127,19 +138,80 @@ class PartManager:
         # Sort Parts
         sorted_parts = self._sort_parts(parts)
 
-        # Run Mechanisms to Merge Parts by Method and States
+        # Run Mechanisms to Merge Parts by Method
         merged_parts = self.merge_mechanism.merge_parts_based_on_merge_method(
             parts=sorted_parts,
-            merge_method=path_manager.config.image.merging.method,
-            groups=path_manager.config.groups.merging,
+            merge_method=config.image.merging.method,
+            groups=config.groups.merging,
         )
 
-        cleaned_merged_parts = (
-            self.state_mechanism.handle_mask_overlaps_based_on_part_state(
+        # Convert Masks to Advanced Forms
+        processed_parts = (
+            self.mask_generator.convert_masks_to_advanced_versions(
                 merged_parts
             )
         )
 
-        return self.mask_generator.convert_masks_to_advanced_versions(
-            cleaned_merged_parts
+        # Compile Masks Layers into One
+        for part in processed_parts:
+            if part.get_name(PartNameType.NAME).endswith("_MASK"):
+                continue
+            part.mask_manager.compile_base_masks()
+
+        # Handle State Logic for Masks to Prevent Overlap
+        cleaned_merged_parts = processed_parts
+        if config.engine_settings.extra_ai_model_features.depth is None:
+            cleaned_merged_parts = (
+                self.state_mechanism.handle_mask_overlaps_based_on_part_state(
+                    merged_parts
+                )
+            )
+
+        return cleaned_merged_parts
+
+    def run_part_generation_pipeline(
+        self,
+        detected_outputs: list[DetectorOutput],
+        config: Config,
+        file_uuid: UUID,
+        image_shape: ImageShape,
+    ) -> PartList:
+        # Organise Parts into Types
+        list_of_parts = [
+            do for do in detected_outputs if do.output_type == OutputType.PART
+        ]
+        depth_list = [
+            do for do in detected_outputs if do.output_type == OutputType.DEPTH
+        ]
+        depth_output: DetectorOutput | None = (
+            depth_list[0] if depth_list else None
+        )
+
+        # Process Part Parts
+        processed_parts = self._process_part_parts(
+            list_of_parts,
+            config,
+            file_uuid,
+            image_shape,
+        )
+
+        # Extras
+        people_masks = [
+            do.mask
+            for do in detected_outputs
+            if do.label == "YOLOSEG_PERSON"
+            if do.mask is not None
+        ]
+        combined_people_masks = (
+            reduce(cv2.add, people_masks) if people_masks else None
+        )
+
+        return PartList.model_validate(
+            {
+                "parts": processed_parts,
+                "additionals": {
+                    "depth": depth_output,
+                    "people_mask": combined_people_masks,
+                },
+            }
         )

@@ -3,7 +3,7 @@ from dataclasses import InitVar, dataclass, field
 import cv2
 import numpy as np
 
-from censor_engine._typing import MaskImage
+from censor_engine.typing import MaskImage
 
 BoxPoints = tuple[
     tuple[float, float],

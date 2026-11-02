@@ -27,7 +27,7 @@ class TestMechanisms:
                 shape_cls,
                 mask_context_no_part,
                 file_path=file_path,
-                method_used="_internal_generate_mask",
+                method_used="internal_generate_mask",
                 prefix=self.parent_folder / "base",
             )
 
@@ -46,7 +46,7 @@ class TestMechanisms:
                 shape_cls,
                 mask_context_no_part,
                 file_path=file_path,
-                method_used="_internal_generate_mask",
+                method_used="internal_generate_mask",
                 prefix=self.parent_folder / "long",
             )
 
@@ -65,6 +65,6 @@ class TestMechanisms:
                 shape_cls,
                 mask_context_no_part,
                 file_path=file_path,
-                method_used="_internal_generate_mask",
+                method_used="internal_generate_mask",
                 prefix=self.parent_folder / "wide",
             )

@@ -1,8 +1,9 @@
 # Rewrite Update
 - Currently to do:
     - Library Stuff
-            - Libraries
-            - Tranc
+            - Config Libraries
+            - Transparancy
+            - Text
     - Tests
         - Image.part.part_properties
         - Helpers and tests for effects
@@ -16,11 +17,6 @@
             - Processors
                 - Image
                     - Part Generation
-                        - Merge part
-                        - State part
-                        - part proper
-                    - Mask Generation # TODO: It might be worth putting it in part generation
-                    - Censor Generation
             - Pipelines
             - Engine
         

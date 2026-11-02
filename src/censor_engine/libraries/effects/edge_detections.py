@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
 
-from censor_engine._typing import Image
 from censor_engine.libraries.effects._default_args import (
     BLACK_AND_WHITE,
     INVERSE,
@@ -12,6 +11,7 @@ from censor_engine.models.libraries.effects.effects import EdgeDetectionEffect
 from censor_engine.models.libraries.effects.schemas.schemas import (
     EffectContext,
 )
+from censor_engine.typing import Image
 
 
 @EffectRegistry.register()

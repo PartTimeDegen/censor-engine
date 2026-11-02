@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from functools import reduce
 
-from censor_engine._typing import Image, MaskImage
+import cv2
+
 from censor_engine.libraries.registries import EffectRegistry
 from censor_engine.models.core.detection_part._part_properties import (
     PartProperties,
@@ -14,6 +15,7 @@ from censor_engine.models.libraries.effects.schemas.schemas import (
     EffectContext,
 )
 from censor_engine.structs.censors import Censor
+from censor_engine.typing import Image, MaskImage
 
 
 @dataclass(slots=True)
@@ -44,6 +46,7 @@ class EffectManager:
 
         """
         # Get he effect class and shorthand the params
+        print(censor)
         effect = self.get_effect_class(censor.effect)
         params = censor.parameters
 
@@ -84,6 +87,7 @@ class EffectManager:
         mask: MaskImage,
         part_properties: PartProperties,
     ) -> Image:
+
         effect_context = EffectContext(
             image=input_image,
             mask=mask,

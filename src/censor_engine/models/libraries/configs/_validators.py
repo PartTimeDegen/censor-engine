@@ -19,16 +19,23 @@ def normalise_censors(
     )
 
     processed: list[Censor] = []
+
     for item in list_of_censors:
         match item:
             case str():
                 processed.append(Censor(item))
             case dict():
-                processed.append(Censor(**item))
+                # TODO: This needs:
+                #       -   Checks to make sure the effect is available
+                #       -   Explanation of what each bit is doing/what for
+                if "effect" in item:
+                    processed.append(Censor(**item))
+                else:
+                    key, value = next(iter(item.items()))  # type: ignore
+                    processed.append(Censor(effect=key, parameters=value))
             case _:
                 msg = f"Invalid censor input: {type(item)}"
                 raise TypeError(msg)
-
     return processed
 
 
@@ -60,6 +67,7 @@ def _generic_convert_to_enum[E: Enum](
     if not isinstance(input_str, str):
         msg = f"Invalid {enum_name} value: {input_str}"
         raise TypeError(msg)
+
     try:
         return getattr(enum, input_str.upper())
 

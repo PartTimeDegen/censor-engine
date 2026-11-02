@@ -12,3 +12,6 @@ class Censor:
 
     effect: str
     parameters: dict[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self):
+        self.effect = self.effect.upper()

@@ -43,6 +43,7 @@ lint.ignore = [
     "D107", # Hide until Prod
     "NPY002", # Valid but effort to fix
     "TC001", # Causes more problems than it fixes
+    "CPY001",
 ]
 
 [format]

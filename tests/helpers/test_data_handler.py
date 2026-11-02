@@ -25,7 +25,7 @@ def _create_new_test_data(
     cv2.imwrite(str(expected_file), image)
 
     # Create Check File
-    if not IGNORE_CHECKME:
+    if not (IGNORE_CHECKME or checkme_file == Path()):
         checkme_file.touch()
 
     # Check
@@ -68,11 +68,21 @@ def _check_files(expected_file: Path, test_folder: Path, image):
 
 
 def handle_test_data(
-    test_name: str | Path, image: np.ndarray, file_path: Path
+    test_name: str | Path,
+    image: np.ndarray,
+    file_path: Path,
+    debug_mode: bool = False,
 ):
     # Make Base Folders
-    test_folder = _get_test_data_path(file_path) / test_name
+    test_folder = (
+        _get_test_data_path(file_path) / test_name
+        if str(file_path).endswith(".py")
+        else file_path / "00_test_data" / test_name
+    )
     test_folder.mkdir(parents=True, exist_ok=True)
+
+    if debug_mode:
+        _create_new_test_data(Path(test_name), Path(), test_folder, image)
 
     # Check if Exists
     expected_file = test_folder / "expected.png"
@@ -91,5 +101,6 @@ def handle_test_data(
 
     else:
         _check_files(expected_file, test_folder, image)
-        if IGNORE_CHECKME:
-            pytest.fail("Disable Checkme Bypass")
+        # if IGNORE_CHECKME:
+
+        # pytest.fail("Disable Checkme Bypass")

@@ -1,9 +1,11 @@
 from functools import reduce
 
 import cv2
+import numpy as np
 
-from censor_engine._typing import Image
 from censor_engine.models.core.detection_part.detection_part import Part
+from censor_engine.models.enums import PartState
+from censor_engine.typing import Image, MaskImage
 
 
 class CensorManager:
@@ -20,24 +22,34 @@ class CensorManager:
         self,
         input_image: Image,
         list_of_parts: list[Part],
-    ) -> Image:
+    ) -> tuple[Image, MaskImage]:
         if (
             not list_of_parts
             or not list_of_parts[0].config.image.reverse_censor
         ):
-            return input_image
+            return (
+                input_image,
+                np.zeros(input_image.shape[:2], dtype=np.uint8),
+            )
 
         # Create Inverse Mesh
-        masks = [part.mask_manager.current_mask for part in list_of_parts]
+        masks = [
+            part.mask_manager.current_mask
+            for part in list_of_parts
+            if part.properties.settings.state != PartState.REVEALED
+        ]
         combined_masks = reduce(cv2.add, masks)  # type: ignore
         inverse_combined_mask = cv2.bitwise_not(combined_masks)  #  type: ignore
 
         # Use Effect Manager from First Part
         effect_manager = list_of_parts[0].effect_manager
-        return effect_manager.apply_effects_from_list_of_reverse_censors(
-            input_image,
-            inverse_combined_mask,  # type: ignore
-            list_of_parts[0].properties,
+        return (
+            effect_manager.apply_effects_from_list_of_reverse_censors(
+                input_image,
+                inverse_combined_mask,  # type: ignore
+                list_of_parts[0].properties,
+            ),
+            inverse_combined_mask,
         )
 
     def _handle_normal_censor(
@@ -56,5 +68,22 @@ class CensorManager:
         input_image: Image,
         list_of_parts: list[Part],
     ) -> Image:
-        reverse_image = self._handle_reverse_censor(input_image, list_of_parts)
-        return self._handle_normal_censor(reverse_image, list_of_parts)
+        reverse_image, reverse_censor_mask = self._handle_reverse_censor(
+            input_image, list_of_parts
+        )
+        censored_image = self._handle_normal_censor(input_image, list_of_parts)
+
+        # Merge Masks
+        _, binary_mask = cv2.threshold(
+            reverse_censor_mask,
+            127,
+            255,
+            cv2.THRESH_BINARY,
+        )
+        cutout_reverse = cv2.bitwise_and(
+            reverse_image, reverse_image, mask=binary_mask
+        )
+        cutout_censored = cv2.bitwise_and(
+            censored_image, censored_image, mask=cv2.bitwise_not(binary_mask)
+        )
+        return cv2.add(cutout_reverse, cutout_censored)  # type: ignore

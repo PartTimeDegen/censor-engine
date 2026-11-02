@@ -4,10 +4,11 @@ from dataclasses import dataclass, field
 import cv2
 import numpy as np
 
-from censor_engine._typing import MaskImage
 from censor_engine.libraries.registries import MaskRegistry
+from censor_engine.models.libraries.masks.enums import MaskType
 from censor_engine.models.libraries.masks.masks import Mask
 from censor_engine.models.libraries.masks.schemas import MaskContext
+from censor_engine.typing import MaskImage
 
 
 @dataclass(slots=True)
@@ -29,14 +30,10 @@ class MaskManager:
         mask_name (str):
             Name of the primary mask registered in the mask registry.
 
-        protection_mask_name (str | None):
-            Name of the protection mask registry entry.
-            If `None`, a copy of the primary mask is used.
 
     """
 
     mask_name: str
-    protection_mask_name: str | None
     mask_context: MaskContext
 
     image_shape: tuple[int, int] = field(init=False)
@@ -59,23 +56,19 @@ class MaskManager:
         mutable current mask.
 
         """
+        self.mask_name = self.mask_name.upper()
         self.image_shape = self.mask_context.empty_mask.shape[:2]
 
         # Base Mask
         self._obj_mask = self.get_mask_class(self.mask_name)
-
-        # Protection Mask if Used
-        if self.protection_mask_name is not None:
-            self._obj_mask_protected = self.get_mask_class(
-                self.protection_mask_name
+        if self._obj_mask.mask_type != MaskType.BASIC:
+            self._original_mask = self._obj_mask.generate_base_mask(
+                self.mask_context
             )
         else:
-            self._obj_mask_protected = copy.copy(self._obj_mask)
-
-        # Generate Masks
-        self._original_mask = self._obj_mask.generate_mask(self.mask_context)
-        self.layers_of_mask = [self._original_mask]
-
+            self._original_mask = self._obj_mask.generate_single_mask(
+                self.mask_context
+            )
         self.current_mask = self._original_mask.copy()
 
     @staticmethod
@@ -131,6 +124,12 @@ class MaskManager:
             else np.zeros(self.image_shape, dtype=np.uint8)
         )
 
+    def generate_base_mask(self) -> None:
+        self._original_mask = self._obj_mask.internal_generate_mask(
+            self.mask_context
+        )
+        self.layers_of_mask = [self._original_mask]
+
     def add_to_current_mask(self, mask: MaskImage) -> None:
         """
         Add a mask to the current mask.
@@ -178,6 +177,8 @@ class MaskManager:
         # TODO: Low priority: change to reduce function
         for mask in self.layers_of_mask:
             self.add_to_current_mask(mask)
+
+        self.mask_context.mask = self.current_mask
 
     @property
     def mask_obj(self):

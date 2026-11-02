@@ -8,7 +8,9 @@ from censor_engine.models.core.processors.image.part_generation._merge_mechanism
     MergeMechanismManager,
 )
 from censor_engine.models.enums import MergeMethod
+from censor_engine.models.libraries.ai_models._enums import OutputType
 from censor_engine.models.libraries.ai_models.output_schemas import (
+    AbsoluteBBox,
     DetectorOutput,
 )
 from censor_engine.models.libraries.configs._helper_types import Groups
@@ -16,7 +18,7 @@ from censor_engine.models.libraries.configs.config import Config
 
 
 @pytest.fixture
-def parts_list():
+def parts_list(bbox: AbsoluteBBox):
     names = [
         "boobs",
         "boobs",
@@ -41,7 +43,12 @@ def parts_list():
     return [
         Part(
             detector_output=DetectorOutput(
-                origin="placeholder", part_id=index, score=0.2, label=name
+                origin="placeholder",
+                output_type=OutputType.PART,
+                part_id=index,
+                score=0.2,
+                bbox=bbox,
+                label=name,
             ),
             config=config,
             file_uuid=uuid.uuid4(),

@@ -1,83 +1,64 @@
 import math
+from typing import Literal
 
 import cv2
 import numpy as np
 
-from censor_engine._typing import Image
 from censor_engine.libraries.registries import EffectRegistry
 from censor_engine.models.libraries.effects.effects import PixelateEffect
 from censor_engine.models.libraries.effects.schemas.schemas import (
     EffectContext,
 )
-from censor_engine.structs.contours import Contour
+from censor_engine.typing import Image
 
 
 @EffectRegistry.register()
 class Pixelate(PixelateEffect):
-    def _get_distortion_factor(
-        self,
-        image: Image,
-        contours: list[Contour],
-        factor: int,
-    ):
-        bounding_rect = contours[0].as_bounding_box()  # Only Biggest Matters
-        _, _, box_width, box_height = bounding_rect
-
-        fixed_size = max(box_width, box_height)
-
-        distortion_ratio = (
-            box_width / fixed_size,
-            box_height / fixed_size,
-        )
-        distortion_ratio = (
-            distortion_ratio[0] / min(distortion_ratio),
-            distortion_ratio[1] / min(distortion_ratio),
-        )
-
-        size_image_ratio = (
-            image.shape[0] / box_width,
-            image.shape[1] / box_height,
-        )
-        size_image_ratio = (
-            size_image_ratio[0] / min(size_image_ratio),
-            size_image_ratio[1] / min(size_image_ratio),
-        )
-
-        factor_ratio = (
-            int(factor / size_image_ratio[0] / distortion_ratio[0]),
-            int(factor / size_image_ratio[1] / distortion_ratio[1]),
-        )
-        factor_ratio = (
-            factor - min(factor_ratio) + factor_ratio[0],
-            factor - min(factor_ratio) + factor_ratio[1],
-        )
-        return (
-            int(factor_ratio[0] * factor / 2),
-            int(factor_ratio[1] * factor / 2),
-        )
+    def _get_interpolation_method(self, input_method: str) -> int:
+        match input_method.upper():
+            case "NEAREST":
+                return cv2.INTER_NEAREST
+            case "LINEAR":
+                return cv2.INTER_LINEAR
+            case "CUBIC":
+                return cv2.INTER_CUBIC
+            case "AREA":
+                return cv2.INTER_AREA
+            case "LANCZOS4":
+                return cv2.INTER_LANCZOS4
+            case "NEIGHBOURHOOD":
+                return cv2.INTER_LANCZOS4
+            case _:
+                return cv2.INTER_NEAREST
 
     def generate_effect(  # type: ignore
         self,
         effect_context: EffectContext,
-        factor: int = 12,
+        factor: float = 26,
+        downscale_method: Literal[
+            "NEAREST", "LINEAR", "CUBIC", "AREA", "LANCZOS4", "NEIGHBOURHOOD"
+        ] = "AREA",
+        upscale_method: Literal[
+            "NEAREST", "LINEAR", "CUBIC", "AREA", "LANCZOS4", "NEIGHBOURHOOD"
+        ] = "NEAREST",
     ) -> Image:
-        factors = self._get_distortion_factor(
-            effect_context.image,
-            effect_context.contours,
-            factor,
+        image = effect_context.image
+        height, width = image.shape[:2]
+
+        # Higher factor = fewer pixels = stronger pixelation
+        pixel_width = max(1, round(width / factor))
+        pixel_height = max(1, round(height / factor))
+
+        down_image = cv2.resize(
+            image,
+            (pixel_width, pixel_height),
+            interpolation=self._get_interpolation_method(downscale_method),
         )
 
-        # Code Proper
-        down_image = cv2.resize(
-            effect_context.image,  # type: ignore
-            factors,  # type: ignore
-            interpolation=cv2.INTER_LINEAR,
-        )
-        shape = effect_context.image_shape
         return cv2.resize(
             down_image,
-            (shape[1], shape[0]),
-            interpolation=cv2.INTER_NEAREST,
+            (width, height),
+            interpolation=self._get_interpolation_method(upscale_method),
         )  # type: ignore
 
 

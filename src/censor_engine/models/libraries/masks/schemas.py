@@ -2,10 +2,10 @@ from dataclasses import InitVar, dataclass, field
 from typing import Any, Literal
 from uuid import UUID, uuid4
 
-from censor_engine._typing import MaskImage
 from censor_engine.models.core.detection_part._part_properties import (
     PartProperties,
 )
+from censor_engine.typing import MaskImage
 
 from .constants import FILLED, OBLIQUE
 

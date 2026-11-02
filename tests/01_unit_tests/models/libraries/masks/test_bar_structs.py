@@ -126,9 +126,9 @@ class TestBoundingInfo:
             boi = BoundingInfo.create_bounding_info(
                 contours=input_contours, bar_info=bi
             )
-            assert boi.centre == (247, 374)
+            assert boi.centre == (248, 250)
             # assert boi.dimensions == (40, 206) # (207, 1980)?
-            assert boi.angle == 0.742
+            assert boi.angle == -90
             # assert boi.is_tight ==  # Wrong?
 
         def test_did_not_use(self):
@@ -211,7 +211,13 @@ class TestBoundingInfo:
 
     class TestPrivateMethods:
         @pytest.mark.parametrize(
-            ("tight_bar", "is_taller_than_wider", "angle", "result_angle", "result_dimensions"),
+            (
+                "tight_bar",
+                "is_taller_than_wider",
+                "angle",
+                "result_angle",
+                "result_dimensions",
+            ),
             [
                 # When Angle is less than snap
                 (True, False, 0.1, 0.1, (128, 390)),

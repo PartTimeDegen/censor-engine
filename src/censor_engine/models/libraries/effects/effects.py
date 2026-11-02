@@ -22,6 +22,10 @@ class ColourEffect(Effect):
     effect_type = EffectType.COLOUR
 
 
+class ReverseCensorEffect(Effect):
+    effect_type = EffectType.REVERSE_CENSOR
+
+
 class DevelopmentEffect(Effect):
     effect_type = EffectType.DEV
 

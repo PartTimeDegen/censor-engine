@@ -2,11 +2,11 @@ from pathlib import Path
 
 import cv2
 
-from censor_engine._typing import Image
 from censor_engine.models.core.detection_part.detection_part import Part
 from censor_engine.models.core.processors.image.censor_generation.censor_manager import (
     CensorManager,
 )
+from censor_engine.typing import Image
 from tests.helpers.test_data_handler import handle_test_data
 
 file_path = Path(__file__)
@@ -23,7 +23,6 @@ class TestCensorManager:
             output = CensorManager()._apply_censors_from_list_of_parts(
                 base_image, list_of_parts_for_censor_manager[0]
             )
-            cv2.imwrite("output.jpg", output)
 
             handle_test_data(
                 Path("censor_manager/apply_censor_from_list_of_parts"),
@@ -43,7 +42,7 @@ class TestCensorManager:
 
             handle_test_data(
                 Path("censor_manager/reverse_censor/working"),
-                image=output,
+                image=output[0],
                 file_path=file_path,
             )
 
@@ -61,7 +60,7 @@ class TestCensorManager:
 
             handle_test_data(
                 Path("censor_manager/reverse_censor/no_censors"),
-                image=output,
+                image=output[0],
                 file_path=file_path,
             )
 

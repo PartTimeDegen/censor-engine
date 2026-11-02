@@ -1,13 +1,13 @@
 import cv2
 import numpy as np
 
-from censor_engine._typing import Image
 from censor_engine.libraries.registries import EffectRegistry
 from censor_engine.models.libraries.effects.effects import OverlayEffect
 from censor_engine.models.libraries.effects.schemas.schemas import (
     EffectContext,
 )
 from censor_engine.structs.colours import Colour
+from censor_engine.typing import Image
 
 
 @EffectRegistry.register()
@@ -55,12 +55,13 @@ class Outline(OverlayEffect):
             buffer = 2 * thickness
             h, w = effect_context.image_shape
 
-            pts = contours_points[0][:, 0]
-            pts[pts[:, 0] == 0, 0] = -buffer
-            pts[pts[:, 0] == w - 1, 0] = w - 1 + buffer
+            for contour in contours_points:
+                pts = contour[:, 0]
+                pts[pts[:, 0] == 0, 0] = -buffer
+                pts[pts[:, 0] == w - 1, 0] = w - thickness + buffer
 
-            pts[pts[:, 1] == 0, 1] = -buffer
-            pts[pts[:, 1] == h - 1, 1] = h - 1 + buffer
+                pts[pts[:, 1] == 0, 1] = -buffer
+                pts[pts[:, 1] == h - 1, 1] = h - thickness + buffer
 
         # Draw contours on a copy of the image
         cv2.drawContours(

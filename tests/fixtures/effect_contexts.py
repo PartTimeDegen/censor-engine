@@ -1,12 +1,12 @@
 import pytest
 
-from censor_engine._typing import Image, MaskImage
 from censor_engine.models.core.detection_part._part_properties import (
     PartProperties,
 )
 from censor_engine.models.libraries.effects.schemas.schemas import (
     EffectContext,
 )
+from censor_engine.typing import Image, MaskImage
 
 
 @pytest.fixture

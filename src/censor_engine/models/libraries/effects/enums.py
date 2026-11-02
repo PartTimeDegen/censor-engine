@@ -15,3 +15,4 @@ class EffectType(IntEnum):
     STYLISATION = auto()
     TEXT = auto()
     TRANSPARENCY = auto()
+    REVERSE_CENSOR = auto()

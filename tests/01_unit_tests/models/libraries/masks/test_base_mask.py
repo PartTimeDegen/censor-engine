@@ -62,7 +62,7 @@ class TestBaseMask:
                 new_callable=Mock,
                 return_value=mask_context_inline_two_parts.mask,
             ):
-                output = mask._internal_generate_mask(
+                output = mask.internal_generate_mask(
                     mask_context_inline_two_parts
                 )
                 assert np.array_equal(
@@ -77,7 +77,7 @@ class TestBaseMask:
                     new_callable=Mock,
                     return_value=mask_context_inline_two_parts.mask,
                 ):
-                    output = mask._internal_generate_mask(
+                    output = mask.internal_generate_mask(
                         mask_context_inline_two_parts
                     )
                 assert np.array_equal(

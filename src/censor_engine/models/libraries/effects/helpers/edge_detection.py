@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from censor_engine._typing import Image
+from censor_engine.typing import Image
 
 
 class EdgeDetectionHelpers:

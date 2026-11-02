@@ -53,7 +53,7 @@ class Registry:
         """
 
         def decorator(cls: T) -> T:
-            name = cls.__name__
+            name = cls.__name__.upper()
 
             if name in self._registry:
                 msg = f"{name} is already registered"
@@ -86,6 +86,7 @@ class Registry:
             Dictionary of the class names and their object
 
         """
+        name = name.upper()
         if not self.modules_loaded:
             self.get_all()
 

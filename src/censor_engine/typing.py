@@ -12,6 +12,7 @@ ProcessedImage = Annotated[NDArray[np.float32], ("H", "W", "C")]
 
 # Masks
 MaskImage = Annotated[NDArray[np.uint8], ("H", "W")]  # logical mask
+DepthImage = Annotated[NDArray[np.float32], ("H", "W")]  # logical mask
 
 # OpenCV-style mask (0/255)
 OpenCVMask = Annotated[NDArray[np.uint32], ("H", "W")]

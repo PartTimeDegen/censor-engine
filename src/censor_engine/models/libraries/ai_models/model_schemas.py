@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 import numpy as np
 from pydantic import BaseModel
 
-from censor_engine._typing import BBox, Image, MaskImage
+from censor_engine.typing import BBox, Image, MaskImage
 
 
 class ModelOutput(BaseModel):

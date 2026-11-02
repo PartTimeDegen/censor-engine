@@ -1,7 +1,7 @@
-from censor_engine._typing import MaskImage
 from censor_engine.libraries.registries import MaskRegistry
 from censor_engine.models.libraries.masks.masks import PolygonMask
 from censor_engine.models.libraries.masks.schemas import MaskContext
+from censor_engine.typing import MaskImage
 
 
 @MaskRegistry.register()

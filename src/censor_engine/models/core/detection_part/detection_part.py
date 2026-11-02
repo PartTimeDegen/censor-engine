@@ -2,12 +2,14 @@ from dataclasses import dataclass, field
 from uuid import UUID
 
 import numpy as np
+from pydantic import BaseModel
 
 from censor_engine.models.libraries.ai_models.output_schemas import (
     DetectorOutput,
 )
 from censor_engine.models.libraries.configs.config import Config
 from censor_engine.models.libraries.masks.schemas import MaskContext
+from censor_engine.typing import MaskImage
 
 from ._effect_manager import EffectManager
 from ._mask_manager import MaskManager
@@ -50,7 +52,6 @@ class Part:
         )
         self.mask_manager = MaskManager(
             mask_name=self.properties.settings.mask,
-            protection_mask_name=self.properties.settings.protection_mask,
             mask_context=mask_context,
         )
 
@@ -76,3 +77,14 @@ class Part:
                 return f"{id_part}_{name}_{merged}"
             case _:
                 return name
+
+
+class PartAdditionals(BaseModel):
+    model_config = {"arbitrary_types_allowed": True}
+    depth: DetectorOutput | None
+    people_mask: MaskImage | None
+
+
+class PartList(BaseModel):
+    parts: list[Part]
+    additionals: PartAdditionals

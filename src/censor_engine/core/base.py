@@ -2,7 +2,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from censor_engine._typing import Image
 from censor_engine.core.paths import PathManager
 from censor_engine.core_engine.cli.parser import build_parser
 from censor_engine.core_engine.cli.processor import process_arguments
@@ -26,6 +25,7 @@ from censor_engine.models.models_core.pipelines.video.mixin_pipeline_video impor
     MixinVideoPipeline,
 )
 from censor_engine.models.models_core.tools.debugger.dev_tools import DevTools
+from censor_engine.typing import Image
 
 
 @dataclass(slots=True, repr=False, eq=False, order=False)

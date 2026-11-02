@@ -3,8 +3,8 @@ from copy import deepcopy
 
 import cv2
 
-from censor_engine._typing import MaskImage
 from censor_engine.models.libraries.configs.settings.schemas import Margins
+from censor_engine.typing import MaskImage
 
 from .schemas import MaskContext
 

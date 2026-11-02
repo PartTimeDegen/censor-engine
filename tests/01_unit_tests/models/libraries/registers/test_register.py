@@ -32,11 +32,11 @@ class TestRegistry:
             mock_import_module.return_value = package
 
             module1 = MagicMock(name="mod1")
-            module1.name = f"{LIBRARIES_BASE_FOLDER}.libraries.example.mod1"
+            module1.name = f"{LIBRARIES_BASE_FOLDER}.libraries.example.MOD1"
             module1.ispkg = False
 
             module2 = MagicMock(name="mod2")
-            module2.name = f"{LIBRARIES_BASE_FOLDER}.libraries.example.mod2"
+            module2.name = f"{LIBRARIES_BASE_FOLDER}.libraries.example.MOD1"
             module2.ispkg = False
 
             package_module = MagicMock(name="subpackage")
@@ -56,8 +56,8 @@ class TestRegistry:
             mock_import_module.assert_has_calls(
                 [
                     call(f"{LIBRARIES_BASE_FOLDER}.example"),
-                    call(f"{LIBRARIES_BASE_FOLDER}.libraries.example.mod1"),
-                    call(f"{LIBRARIES_BASE_FOLDER}.libraries.example.mod2"),
+                    call(f"{LIBRARIES_BASE_FOLDER}.libraries.example.MOD1"),
+                    call(f"{LIBRARIES_BASE_FOLDER}.libraries.example.MOD2"),
                 ]
             )
 
@@ -73,7 +73,7 @@ class TestRegistry:
                 pass
 
             assert registry.get("MyClass") is MyClass
-            assert registry.get_all() == {"MyClass": MyClass}
+            assert registry.get_all() == {"MYCLASS": MyClass}
 
         def test_register_duplicate_class_raises(self):
             registry = Registry("dummy")
@@ -85,7 +85,7 @@ class TestRegistry:
 
             with pytest.raises(
                 ValueError,
-                match="MyClass is already registered",
+                match="MYCLASS is already registered",
             ):
                 registry.register()(MyClass)
 
@@ -106,7 +106,7 @@ class TestRegistry:
 
             with pytest.raises(
                 KeyError,
-                match="DoesNotExist is not registered",
+                match="DOESNOTEXIST is not registered",
             ):
                 registry.get("DoesNotExist")
 
@@ -120,7 +120,7 @@ class TestRegistry:
             class MyClass:
                 pass
 
-            registry._registry["MyClass"] = MyClass
+            registry._registry["MYCLASS"] = MyClass
 
             def side_effect():
                 registry.modules_loaded = True
@@ -149,7 +149,7 @@ class TestRegistry:
 
             registry_copy.clear()
 
-            assert "MyClass" in registry._registry
+            assert "MYCLASS" in registry._registry
 
         @patch.object(Registry, "_auto_register")
         def test_get_all_calls_auto_register_once(

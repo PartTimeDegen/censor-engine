@@ -2,14 +2,15 @@ from uuid import uuid4
 
 import pytest
 
-from censor_engine._typing import MaskImage
 from censor_engine.models.core.detection_part.detection_part import Part
+from censor_engine.models.libraries.ai_models._enums import OutputType
 from censor_engine.models.libraries.ai_models.output_schemas import (
     AbsoluteBBox,
     DetectorOutput,
 )
 from censor_engine.models.libraries.configs.config import Config
 from censor_engine.structs.censors import Censor
+from censor_engine.typing import MaskImage
 from tests.fixtures._dimensions import CANVAS_SIZE
 
 
@@ -67,8 +68,9 @@ def list_of_parts_for_censor_manager(
         DetectorOutput(
             bbox=bbox,
             # assumes MaskImage is bytes-like in tests
-            masks=[],
+            mask=None,
             origin="test_origin",
+            output_type=OutputType.PART,
             part_id=1,
             label=name,
             score=0.95,

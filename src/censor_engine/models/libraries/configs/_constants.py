@@ -3,7 +3,7 @@ CURRENT_VERSION = 2
 
 # SETTING DEFAULTS
 # Default Part Settings
-DEFAULT_MASK = "Box"
+DEFAULT_MASK = "BOX"
 
 
 # Video

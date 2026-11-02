@@ -1,7 +1,6 @@
 import numpy as np
 from scipy.spatial import Voronoi  # type: ignore
 
-from censor_engine._typing import Image
 from censor_engine.libraries.effects._default_args import (
     OUTLINE_COLOUR,
     OUTLINE_WIDTH,
@@ -15,6 +14,7 @@ from censor_engine.models.libraries.effects.schemas.schemas import (
     EffectContext,
 )
 from censor_engine.structs.colours import TypeColour
+from censor_engine.typing import Image
 
 
 @EffectRegistry.register()

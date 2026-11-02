@@ -49,7 +49,7 @@ class TestShapes:
             shape_cls,
             mask_context_inline_two_parts,
             file_path=file_path,
-            method_used="_internal_generate_mask",
+            method_used="internal_generate_mask",
             prefix=self.parent_folder / "standard",
         )
 
@@ -60,7 +60,7 @@ class TestShapes:
             shape_cls,
             mask_context_single_part,
             file_path=file_path,
-            method_used="_internal_generate_mask",
+            method_used="internal_generate_mask",
             prefix=self.parent_folder / "single_part",
         )
 
@@ -69,7 +69,7 @@ class TestShapes:
             shape_cls,
             mask_context_diagonal,
             file_path=file_path,
-            method_used="_internal_generate_mask",
+            method_used="internal_generate_mask",
             prefix=self.parent_folder / "diagonal",
         )
 
@@ -80,7 +80,7 @@ class TestShapes:
             shape_cls,
             mask_context_vertical,
             file_path=file_path,
-            method_used="_internal_generate_mask",
+            method_used="internal_generate_mask",
             prefix=self.parent_folder / "vertical_stack",
         )
 
@@ -91,7 +91,7 @@ class TestShapes:
             shape_cls,
             mask_context_quad_square,
             file_path=file_path,
-            method_used="_internal_generate_mask",
+            method_used="internal_generate_mask",
             prefix=self.parent_folder / "quad_square",
         )
 
@@ -109,10 +109,10 @@ class TestModelInternals:
         mask_context_three_triangle_top.file_uuid = old_uuid
         mask_context_three_triangle_bottom.file_uuid = old_uuid
 
-        top_mask = Bar()._internal_generate_mask(
+        top_mask = Bar().internal_generate_mask(
             deepcopy(mask_context_three_triangle_top)
         )
-        bottom_mask = Bar()._internal_generate_mask(
+        bottom_mask = Bar().internal_generate_mask(
             deepcopy(mask_context_three_triangle_bottom)
         )
         mask_both = cv2.add(top_mask, bottom_mask)
@@ -130,7 +130,7 @@ class TestModelInternals:
             Bar,  # type: ignore
             mask_context_three_triangle_bottom,
             file_path=file_path,
-            method_used="_internal_generate_mask",
+            method_used="internal_generate_mask",
             prefix=str(self.parent_folder / "angle_reset"),
             include_shape_name=False,
         )

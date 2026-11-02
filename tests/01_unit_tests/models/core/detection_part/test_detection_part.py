@@ -3,12 +3,12 @@ from uuid import uuid4
 
 import pytest
 
-from censor_engine._typing import Image
 from censor_engine.models.core.detection_part.detection_part import Part
 from censor_engine.models.libraries.ai_models.output_schemas import (
     DetectorOutput,
 )
 from censor_engine.models.libraries.configs.config import Config
+from censor_engine.typing import Image
 
 
 @pytest.fixture
@@ -65,7 +65,6 @@ class TestPart:
     # class TestMaskManager:
     #     def test_properties(self, part: Part):
     #         assert part.masks.mask_name ==
-    #         assert part.masks.protection_mask_name ==
     #         assert part.masks.mask_context ==
 
     #         assert part.masks.image_shape ==

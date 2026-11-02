@@ -1,4 +1,4 @@
-from censor_engine._typing import Image, ImageShape
+from censor_engine.typing import Image, ImageShape
 
 
 class GeneralHelpers:

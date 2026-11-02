@@ -1,7 +1,7 @@
 import cv2
 
-from censor_engine._typing import Image
 from censor_engine.structs.colours import Colour
+from censor_engine.typing import Image
 
 
 class TextHelpers:

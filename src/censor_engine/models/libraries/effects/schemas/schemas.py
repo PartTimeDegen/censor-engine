@@ -2,11 +2,11 @@ from dataclasses import dataclass, field
 
 import cv2
 
-from censor_engine._typing import Image, MaskImage
 from censor_engine.models.core.detection_part._part_properties import (
     PartProperties,
 )
 from censor_engine.structs.contours import Contour
+from censor_engine.typing import Image, MaskImage
 
 from ._general_parameters import GeneralParameters
 from ._mask_info_extraction import MaskInfo

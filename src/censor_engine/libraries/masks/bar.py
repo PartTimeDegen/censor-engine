@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
 
-from censor_engine._typing import MaskImage
 from censor_engine.libraries.registries import MaskRegistry
 from censor_engine.models.libraries.masks.bar_structs import (
     BarInfo,
@@ -9,6 +8,7 @@ from censor_engine.models.libraries.masks.bar_structs import (
 )
 from censor_engine.models.libraries.masks.masks import BarMask
 from censor_engine.models.libraries.masks.schemas import MaskContext
+from censor_engine.typing import MaskImage
 
 
 @MaskRegistry.register()
@@ -54,6 +54,7 @@ class Bar(BarMask):
         force_vertical: bool = False,
         long_direction: bool = False,
         tight_bar: bool = False,
+        force_angle: float | None = None,
     ) -> MaskImage:
         if not mask_context.is_merged and not force_vertical:
             force_horizontal = True
@@ -97,6 +98,9 @@ class Bar(BarMask):
         else:
             bounding_info.check_if_dimensions_flip(BarInfo.bar_angle)
             bounding_info.angle = BarInfo.bar_angle
+
+        if force_angle is not None:
+            bounding_info.angle = force_angle
 
         return self._draw_bar(mask_context, bounding_info)
 

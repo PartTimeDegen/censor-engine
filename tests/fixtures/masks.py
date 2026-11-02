@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import pytest
 
-from censor_engine._typing import MaskImage
+from censor_engine.typing import MaskImage
 from tests.fixtures._dimensions import (
     CANVAS_SIZE,
     HALF_PART_SIZE,

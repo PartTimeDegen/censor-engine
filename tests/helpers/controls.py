@@ -1,0 +1,4 @@
+USE_NSFW_IMAGES = False
+USE_SHORT_LIST = True
+
+USE_ALL_MODELS = False

@@ -21,7 +21,7 @@ class TestShapes:
             shape_cls,
             mask_context_inline_two_parts,
             file_path=file_path,
-            method_used="_internal_generate_mask",
+            method_used="internal_generate_mask",
             prefix=self.parent_folder / "standard",
         )
 
@@ -32,7 +32,7 @@ class TestShapes:
             shape_cls,
             mask_context_single_part,
             file_path=file_path,
-            method_used="_internal_generate_mask",
+            method_used="internal_generate_mask",
             prefix=self.parent_folder / "single_part",
         )
 
@@ -41,6 +41,6 @@ class TestShapes:
             shape_cls,
             mask_context_diagonal,
             file_path=file_path,
-            method_used="_internal_generate_mask",
+            method_used="internal_generate_mask",
             prefix=self.parent_folder / "diagonal",
         )

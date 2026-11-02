@@ -12,6 +12,7 @@ from censor_engine.models.core.data_caching.image_cache._paths import (
 from censor_engine.models.core.data_caching.image_cache.model import (
     ImageCache,
 )
+from censor_engine.models.libraries.ai_models._enums import OutputType
 from censor_engine.models.libraries.ai_models.output_schemas import (
     DetectorOutput,
 )
@@ -27,10 +28,34 @@ def media_file(tmp_path):
 DUMMY_DATA = AIOutputData(
     model_name="dummy",
     output_data=[
-        DetectorOutput(origin="dummy", part_id=0, label="dummy_0", score=0.67),
-        DetectorOutput(origin="dummy", part_id=1, label="dummy_1", score=0.67),
-        DetectorOutput(origin="dummy", part_id=2, label="dummy_2", score=0.67),
-        DetectorOutput(origin="dummy", part_id=3, label="dummy_3", score=0.67),
+        DetectorOutput(
+            origin="dummy",
+            output_type=OutputType.PART,
+            part_id=0,
+            label="dummy_0",
+            score=0.67,
+        ),
+        DetectorOutput(
+            origin="dummy",
+            output_type=OutputType.PART,
+            part_id=1,
+            label="dummy_1",
+            score=0.67,
+        ),
+        DetectorOutput(
+            origin="dummy",
+            output_type=OutputType.PART,
+            part_id=2,
+            label="dummy_2",
+            score=0.67,
+        ),
+        DetectorOutput(
+            origin="dummy",
+            output_type=OutputType.PART,
+            part_id=3,
+            label="dummy_3",
+            score=0.67,
+        ),
     ],
 )
 

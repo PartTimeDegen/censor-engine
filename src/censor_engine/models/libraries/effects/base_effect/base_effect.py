@@ -2,7 +2,6 @@ from typing import ClassVar
 
 import numpy as np
 
-from censor_engine._typing import Image
 from censor_engine.models.libraries.effects.enums import EffectType
 from censor_engine.models.libraries.effects.helpers.general_effects import (
     GeneralHelpers,
@@ -10,6 +9,7 @@ from censor_engine.models.libraries.effects.helpers.general_effects import (
 from censor_engine.models.libraries.effects.schemas.schemas import (
     EffectContext,
 )
+from censor_engine.typing import Image
 
 
 class Effect:

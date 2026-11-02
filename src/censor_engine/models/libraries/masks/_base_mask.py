@@ -2,8 +2,8 @@ from typing import ClassVar
 
 import cv2
 
-from censor_engine._typing import MaskImage
 from censor_engine.libraries.registries import MaskRegistry
+from censor_engine.typing import MaskImage
 
 from ._mechanisms import MaskMechanisms
 from .constants import FILLED
@@ -31,6 +31,7 @@ class Mask:
         if self.mask_type != MaskType.BAR:
             return (mask_context, kwargs)
 
+        mask_context.mask = self.generate_base_mask(mask_context)
         mask_context.mask = self.generate_joint_mask(mask_context)
 
         return (mask_context, kwargs)
@@ -40,7 +41,7 @@ class Mask:
         raise NotImplementedError(msg)
 
     # Internal Method to Apply Different Common Settings
-    def _internal_generate_mask(
+    def internal_generate_mask(
         self,
         mask_context: MaskContext,
         **kwargs: dict,
@@ -65,6 +66,10 @@ class Mask:
         )
 
     # API Helpers
+    def generate_base_mask(self, mask_context: MaskContext) -> MaskImage:
+        obj_mask = MaskRegistry.get(self.base_mask)
+        return obj_mask().generate_mask(mask_context=mask_context)
+
     def generate_single_mask(self, mask_context: MaskContext) -> MaskImage:
         obj_mask = MaskRegistry.get(self.single_mask)
         return obj_mask().generate_mask(mask_context=mask_context)

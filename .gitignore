@@ -201,10 +201,9 @@ res/*
 tools/ffmpeg/*
 !tools/ffmpeg/.gitkeep
 
-tools/models/640m.pt
+tools/models/*
 
 scripts/test_scripts/*
 !scripts/test_scripts/.gitkeep
 *.pt
-!tools/models/320n.pt
 !src/censor_engine/models/**/*.json

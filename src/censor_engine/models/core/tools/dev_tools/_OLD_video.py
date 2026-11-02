@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 
 import cv2
 
-from censor_engine._typing import Image
+from censor_engine.typing import Image
 from censor_engine.core_engine.processors.video import (
     FrameProcessor,
     VideoProcessor,

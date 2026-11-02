@@ -104,7 +104,7 @@ class TestPartStateMechanism:
         output = PartStateMechanism().handle_mask_overlaps_based_on_part_state(
             part_list
         )
-        assert len(output) == 6
+        assert len(output) == 5
 
     def test_no_parts(self):
         output = PartStateMechanism().handle_mask_overlaps_based_on_part_state(
@@ -120,4 +120,4 @@ class TestPartStateMechanism:
         output = PartStateMechanism().handle_mask_overlaps_based_on_part_state(
             new_list
         )
-        assert len(output) == 6
+        assert len(output) == 5

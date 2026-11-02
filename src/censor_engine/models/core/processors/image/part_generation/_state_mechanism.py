@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+import cv2
+
 from censor_engine.models.core.detection_part.detection_part import Part
 from censor_engine.models.enums import MergeMethod, PartState
 
@@ -104,7 +106,7 @@ class StateHandlingStrategy:
     def revealed_state(part_pair: PartPair) -> None:
         part_order = (
             part_pair.arg_order
-            if part_pair.a_has_higher_state
+            if not part_pair.a_has_higher_state
             else part_pair.inverse_arg_order
         )
         _subtract_masks(*part_order)
@@ -141,12 +143,6 @@ class PartStateMechanism:
 
         # Handle Empty Lists
         if not sorted_parts:
-            return sorted_parts
-
-        # Prematurely Return if the Merge Method is None
-        # NOTE: Merge method is global so this works, change if it gets made to
-        #       be per part.
-        if parts[0].config.image.merging.method == MergeMethod.NONE:
             return sorted_parts
 
         # Merging Algorithm

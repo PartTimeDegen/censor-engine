@@ -4,8 +4,8 @@ import cv2
 import numpy as np
 
 from censor_engine._common_constants import DIM_COLOUR
-from censor_engine._typing import Image, MaskImage
 from censor_engine.structs.colours import Colour
+from censor_engine.typing import Image, MaskImage
 
 
 @dataclass

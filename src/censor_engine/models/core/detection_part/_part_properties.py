@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 
-from censor_engine._typing import MaskImage
+from censor_engine.models.core.detection_part._additionals_schema import (
+    AdditionalProperties,
+)
 from censor_engine.models.libraries.ai_models.output_schemas import (
     AbsoluteBBox,
     DetectorOutput,
@@ -13,6 +15,7 @@ from censor_engine.models.libraries.configs.config import Config
 from censor_engine.models.libraries.configs.settings._detection import (
     PartSettings,
 )
+from censor_engine.typing import MaskImage
 
 
 @dataclass(slots=True)
@@ -41,7 +44,7 @@ class PartProperties:
     settings: PartSettings = field(init=False)
 
     # # Boundary Box
-    bbox: AbsoluteBBox | None = field(init=False, default=None)
+    bbox: AbsoluteBBox = field(init=False)
 
     # Public Stuff
     # # Detector Outputs
@@ -49,7 +52,7 @@ class PartProperties:
     part_id: int = field(init=False)
     label: str = field(init=False)
     score: BoundPercentage = field(init=False)
-    original_bbox: AbsoluteBBox | None = field(init=False)
+    original_bbox: AbsoluteBBox = field(init=False)
     masks: list[MaskImage] | None = field(init=False)
 
     # # Merge Group
@@ -60,6 +63,11 @@ class PartProperties:
     # # Persistance Group
     group_persist_id: int | None = field(init=False)
     group_persist: list[str] = field(default_factory=list, init=False)
+
+    # Additionals
+    additionals: AdditionalProperties = field(
+        default_factory=AdditionalProperties
+    )
 
     def __post_init__(self) -> None:
         """
@@ -90,12 +98,17 @@ class PartProperties:
         self.part_id = self.detector_output.part_id
         self.score = self.detector_output.score
         self.label = self.detector_output.label
+
+        # NOTE: This is will never be None, the None is from non-part outputs
+        if self.detector_output.bbox is None:
+            msg_0 = "Part BBox is None"
+            raise TypeError(msg_0)
         self.original_bbox = self.detector_output.bbox
-        self.masks = self.detector_output.masks
+        self.masks = self.detector_output.mask  # type: ignore
 
     def _load_config_data(self) -> None:
         # Part Config
-        self.settings = self.config.detection.parts[self.label]
+        self.settings = self.config.detection.part_settings[self.label]
 
         # Get Groups
         group_infos = self.config.groups

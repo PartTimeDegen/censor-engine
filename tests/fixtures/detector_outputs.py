@@ -1,10 +1,11 @@
 import pytest
 
-from censor_engine._typing import MaskImage
+from censor_engine.models.libraries.ai_models._enums import OutputType
 from censor_engine.models.libraries.ai_models.output_schemas import (
     AbsoluteBBox,
     DetectorOutput,
 )
+from censor_engine.typing import MaskImage
 from tests.fixtures._dimensions import HALF_PART_SIZE, MIDPOINT
 
 
@@ -44,14 +45,14 @@ def bbox_long_vert() -> AbsoluteBBox:
 def detector_output(
     bbox: AbsoluteBBox,
     mask_empty: MaskImage,
-    mask_full: MaskImage,
     single_part,
 ) -> DetectorOutput:
     return DetectorOutput(
         bbox=bbox,
         # assumes MaskImage is bytes-like in tests
-        masks=[mask_empty, mask_full],
+        mask=mask_empty,
         origin="test_origin",
+        output_type=OutputType.PART,
         part_id=1,
         label=single_part,
         score=0.95,
